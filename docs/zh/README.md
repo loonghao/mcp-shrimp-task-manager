@@ -301,6 +301,69 @@ or
 > - 應用程式在不同環境下行為不一致
 > - 系統崩潰或無法啟動
 
+### 🎯 項目感知數據目錄
+
+蝦米任務管理器支援**項目感知數據目錄**功能，可自動為不同項目隔離任務數據。此功能可防止同時處理多個項目時發生任務數據衝突。
+
+#### 工作原理
+
+系統會自動檢測您當前的項目並創建項目特定的數據目錄：
+
+```
+DATA_DIR/
+├── projects/
+│   ├── project-a/
+│   │   ├── tasks.json
+│   │   ├── memory/
+│   │   └── WebGUI.md
+│   ├── project-b/
+│   │   ├── tasks.json
+│   │   └── memory/
+│   └── my-custom-project/
+│       └── tasks.json
+└── tasks.json (舊版，向後兼容)
+```
+
+#### 項目檢測優先級
+
+1. **PROJECT_NAME 環境變數**（最高優先級）
+2. **Git 倉庫名稱**
+3. **package.json 的 name 字段**
+4. **當前工作目錄名稱**（最低優先級）
+
+#### 配置方式
+
+添加以下環境變數以啟用項目感知功能：
+
+```json
+{
+  "mcpServers": {
+    "shrimp-task-manager": {
+      "command": "node",
+      "args": ["/path/to/mcp-shrimp-task-manager/dist/index.js"],
+      "env": {
+        "DATA_DIR": "/path/to/global/data",
+        "PROJECT_AUTO_DETECT": "true",
+        "PROJECT_NAME": "my-custom-project",
+        "TEMPLATES_USE": "en",
+        "ENABLE_GUI": "false"
+      }
+    }
+  }
+}
+```
+
+**環境變數說明：**
+- `PROJECT_AUTO_DETECT`: 設為 `"true"` 以啟用項目檢測（預設：`"false"`）
+- `PROJECT_NAME`: 可選的手動項目標識符（覆蓋自動檢測）
+
+#### 功能優勢
+
+- **多項目支援**：同時處理多個項目而不會發生任務數據衝突
+- **自動隔離**：每個項目都有自己的任務歷史和記憶
+- **向後兼容**：預設禁用，不影響現有用戶
+- **靈活檢測**：多種檢測方式確保可靠的項目識別
+
 ### 🔧 環境變數配置
 
 蝦米任務管理器支援透過環境變數自定義提示詞行為，讓您無需修改程式碼即可微調 AI 助手的回應。您可以在配置中或透過 `.env` 文件設置這些變數：
@@ -331,6 +394,8 @@ or
 此外，還有其他系統配置變數：
 
 - **DATA_DIR**：指定任務數據存儲的目錄
+- **PROJECT_AUTO_DETECT**：啟用自動項目檢測以實現數據隔離（預設：`"false"`）
+- **PROJECT_NAME**：手動項目標識符，覆蓋自動檢測
 - **TEMPLATES_USE**：指定提示詞使用的模板集。預設為 `en`。目前可用的選項有 `en` 和 `zh`。若要使用自定義模板，請將 `src/prompts/templates_en` 目錄複製到 `DATA_DIR` 指定的位置，重新命名複製的目錄（例如，`my_templates`），並將 `TEMPLATES_USE` 設置為新的目錄名稱（例如，`my_templates`）。
 
 有關自定義提示詞的詳細說明，包括支援的參數和範例，請參閱[提示詞自定義指南](prompt-customization.md)。
