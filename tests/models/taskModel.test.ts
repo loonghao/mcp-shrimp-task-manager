@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -21,8 +21,8 @@ import {
 } from '../helpers/testUtils.js';
 
 // Mock the project detector to return test directory
-jest.mock('../../src/utils/projectDetector.js', () => ({
-  getProjectDataDir: jest.fn(() => Promise.resolve(getTestDataDir())),
+vi.mock('../../src/utils/projectDetector.js', () => ({
+  getProjectDataDir: vi.fn(() => Promise.resolve(getTestDataDir())),
 }));
 
 describe('TaskModel', () => {
@@ -139,7 +139,8 @@ describe('TaskModel', () => {
       const task = await createTask('To Delete', 'Description');
       const deleted = await deleteTask(task.id);
 
-      expect(deleted).toBe(true);
+      expect(deleted.success).toBe(true);
+      expect(deleted.message).toBe('任務刪除成功');
 
       const foundTask = await getTaskById(task.id);
       expect(foundTask).toBeNull();
@@ -150,7 +151,8 @@ describe('TaskModel', () => {
       await updateTask(task.id, { status: TaskStatus.COMPLETED });
 
       const deleted = await deleteTask(task.id);
-      expect(deleted).toBe(false);
+      expect(deleted.success).toBe(false);
+      expect(deleted.message).toBe('無法刪除已完成的任務');
 
       const foundTask = await getTaskById(task.id);
       expect(foundTask).toBeDefined();
@@ -158,7 +160,8 @@ describe('TaskModel', () => {
 
     it('should return false for non-existent task', async () => {
       const deleted = await deleteTask('non-existent');
-      expect(deleted).toBe(false);
+      expect(deleted.success).toBe(false);
+      expect(deleted.message).toBe('找不到指定任務');
     });
   });
 
