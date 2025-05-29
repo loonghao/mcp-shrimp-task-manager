@@ -4,6 +4,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { getProjectDataDir } from "./utils/projectDetector.js";
+import { setServerInstance } from "./utils/serverInstance.js";
 import {
   CallToolRequest,
   CallToolRequestSchema,
@@ -50,6 +51,8 @@ import {
   initProjectRulesSchema,
   researchMode,
   researchModeSchema,
+  getProjectContext,
+  getProjectContextSchema,
 } from "./tools/index.js";
 
 async function main() {
@@ -197,6 +200,9 @@ async function main() {
       }
     );
 
+    // 設置全局服務器實例，供項目檢測使用
+    setServerInstance(server);
+
     server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
         tools: [
@@ -302,6 +308,13 @@ async function main() {
               "toolsDescription/researchMode.md"
             ),
             inputSchema: zodToJsonSchema(researchModeSchema),
+          },
+          {
+            name: "get_project_context",
+            description: loadPromptFromTemplate(
+              "toolsDescription/getProjectContext.md"
+            ),
+            inputSchema: zodToJsonSchema(getProjectContextSchema),
           },
         ],
       };
@@ -459,6 +472,16 @@ async function main() {
                 );
               }
               return await researchMode(parsedArgs.data);
+            case "get_project_context":
+              parsedArgs = await getProjectContextSchema.safeParseAsync(
+                request.params.arguments
+              );
+              if (!parsedArgs.success) {
+                throw new Error(
+                  `Invalid arguments for tool ${request.params.name}: ${parsedArgs.error.message}`
+                );
+              }
+              return await getProjectContext(parsedArgs.data);
             default:
               throw new Error(`Tool ${request.params.name} does not exist`);
           }
