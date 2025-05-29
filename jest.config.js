@@ -11,7 +11,8 @@ export default {
     '^.+\\.ts$': ['ts-jest', {
       useESM: false,
       tsconfig: {
-        module: 'commonjs'
+        module: 'commonjs',
+        target: 'ES2022'
       }
     }]
   },

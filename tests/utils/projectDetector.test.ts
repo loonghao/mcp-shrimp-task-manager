@@ -26,9 +26,9 @@ describe('ProjectDetector', () => {
   });
 
   describe('getProjectDataDir', () => {
-    it('should use baseDataDir when PROJECT_AUTO_DETECT is not enabled', async () => {
+    it('should use baseDataDir when PROJECT_AUTO_DETECT is explicitly disabled', async () => {
       const originalAutoDetect = process.env.PROJECT_AUTO_DETECT;
-      delete process.env.PROJECT_AUTO_DETECT;
+      process.env.PROJECT_AUTO_DETECT = 'false';
 
       const baseDir = '/custom/data/dir';
       const result = await getProjectDataDir(baseDir);
@@ -37,6 +37,8 @@ describe('ProjectDetector', () => {
       // Restore original value
       if (originalAutoDetect) {
         process.env.PROJECT_AUTO_DETECT = originalAutoDetect;
+      } else {
+        delete process.env.PROJECT_AUTO_DETECT;
       }
     });
 
@@ -69,6 +71,10 @@ describe('ProjectDetector', () => {
     });
 
     it('should handle missing package.json gracefully', async () => {
+      // Disable auto-detection for this test
+      const originalAutoDetect = process.env.PROJECT_AUTO_DETECT;
+      process.env.PROJECT_AUTO_DETECT = 'false';
+
       // Change to test directory without package.json
       process.chdir(testDir);
 
@@ -78,14 +84,31 @@ describe('ProjectDetector', () => {
       // Should return base directory when auto-detect is disabled
       expect(typeof result).toBe('string');
       expect(result).toBe(baseDir);
+
+      // Restore original value
+      if (originalAutoDetect) {
+        process.env.PROJECT_AUTO_DETECT = originalAutoDetect;
+      } else {
+        delete process.env.PROJECT_AUTO_DETECT;
+      }
     });
 
     it('should handle auto-detect disabled mode', async () => {
+      const originalAutoDetect = process.env.PROJECT_AUTO_DETECT;
+      process.env.PROJECT_AUTO_DETECT = 'false';
+
       const baseDir = '/test/data/dir';
       const result = await getProjectDataDir(baseDir);
 
-      // Should return base directory when auto-detect is disabled (default)
+      // Should return base directory when auto-detect is disabled
       expect(result).toBe(baseDir);
+
+      // Restore original value
+      if (originalAutoDetect) {
+        process.env.PROJECT_AUTO_DETECT = originalAutoDetect;
+      } else {
+        delete process.env.PROJECT_AUTO_DETECT;
+      }
     });
   });
 });
