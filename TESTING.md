@@ -67,14 +67,14 @@ npm test -- tests/utils/
 
 ## Test Coverage
 
-The project maintains a minimum test coverage threshold of 70%. Coverage reports are generated in the `coverage/` directory.
+The project maintains a minimum test coverage threshold of 50%. Coverage reports are generated in the `coverage/` directory.
 
 ### Coverage Thresholds
 
-- **Lines**: 70% minimum
-- **Functions**: 70% minimum  
-- **Branches**: 70% minimum
-- **Statements**: 70% minimum
+- **Lines**: 50% minimum
+- **Functions**: 50% minimum
+- **Branches**: 50% minimum
+- **Statements**: 50% minimum
 
 ### Viewing Coverage Reports
 
@@ -151,7 +151,7 @@ Specialized workflow for pull request validation:
 
 - **Codecov Integration**: Automatic coverage uploads
 - **PR Comments**: Coverage reports posted as PR comments
-- **Threshold Enforcement**: Builds fail if coverage drops below 70%
+- **Threshold Enforcement**: Builds fail if coverage drops below 50%
 
 ## Writing Tests
 
