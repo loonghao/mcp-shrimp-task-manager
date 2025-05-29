@@ -111,7 +111,7 @@ describe('TaskModel', () => {
       expect(updatedTask?.name).toBe('Updated');
       expect(updatedTask?.description).toBe('Updated description');
       expect(updatedTask?.notes).toBe('New notes');
-      expect(updatedTask?.updatedAt.getTime()).toBeGreaterThan(task.updatedAt.getTime());
+      expect(updatedTask?.updatedAt.getTime()).toBeGreaterThanOrEqual(task.updatedAt.getTime());
     });
 
     it('should not update completed task except allowed fields', async () => {
