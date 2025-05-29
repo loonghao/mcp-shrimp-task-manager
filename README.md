@@ -242,7 +242,7 @@ We use **Vitest** as our testing framework, which provides:
 
 ### Test Coverage
 
-The project maintains a minimum test coverage threshold of **70%** across:
+The project maintains a minimum test coverage threshold of **50%** across:
 - Lines, Functions, Branches, and Statements
 - Core task management operations
 - Tool functionality and utilities
@@ -257,7 +257,7 @@ Every pull request automatically runs:
 - **Security audit** for vulnerabilities
 - **Build verification** to ensure deployability
 
-Coverage reports are automatically posted as PR comments, and builds fail if coverage drops below the 70% threshold.
+Coverage reports are automatically posted as PR comments, and builds fail if coverage drops below the 50% threshold.
 
 ### Development Guidelines
 
