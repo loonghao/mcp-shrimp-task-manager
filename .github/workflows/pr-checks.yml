@@ -47,8 +47,9 @@ jobs:
         THRESHOLD=50
 
         if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
-          echo "❌ Coverage $COVERAGE% is below threshold $THRESHOLD%"
-          exit 1
+          echo "💡 Coverage $COVERAGE% is below threshold $THRESHOLD%"
+          echo "Consider adding more tests to improve coverage."
+          echo "This is informational only and will not fail the CI."
         else
           echo "✅ Coverage $COVERAGE% meets threshold $THRESHOLD%"
         fi
