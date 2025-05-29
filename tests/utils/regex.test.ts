@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { UUID_V4_REGEX } from '../../src/utils/regex.js';
 import { v4 as uuidv4 } from 'uuid';
 
