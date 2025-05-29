@@ -10,6 +10,7 @@
 - [🌐 Web GUI](#web-gui)
 - [📚 Documentation Resources](#documentation)
 - [🔧 Installation and Usage](#installation)
+- [🧪 Testing and Development](#testing)
 - [🔌 Using with MCP-Compatible Clients](#clients)
 - [💡 System Prompt Guidance](#prompt)
 - [🛠️ Available Tools Overview](#tools)
@@ -206,6 +207,55 @@ npm install
 # Build and start service
 npm run build
 ```
+
+## 🧪 <a id="testing"></a>Testing and Development
+
+Shrimp Task Manager includes a comprehensive testing suite to ensure code quality and reliability.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests for CI (no watch, with coverage)
+npm run test:ci
+```
+
+### Test Coverage
+
+The project maintains a minimum test coverage threshold of **70%** across:
+- Lines, Functions, Branches, and Statements
+- Core task management operations
+- Tool functionality and utilities
+- Type definitions and validation
+
+### CI/CD Pipeline
+
+Every pull request automatically runs:
+- **Comprehensive test suite** on Node.js 18.x and 20.x
+- **TypeScript compilation** validation
+- **Code coverage analysis** with threshold enforcement
+- **Security audit** for vulnerabilities
+- **Build verification** to ensure deployability
+
+Coverage reports are automatically posted as PR comments, and builds fail if coverage drops below the 70% threshold.
+
+### Development Guidelines
+
+For contributors:
+- Write tests for new features and bug fixes
+- Ensure all tests pass before submitting PRs
+- Maintain or improve code coverage
+- Follow the established testing patterns
+
+For detailed testing information, see [TESTING.md](TESTING.md).
 
 ## 🔌 <a id="clients"></a>Using with MCP-Compatible Clients
 
