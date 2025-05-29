@@ -4,7 +4,7 @@ This document describes the testing setup and practices for the MCP Shrimp Task 
 
 ## Overview
 
-The project uses Jest as the testing framework with TypeScript support. Tests are organized to cover:
+The project uses **Vitest** as the testing framework with native TypeScript and ES modules support. Tests are organized to cover:
 
 - **Core Models**: Task management, CRUD operations, dependencies
 - **Tools**: Task planning, execution, and management tools  
@@ -39,11 +39,14 @@ tests/
 # Run all tests
 npm test
 
-# Run tests in watch mode
+# Run tests in watch mode (interactive)
 npm run test:watch
 
 # Run tests with coverage
 npm run test:coverage
+
+# Run tests with UI interface
+npm run test:ui
 
 # Run tests for CI (no watch, with coverage)
 npm run test:ci
@@ -56,7 +59,7 @@ npm run test:ci
 npm test -- tests/models/taskModel.test.ts
 
 # Run tests matching a pattern
-npm test -- --testNamePattern="should create task"
+npm test -- --reporter=verbose --run
 
 # Run tests for a specific directory
 npm test -- tests/utils/
@@ -76,6 +79,45 @@ The project maintains a minimum test coverage threshold of 70%. Coverage reports
 ### Viewing Coverage Reports
 
 After running `npm run test:coverage`, open `coverage/lcov-report/index.html` in your browser to view detailed coverage reports.
+
+## Vitest Features
+
+### Why Vitest?
+
+We migrated from Jest to Vitest for several advantages:
+
+- **Native ES Modules Support**: No configuration needed for ES modules and `import.meta.url`
+- **Faster Execution**: Built on Vite's fast build system
+- **Better TypeScript Integration**: Out-of-the-box TypeScript support
+- **Modern Testing Features**: Built-in watch mode, UI interface, and coverage
+- **Simplified Configuration**: Less configuration overhead compared to Jest
+
+### Key Features Used
+
+- **Sequential Execution**: Tests run sequentially to avoid file system race conditions
+- **V8 Coverage Provider**: Fast and accurate coverage reporting
+- **Global Test APIs**: `describe`, `it`, `expect` available globally
+- **Mock Functions**: Using `vi.mock()` and `vi.fn()` for mocking
+- **Setup Files**: Global test setup in `tests/setup.ts`
+
+### Configuration
+
+The project uses `vitest.config.ts` for configuration:
+
+```typescript
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    setupFiles: ['./tests/setup.ts'],
+    pool: 'forks',
+    poolOptions: {
+      forks: { singleFork: true }
+    },
+    testTimeout: 10000
+  }
+});
+```
 
 ## CI/CD Pipeline
 
@@ -196,13 +238,13 @@ describe('Feature Name', () => {
 
 ```bash
 # Run tests with verbose output
-npm test -- --verbose
+npm test -- --reporter=verbose
 
 # Run a single test file with debugging
-npm test -- --testNamePattern="specific test" --verbose
+npm test -- tests/specific.test.ts --reporter=verbose
 
-# Check Jest configuration
-npx jest --showConfig
+# Check Vitest configuration
+npx vitest --config
 ```
 
 ## Contributing

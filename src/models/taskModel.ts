@@ -10,15 +10,13 @@ import {
 import fs from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { fileURLToPath } from "url";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { getProjectDataDir } from "../utils/projectDetector.js";
+import { getProjectRoot } from "../utils/moduleResolver.js";
 
 // 確保獲取專案資料夾路徑
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const PROJECT_ROOT = path.resolve(__dirname, "../..");
+const PROJECT_ROOT = getProjectRoot();
 
 // 獲取項目感知的數據目錄
 async function getDataDir(): Promise<string> {

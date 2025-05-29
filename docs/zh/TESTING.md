@@ -4,7 +4,7 @@
 
 ## 概述
 
-專案使用 Jest 作為測試框架，支援 TypeScript。測試涵蓋以下範圍：
+專案使用 **Vitest** 作為測試框架，原生支援 TypeScript 和 ES 模組。測試涵蓋以下範圍：
 
 - **核心模型**：任務管理、CRUD 操作、依賴關係
 - **工具**：任務規劃、執行和管理工具
@@ -39,11 +39,14 @@ tests/
 # 執行所有測試
 npm test
 
-# 監視模式執行測試
+# 監視模式執行測試（互動式）
 npm run test:watch
 
 # 執行測試並產生覆蓋率報告
 npm run test:coverage
+
+# 執行測試並開啟 UI 介面
+npm run test:ui
 
 # CI 模式執行測試（無監視，包含覆蓋率）
 npm run test:ci
@@ -55,8 +58,8 @@ npm run test:ci
 # 執行特定檔案的測試
 npm test -- tests/models/taskModel.test.ts
 
-# 執行符合模式的測試
-npm test -- --testNamePattern="should create task"
+# 執行詳細報告模式的測試
+npm test -- --reporter=verbose --run
 
 # 執行特定目錄的測試
 npm test -- tests/utils/
@@ -76,6 +79,45 @@ npm test -- tests/utils/
 ### 檢視覆蓋率報告
 
 執行 `npm run test:coverage` 後，在瀏覽器中開啟 `coverage/lcov-report/index.html` 檢視詳細的覆蓋率報告。
+
+## Vitest 特性
+
+### 為什麼選擇 Vitest？
+
+我們從 Jest 遷移到 Vitest 有以下優勢：
+
+- **原生 ES 模組支援**：無需配置即可支援 ES 模組和 `import.meta.url`
+- **更快的執行速度**：基於 Vite 的快速建置系統
+- **更好的 TypeScript 整合**：開箱即用的 TypeScript 支援
+- **現代化測試功能**：內建監視模式、UI 介面和覆蓋率
+- **簡化配置**：相比 Jest 減少了配置開銷
+
+### 使用的關鍵功能
+
+- **順序執行**：測試順序執行以避免檔案系統競爭條件
+- **V8 覆蓋率提供者**：快速且準確的覆蓋率報告
+- **全域測試 API**：`describe`、`it`、`expect` 全域可用
+- **模擬函數**：使用 `vi.mock()` 和 `vi.fn()` 進行模擬
+- **設置檔案**：在 `tests/setup.ts` 中進行全域測試設置
+
+### 配置
+
+專案使用 `vitest.config.ts` 進行配置：
+
+```typescript
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    setupFiles: ['./tests/setup.ts'],
+    pool: 'forks',
+    poolOptions: {
+      forks: { singleFork: true }
+    },
+    testTimeout: 10000
+  }
+});
+```
 
 ## CI/CD 流水線
 
@@ -196,13 +238,13 @@ describe('功能名稱', () => {
 
 ```bash
 # 執行詳細輸出的測試
-npm test -- --verbose
+npm test -- --reporter=verbose
 
 # 執行單一測試檔案並除錯
-npm test -- --testNamePattern="specific test" --verbose
+npm test -- tests/specific.test.ts --reporter=verbose
 
-# 檢查 Jest 配置
-npx jest --showConfig
+# 檢查 Vitest 配置
+npx vitest --config
 ```
 
 ## 貢獻

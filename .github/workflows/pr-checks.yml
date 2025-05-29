@@ -38,13 +38,14 @@ jobs:
 
     - name: Check code coverage threshold
       run: |
-        # Extract coverage percentage from Jest output
-        COVERAGE=$(npm run test:coverage 2>&1 | grep -o 'All files.*[0-9]\+\.[0-9]\+' | grep -o '[0-9]\+\.[0-9]\+' | head -1)
+        # Extract coverage percentage from Vitest output
+        npm run test:coverage > coverage_output.txt 2>&1
+        COVERAGE=$(grep -o 'All files.*[0-9]\+\.[0-9]\+' coverage_output.txt | grep -o '[0-9]\+\.[0-9]\+' | head -1 || echo "0")
         echo "Current coverage: $COVERAGE%"
-        
+
         # Set minimum coverage threshold
         THRESHOLD=70
-        
+
         if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
           echo "❌ Coverage $COVERAGE% is below threshold $THRESHOLD%"
           exit 1
@@ -74,13 +75,13 @@ jobs:
       run: |
         echo "Running integration tests..."
         # Run tests that specifically test tool integration
-        npm test -- --testPathPattern="integration|tools" --verbose
+        npm test -- tests/tools/
 
     - name: Validate task model integrity
       run: |
         echo "Validating task model integrity..."
         # Run specific tests for task model
-        npm test -- --testPathPattern="taskModel" --verbose
+        npm test -- tests/models/taskModel.test.ts
 
     - name: Check bundle size impact
       run: |

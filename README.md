@@ -210,7 +210,7 @@ npm run build
 
 ## 🧪 <a id="testing"></a>Testing and Development
 
-Shrimp Task Manager includes a comprehensive testing suite to ensure code quality and reliability.
+Shrimp Task Manager includes a comprehensive testing suite powered by **Vitest** to ensure code quality and reliability.
 
 ### Running Tests
 
@@ -218,15 +218,27 @@ Shrimp Task Manager includes a comprehensive testing suite to ensure code qualit
 # Run all tests
 npm test
 
-# Run tests in watch mode
+# Run tests in watch mode (interactive)
 npm run test:watch
 
 # Run tests with coverage report
 npm run test:coverage
 
+# Run tests with UI interface
+npm run test:ui
+
 # Run tests for CI (no watch, with coverage)
 npm run test:ci
 ```
+
+### Test Framework
+
+We use **Vitest** as our testing framework, which provides:
+- **Fast execution** with native ES modules support
+- **Better TypeScript integration** out of the box
+- **Modern testing features** with excellent developer experience
+- **Built-in coverage reporting** with v8 provider
+- **Watch mode** with intelligent re-running
 
 ### Test Coverage
 
@@ -254,6 +266,7 @@ For contributors:
 - Ensure all tests pass before submitting PRs
 - Maintain or improve code coverage
 - Follow the established testing patterns
+- Use Vitest's modern testing features and syntax
 
 For detailed testing information, see [TESTING.md](TESTING.md).
 
