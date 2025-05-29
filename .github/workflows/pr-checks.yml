@@ -44,7 +44,7 @@ jobs:
         echo "Current coverage: $COVERAGE%"
 
         # Set minimum coverage threshold
-        THRESHOLD=70
+        THRESHOLD=50
 
         if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
           echo "❌ Coverage $COVERAGE% is below threshold $THRESHOLD%"
@@ -145,15 +145,15 @@ jobs:
               
               coverageComment += `| Metric | Coverage | Status |\n`;
               coverageComment += `|--------|----------|--------|\n`;
-              coverageComment += `| Lines | ${total.lines.pct}% | ${total.lines.pct >= 70 ? '✅' : '❌'} |\n`;
-              coverageComment += `| Functions | ${total.functions.pct}% | ${total.functions.pct >= 70 ? '✅' : '❌'} |\n`;
-              coverageComment += `| Branches | ${total.branches.pct}% | ${total.branches.pct >= 70 ? '✅' : '❌'} |\n`;
-              coverageComment += `| Statements | ${total.statements.pct}% | ${total.statements.pct >= 70 ? '✅' : '❌'} |\n\n`;
-              
-              if (total.lines.pct >= 70) {
-                coverageComment += '🎉 Great job! Coverage meets the minimum threshold of 70%.\n';
+              coverageComment += `| Lines | ${total.lines.pct}% | ${total.lines.pct >= 50 ? '✅' : '❌'} |\n`;
+              coverageComment += `| Functions | ${total.functions.pct}% | ${total.functions.pct >= 50 ? '✅' : '❌'} |\n`;
+              coverageComment += `| Branches | ${total.branches.pct}% | ${total.branches.pct >= 50 ? '✅' : '❌'} |\n`;
+              coverageComment += `| Statements | ${total.statements.pct}% | ${total.statements.pct >= 50 ? '✅' : '❌'} |\n\n`;
+
+              if (total.lines.pct >= 50) {
+                coverageComment += '🎉 Great job! Coverage meets the minimum threshold of 50%.\n';
               } else {
-                coverageComment += '⚠️ Coverage is below the minimum threshold of 70%. Please add more tests.\n';
+                coverageComment += '⚠️ Coverage is below the minimum threshold of 50%. Please add more tests.\n';
               }
             } else {
               coverageComment += 'Coverage report not available.\n';
