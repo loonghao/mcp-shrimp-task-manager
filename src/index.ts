@@ -196,6 +196,9 @@ async function main() {
       {
         capabilities: {
           tools: {},
+          roots: {
+            listChanged: true,
+          },
         },
       }
     );

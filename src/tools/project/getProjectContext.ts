@@ -27,7 +27,7 @@ export type GetProjectContextInput = z.infer<typeof getProjectContextSchema>;
 export async function getProjectContext(input: GetProjectContextInput) {
   try {
     const server = getServerInstance();
-    const projectInfo = await detectProject();
+    const projectInfo = await detectProject(undefined, server || undefined);
     
     // 获取基础数据目录和项目特定目录
     const baseDataDir = process.env.DATA_DIR || path.join(process.cwd(), "data");
