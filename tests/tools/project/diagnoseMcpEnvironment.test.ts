@@ -89,8 +89,8 @@ describe('diagnoseMcpEnvironment', () => {
       if (jsonMatch) {
         const jsonData = JSON.parse(jsonMatch[1]);
         expect(jsonData.systemInfo).toBeDefined();
-        expect(jsonData.systemInfo.platform).toBe('win32');
-        expect(jsonData.systemInfo.architecture).toBe('x64');
+        expect(jsonData.systemInfo.platform).toBe(process.platform);
+        expect(jsonData.systemInfo.architecture).toBe(process.arch);
       }
     });
 
