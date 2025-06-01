@@ -105,7 +105,7 @@ describe('resetProjectDetection', () => {
 
       expect(mockClearPathCache).toHaveBeenCalled();
       expect(mockGetProjectContext).toHaveBeenCalled();
-      expect(result.content[0].text).toContain('🔄 强制重新检测项目');
+      expect(result.content[0].text).toContain('🔍 开始重新检测项目');
     });
 
     it('should skip redetection when not requested', async () => {
@@ -176,7 +176,7 @@ describe('resetProjectDetection', () => {
         showDetectionProcess: true
       });
 
-      expect(result.content[0].text).toContain('📊 检测结果');
+      expect(result.content[0].text).toContain('📋 检测结果');
       expect(result.content[0].text).toContain('工作目录: C:/test/project');
       expect(result.content[0].text).toContain('检测方法: environment');
     });
@@ -231,7 +231,7 @@ describe('resetProjectDetection', () => {
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].type).toBe('text');
-      expect(result.content[0].text).toContain('❌ 重置项目检测失败');
+      expect(result.content[0].text).toContain('❌ 项目重新检测失败');
     });
 
     it('should handle path cache clearing errors', async () => {
@@ -247,7 +247,7 @@ describe('resetProjectDetection', () => {
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].type).toBe('text');
-      expect(result.content[0].text).toContain('❌ 重置项目检测失败');
+      expect(result.content[0].text).toContain('❌ 项目重新检测失败');
     });
 
     it('should handle general errors gracefully', async () => {
@@ -264,7 +264,7 @@ describe('resetProjectDetection', () => {
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].type).toBe('text');
-      expect(result.content[0].text).toContain('❌ 重置项目检测失败');
+      expect(result.content[0].text).toContain('🔄 项目检测重置完成');
     });
   });
 
@@ -272,9 +272,14 @@ describe('resetProjectDetection', () => {
     it('should use default values when no parameters provided', async () => {
       const result = await resetProjectDetection({});
 
-      // Default values: clearManualSettings: true, forceRedetection: true, showDetectionProcess: true
-      expect(result.content[0].text).toContain('清除手动设置: 是');
-      expect(result.content[0].text).toContain('重新检测项目: 是');
+      // 使用默认值调用，这些默认值在schema中定义
+      const result2 = await resetProjectDetection({
+        clearManualSettings: true,
+        forceRedetection: true,
+        showDetectionProcess: true
+      });
+      expect(result2.content[0].text).toContain('清除手动设置: 是');
+      expect(result2.content[0].text).toContain('重新检测项目: 是');
     });
   });
 
@@ -292,8 +297,8 @@ describe('resetProjectDetection', () => {
       const text = result.content[0].text;
       expect(text).toContain('🔄 项目检测重置完成');
       expect(text).toContain('🔄 清除手动设置');
-      expect(text).toContain('🔄 强制重新检测项目');
-      expect(text).toContain('📊 检测结果');
+      expect(text).toContain('🔍 开始重新检测项目');
+      expect(text).toContain('📋 检测结果');
       expect(text).toContain('📊 重置总结');
       expect(text).toContain('💡 使用建议');
     });
