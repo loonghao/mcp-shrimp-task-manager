@@ -29,6 +29,11 @@ vi.mock('@/utils/logger', () => ({
 describe('setProjectWorkingDirectory', () => {
   const originalEnv = process.env;
 
+  // 跨平台测试路径
+  const testProjectPath = path.resolve('/test/project');
+  const testDataPath = path.resolve('/test-data');
+  const testProjectDataPath = path.join(testDataPath, 'projects', 'test-project');
+
   beforeEach(() => {
     process.env = { ...originalEnv };
     vi.clearAllMocks();
@@ -53,7 +58,7 @@ describe('setProjectWorkingDirectory', () => {
       vi.mocked(fs.stat).mockRejectedValue(new Error('ENOENT: no such file or directory'));
 
       const result = await setProjectWorkingDirectory({
-        projectPath: 'C:/non/existent/path',
+        projectPath: path.resolve('/non/existent/path'),
         persistent: false,
         validateProject: false
       });
@@ -67,7 +72,7 @@ describe('setProjectWorkingDirectory', () => {
       } as any);
 
       const result = await setProjectWorkingDirectory({
-        projectPath: 'C:/some/file.txt',
+        projectPath: path.resolve('/some/file.txt'),
         persistent: false,
         validateProject: false
       });
@@ -89,49 +94,49 @@ describe('setProjectWorkingDirectory', () => {
 
       // Mock path summary
       vi.mocked(pathManager.getPathSummary).mockResolvedValue({
-        baseDataDir: 'C:/test-data',
-        projectDataDir: 'C:/test-data/projects/test-project',
-        logDir: 'C:/test-data/projects/test-project/logs',
-        tasksFile: 'C:/test-data/projects/test-project/tasks.json',
-        configDir: 'C:/test-data/projects/test-project/config',
-        tempDir: 'C:/test-data/projects/test-project/temp',
+        baseDataDir: testDataPath,
+        projectDataDir: testProjectDataPath,
+        logDir: path.join(testProjectDataPath, 'logs'),
+        tasksFile: path.join(testProjectDataPath, 'tasks.json'),
+        configDir: path.join(testProjectDataPath, 'config'),
+        tempDir: path.join(testProjectDataPath, 'temp'),
         projectInfo: {
           id: 'test-project',
           rawName: 'Test Project',
           source: 'directory',
-          path: 'C:/test/project'
+          path: testProjectPath
         }
       });
     });
 
     it('should set project directory successfully', async () => {
       const result = await setProjectWorkingDirectory({
-        projectPath: 'C:/test/project',
+        projectPath: testProjectPath,
         persistent: false,
         validateProject: false
       });
 
-      expect(pathManager.updateProjectPath).toHaveBeenCalledWith('C:/test/project');
-      expect(result.content[0].text).toContain('✅ 项目工作目录已设置为: C:/test/project');
+      expect(pathManager.updateProjectPath).toHaveBeenCalledWith(testProjectPath);
+      expect(result.content[0].text).toContain(`✅ 项目工作目录已设置为: ${testProjectPath}`);
     });
 
     it('should save config when persistent is true', async () => {
       await setProjectWorkingDirectory({
-        projectPath: 'C:/test/project',
+        projectPath: testProjectPath,
         persistent: true,
         validateProject: false
       });
 
       expect(fs.writeFile).toHaveBeenCalledWith(
-        path.join('C:/test/project', '.shrimp-config.json'),
-        expect.stringContaining('"projectPath": "C:/test/project"'),
+        path.join(testProjectPath, '.shrimp-config.json'),
+        expect.stringContaining(JSON.stringify(testProjectPath)),
         'utf-8'
       );
     });
 
     it('should not save config when persistent is false', async () => {
       await setProjectWorkingDirectory({
-        projectPath: 'C:/test/project',
+        projectPath: testProjectPath,
         persistent: false,
         validateProject: false
       });
@@ -141,14 +146,14 @@ describe('setProjectWorkingDirectory', () => {
 
     it('should include path summary in response', async () => {
       const result = await setProjectWorkingDirectory({
-        projectPath: 'C:/test/project',
+        projectPath: testProjectPath,
         persistent: false,
         validateProject: false
       });
 
       expect(result.content[0].text).toContain('📁 路径配置摘要:');
-      expect(result.content[0].text).toContain('数据目录: C:/test-data/projects/test-project');
-      expect(result.content[0].text).toContain('日志目录: C:/test-data/projects/test-project/logs');
+      expect(result.content[0].text).toContain(`数据目录: ${testProjectDataPath}`);
+      expect(result.content[0].text).toContain(`日志目录: ${path.join(testProjectDataPath, 'logs')}`);
     });
 
     it('should validate project when validateProject is true', async () => {
@@ -161,7 +166,7 @@ describe('setProjectWorkingDirectory', () => {
       });
 
       const result = await setProjectWorkingDirectory({
-        projectPath: 'C:/test/project',
+        projectPath: testProjectPath,
         persistent: false,
         validateProject: true
       });
@@ -179,7 +184,7 @@ describe('setProjectWorkingDirectory', () => {
       vi.mocked(pathManager.updateProjectPath).mockRejectedValue(new Error('Update failed'));
 
       const result = await setProjectWorkingDirectory({
-        projectPath: 'C:/test/project',
+        projectPath: testProjectPath,
         persistent: false,
         validateProject: false
       });
@@ -198,17 +203,17 @@ describe('setProjectWorkingDirectory', () => {
       vi.mocked(fs.writeFile).mockRejectedValue(new Error('Write failed'));
 
       vi.mocked(pathManager.getPathSummary).mockResolvedValue({
-        baseDataDir: 'C:/test-data',
-        projectDataDir: 'C:/test-data/projects/test-project',
-        logDir: 'C:/test-data/projects/test-project/logs',
-        tasksFile: 'C:/test-data/projects/test-project/tasks.json',
-        configDir: 'C:/test-data/projects/test-project/config',
-        tempDir: 'C:/test-data/projects/test-project/temp',
+        baseDataDir: testDataPath,
+        projectDataDir: testProjectDataPath,
+        logDir: path.join(testProjectDataPath, 'logs'),
+        tasksFile: path.join(testProjectDataPath, 'tasks.json'),
+        configDir: path.join(testProjectDataPath, 'config'),
+        tempDir: path.join(testProjectDataPath, 'temp'),
         projectInfo: null
       });
 
       const result = await setProjectWorkingDirectory({
-        projectPath: 'C:/test/project',
+        projectPath: testProjectPath,
         persistent: true,
         validateProject: false
       });

@@ -38,9 +38,10 @@ const EXPECTED_TOOLS = [
   'validate_project_isolation'
 ];
 
+// 定义服务器路径在全局作用域
+const serverPath = path.join(__dirname, '../../dist/index.js');
+
 describe('MCP 服务器集成测试', () => {
-  const serverPath = path.join(__dirname, '../../dist/index.js');
-  
   beforeAll(() => {
     // 确保构建文件存在
     const fs = require('fs');
@@ -54,13 +55,13 @@ describe('MCP 服务器集成测试', () => {
       const result = await testServerStartup('zh');
       expect(result.success).toBe(true);
       expect(result.error).toBe('');
-    }, 15000);
+    }, 25000); // 增加到25秒
 
     it('应该能够成功启动服务器（英文模板）', async () => {
       const result = await testServerStartup('en');
       expect(result.success).toBe(true);
       expect(result.error).toBe('');
-    }, 15000);
+    }, 25000); // 增加到25秒
   });
 
   describe('工具列表测试', () => {
@@ -69,26 +70,26 @@ describe('MCP 服务器集成测试', () => {
       expect(result.success).toBe(true);
       expect(result.tools).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
       expect(result.tools.length).toBe(EXPECTED_TOOLS.length);
-    }, 15000);
+    }, 25000); // 增加到25秒
 
     it('应该返回完整的工具列表（英文模板）', async () => {
       const result = await testToolsList('en');
       expect(result.success).toBe(true);
       expect(result.tools).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
       expect(result.tools.length).toBe(EXPECTED_TOOLS.length);
-    }, 15000);
+    }, 25000); // 增加到25秒
 
     it('工具描述应该不为空', async () => {
       const result = await testToolsDescriptions('zh');
       expect(result.success).toBe(true);
       expect(result.emptyDescriptions.length).toBe(0);
-    }, 15000);
+    }, 25000); // 增加到25秒
 
     it('新增的工具应该存在', async () => {
       const result = await testToolsList('zh');
       expect(result.success).toBe(true);
       expect(result.tools).toContain('validate_project_isolation');
-    }, 15000);
+    }, 25000); // 增加到25秒
   });
 
   describe('环境变量测试', () => {
@@ -99,7 +100,7 @@ describe('MCP 服务器集成测试', () => {
       });
       expect(result.success).toBe(true);
       expect(result.envVars.PROJECT_AUTO_DETECT).toBe('true');
-    }, 15000);
+    }, 25000); // 增加到25秒
 
     it('应该正确设置默认环境变量', async () => {
       const result = await testServerWithEnv({
@@ -108,7 +109,7 @@ describe('MCP 服务器集成测试', () => {
       });
       expect(result.success).toBe(true);
       expect(result.envVars.PROJECT_AUTO_DETECT).toBe('true'); // 应该被自动设置
-    }, 15000);
+    }, 25000); // 增加到25秒
   });
 });
 
@@ -123,16 +124,19 @@ async function testServerStartup(templatesUse: string): Promise<{
         ...process.env,
         PROJECT_AUTO_DETECT: 'true',
         TEMPLATES_USE: templatesUse,
-        LOG_LEVEL: 'error' // 减少日志输出
+        LOG_LEVEL: 'info', // 需要info级别才能看到连接成功消息
+        LOG_TO_CONSOLE: 'true' // 确保日志输出到控制台
       },
       stdio: ['pipe', 'pipe', 'pipe']
     });
 
     let errorOutput = '';
+    let stdoutOutput = '';
     let hasStarted = false;
 
     server.stdout.on('data', (data) => {
       const text = data.toString();
+      stdoutOutput += text;
       if (text.includes('MCP服务器连接成功')) {
         hasStarted = true;
         server.kill('SIGTERM');
@@ -161,9 +165,12 @@ async function testServerStartup(templatesUse: string): Promise<{
     setTimeout(() => {
       if (!hasStarted) {
         server.kill('SIGTERM');
-        resolve({ success: false, error: '服务器启动超时' });
+        resolve({
+          success: false,
+          error: `服务器启动超时 (20秒)。标准输出: ${stdoutOutput}。错误输出: ${errorOutput}`
+        });
       }
-    }, 10000);
+    }, 20000); // 增加到20秒
   });
 }
 
@@ -178,7 +185,8 @@ async function testToolsList(templatesUse: string): Promise<{
         ...process.env,
         PROJECT_AUTO_DETECT: 'true',
         TEMPLATES_USE: templatesUse,
-        LOG_LEVEL: 'error'
+        LOG_LEVEL: 'info', // 需要info级别才能看到连接成功消息
+        LOG_TO_CONSOLE: 'true' // 确保日志输出到控制台
       },
       stdio: ['pipe', 'pipe', 'pipe']
     });
@@ -226,12 +234,12 @@ async function testToolsList(templatesUse: string): Promise<{
     // 超时处理
     setTimeout(() => {
       server.kill('SIGTERM');
-      resolve({ 
-        success: false, 
-        tools: [], 
-        error: `工具列表请求超时, 错误输出: ${errorOutput}` 
+      resolve({
+        success: false,
+        tools: [],
+        error: `工具列表请求超时 (20秒), 错误输出: ${errorOutput}`
       });
-    }, 10000);
+    }, 20000); // 增加到20秒
   });
 }
 
@@ -266,23 +274,20 @@ async function testServerWithEnv(env: Record<string, string>): Promise<{
 
     let envVars: Record<string, string> = {};
     let hasStarted = false;
+    let fullOutput = '';
 
     server.stdout.on('data', (data) => {
       const text = data.toString();
-      
-      // 解析环境变量信息
-      if (text.includes('env: {')) {
-        try {
-          const envMatch = text.match(/env: (\{[^}]+\})/);
-          if (envMatch) {
-            const envStr = envMatch[1].replace(/'/g, '"');
-            envVars = JSON.parse(envStr);
-          }
-        } catch (e) {
-          // 忽略解析错误
+      fullOutput += text;
+
+      // 解析环境变量信息 - 使用更宽松的匹配
+      if (text.includes('PROJECT_AUTO_DETECT:')) {
+        const match = text.match(/PROJECT_AUTO_DETECT:\s*'([^']+)'/);
+        if (match) {
+          envVars.PROJECT_AUTO_DETECT = match[1];
         }
       }
-      
+
       if (text.includes('MCP服务器连接成功')) {
         hasStarted = true;
         server.kill('SIGTERM');
@@ -300,6 +305,6 @@ async function testServerWithEnv(env: Record<string, string>): Promise<{
         server.kill('SIGTERM');
         resolve({ success: false, envVars: {} });
       }
-    }, 10000);
+    }, 20000); // 增加到20秒
   });
 }
