@@ -465,6 +465,7 @@ Additionally, there are other system configuration variables:
 - **PROJECT_AUTO_DETECT**: Enable automatic project detection for data isolation (default: `"false"`)
 - **PROJECT_NAME**: Manual project identifier, overrides automatic detection
 - **TEMPLATES_USE**: Specifies the template set to use for prompts. Defaults to `en`. Currently available options are `en` and `zh`. To use custom templates, copy the `src/prompts/templates_en` directory to the location specified by `DATA_DIR`, rename the copied directory (e.g., to `my_templates`), and set `TEMPLATES_USE` to the new directory name (e.g., `my_templates`).
+- **LOG_LEVEL**: Controls the logging level. Available options: `DEBUG`, `INFO`, `WARN`, `ERROR` (default: `"INFO"`). Logs are automatically saved to `DATA_DIR/logs/` directory.
 
 For detailed instructions on customizing prompts, including supported parameters and examples, see the [Prompt Customization Guide](docs/en/prompt-customization.md).
 

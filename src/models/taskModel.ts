@@ -12,7 +12,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { getProjectDataDir } from "../utils/projectDetector.js";
+import { getProjectDataDir } from "../utils/pathManager.js";
 import { getProjectRoot } from "../utils/moduleResolver.js";
 
 // 確保獲取專案資料夾路徑
@@ -20,8 +20,7 @@ const PROJECT_ROOT = getProjectRoot();
 
 // 獲取項目感知的數據目錄
 async function getDataDir(): Promise<string> {
-  const baseDataDir = process.env.DATA_DIR || path.join(PROJECT_ROOT, "data");
-  return await getProjectDataDir(baseDataDir);
+  return await getProjectDataDir();
 }
 
 // 獲取任務文件路徑

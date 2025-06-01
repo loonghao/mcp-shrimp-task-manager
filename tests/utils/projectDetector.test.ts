@@ -1,19 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { getProjectDataDir, clearProjectCache } from '../../src/utils/projectDetector.js';
+import { getProjectContext, detectProjectRoot } from '../../src/utils/projectDetector.js';
 
-describe('ProjectDetector', () => {
+describe('ProjectDetector (MCP Style)', () => {
+  const testDir = path.join(os.tmpdir(), 'shrimp-test-project-detector');
   const originalCwd = process.cwd();
-  // Use system temp directory to avoid Git detection
-  const testDir = path.join(os.tmpdir(), 'test-project-' + Date.now());
 
   beforeEach(() => {
-    // Clear project cache before each test
-    clearProjectCache();
-
-    // Clean up test directory
+    // 清理测试目录
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });
     }
@@ -21,110 +17,113 @@ describe('ProjectDetector', () => {
   });
 
   afterEach(() => {
-    // Restore original working directory
+    // 恢复原始工作目录
     process.chdir(originalCwd);
     
-    // Clean up test directory
+    // 清理测试目录
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });
     }
   });
 
-  describe('getProjectDataDir', () => {
-    it('should use baseDataDir when PROJECT_AUTO_DETECT is explicitly disabled', async () => {
-      const originalAutoDetect = process.env.PROJECT_AUTO_DETECT;
-      process.env.PROJECT_AUTO_DETECT = 'false';
-
-      const baseDir = '/custom/data/dir';
-      const result = await getProjectDataDir(baseDir);
-      expect(result).toBe(baseDir);
-
-      // Restore original value
-      if (originalAutoDetect) {
-        process.env.PROJECT_AUTO_DETECT = originalAutoDetect;
-      } else {
-        delete process.env.PROJECT_AUTO_DETECT;
-      }
-    });
-
-    it('should detect project name from package.json when auto-detect is enabled', async () => {
-      // Enable auto-detection
-      const originalAutoDetect = process.env.PROJECT_AUTO_DETECT;
-      const originalProjectName = process.env.PROJECT_NAME;
-      process.env.PROJECT_AUTO_DETECT = 'true';
-
-      // Clear any existing PROJECT_NAME to ensure package.json detection
-      delete process.env.PROJECT_NAME;
-
-      // Create a package.json file
+  describe('getProjectContext', () => {
+    it('should detect project with package.json', async () => {
+      // 创建package.json文件
       const packageJson = {
         name: 'test-project',
         version: '1.0.0',
+        description: 'Test project'
       };
-
       fs.writeFileSync(
         path.join(testDir, 'package.json'),
         JSON.stringify(packageJson, null, 2)
       );
 
-      const baseDir = '/base/data/dir';
-      // Pass testDir as workingDir to avoid Git detection from current repo
-      const result = await getProjectDataDir(baseDir, testDir);
-
-      // Should include project name in path when auto-detect is enabled
-      expect(result).toContain('test-project');
-
-      // Clean up
-      if (originalAutoDetect) {
-        process.env.PROJECT_AUTO_DETECT = originalAutoDetect;
-      } else {
-        delete process.env.PROJECT_AUTO_DETECT;
-      }
-
-      if (originalProjectName) {
-        process.env.PROJECT_NAME = originalProjectName;
-      }
-    });
-
-    it('should handle missing package.json gracefully', async () => {
-      // Disable auto-detection for this test
-      const originalAutoDetect = process.env.PROJECT_AUTO_DETECT;
-      process.env.PROJECT_AUTO_DETECT = 'false';
-
-      // Change to test directory without package.json
+      // 切换到测试目录
       process.chdir(testDir);
 
-      const baseDir = '/base/data/dir';
-      const result = await getProjectDataDir(baseDir, testDir);
+      const context = await getProjectContext();
 
-      // Should return base directory when auto-detect is disabled
-      expect(typeof result).toBe('string');
-      expect(result).toBe(baseDir);
+      expect(context.projectId).toBe('test-project');
+      expect(context.projectName).toBe('test-project');
+      expect(context.projectRoot).toBe(testDir);
+      expect(context.projectType.hasPackageJson).toBe(true);
+      expect(context.packageInfo?.name).toBe('test-project');
+      expect(context.metadata.detectionMethod).toBe('cwd');
+    });
 
-      // Restore original value
-      if (originalAutoDetect) {
-        process.env.PROJECT_AUTO_DETECT = originalAutoDetect;
-      } else {
-        delete process.env.PROJECT_AUTO_DETECT;
+    it('should detect project with git repository', async () => {
+      // 创建.git目录
+      fs.mkdirSync(path.join(testDir, '.git'));
+
+      // 切换到测试目录
+      process.chdir(testDir);
+
+      const context = await getProjectContext();
+
+      expect(context.projectType.hasGit).toBe(true);
+      expect(context.metadata.detectionMethod).toBe('cwd');
+    });
+
+    it('should use explicit path configuration', async () => {
+      const context = await getProjectContext({
+        allowedPaths: [testDir],
+        autoDetect: false
+      });
+
+      expect(context.projectRoot).toBe(testDir);
+      expect(context.metadata.detectionMethod).toBe('explicit');
+    });
+
+    it('should use environment variable', async () => {
+      const originalEnv = process.env.SHRIMP_PROJECT_PATH;
+      process.env.SHRIMP_PROJECT_PATH = testDir;
+
+      try {
+        const context = await getProjectContext({
+          allowedPaths: [],
+          autoDetect: false
+        });
+
+        expect(context.projectRoot).toBe(testDir);
+        expect(context.metadata.detectionMethod).toBe('environment');
+      } finally {
+        if (originalEnv) {
+          process.env.SHRIMP_PROJECT_PATH = originalEnv;
+        } else {
+          delete process.env.SHRIMP_PROJECT_PATH;
+        }
       }
     });
 
-    it('should handle auto-detect disabled mode', async () => {
-      const originalAutoDetect = process.env.PROJECT_AUTO_DETECT;
-      process.env.PROJECT_AUTO_DETECT = 'false';
+    it('should fallback to specified directory', async () => {
+      const context = await getProjectContext({
+        allowedPaths: [],
+        autoDetect: false,
+        fallbackDir: testDir
+      });
 
-      const baseDir = '/test/data/dir';
-      const result = await getProjectDataDir(baseDir);
+      expect(context.projectRoot).toBe(testDir);
+      expect(context.metadata.detectionMethod).toBe('fallback');
+    });
+  });
 
-      // Should return base directory when auto-detect is disabled
-      expect(result).toBe(baseDir);
+  describe('detectProjectRoot', () => {
+    it('should detect project root from current directory', async () => {
+      // 创建package.json
+      fs.writeFileSync(path.join(testDir, 'package.json'), '{"name": "test"}');
+      process.chdir(testDir);
 
-      // Restore original value
-      if (originalAutoDetect) {
-        process.env.PROJECT_AUTO_DETECT = originalAutoDetect;
-      } else {
-        delete process.env.PROJECT_AUTO_DETECT;
-      }
+      const projectRoot = await detectProjectRoot();
+      expect(projectRoot).toBe(testDir);
+    });
+
+    it('should use provided working directory', async () => {
+      // 创建一个项目指标文件以确保检测到正确的目录
+      fs.writeFileSync(path.join(testDir, 'package.json'), '{"name": "test"}');
+
+      const projectRoot = await detectProjectRoot(testDir);
+      expect(projectRoot).toBe(testDir);
     });
   });
 });
