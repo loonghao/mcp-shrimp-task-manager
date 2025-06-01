@@ -116,6 +116,8 @@ describe('reflectTask Tool', () => {
       const result1 = await reflectTask(input1);
       const result2 = await reflectTask(input2);
 
+      // reflectTask uses templates that include the input parameters
+      // so different inputs should produce different outputs
       expect(result1.content[0].text).not.toBe(result2.content[0].text);
       expect(result1.content[0].text).toContain('First task summary');
       expect(result2.content[0].text).toContain('Second task summary');

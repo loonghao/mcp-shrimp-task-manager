@@ -68,6 +68,38 @@ jobs:
         test -f dist/index.js
         test -f dist/index.d.ts
 
+    - name: Verify template integrity
+      run: |
+        # Check that all critical template files exist in both languages
+        echo "Checking template file integrity..."
+
+        # Critical tool description files
+        TOOLS=(
+          "planTask.md" "analyzeTask.md" "reflectTask.md" "splitTasks.md"
+          "listTasks.md" "executeTask.md" "verifyTask.md" "deleteTask.md"
+          "clearAllTasks.md" "updateTask.md" "queryTask.md" "getTaskDetail.md"
+          "processThought.md" "initProjectRules.md" "researchMode.md"
+          "getProjectContext.md" "analyzeWorkingDirectory.md" "setProjectWorkingDirectory.md"
+          "diagnoseMcpEnvironment.md" "viewRealtimeLogs.md" "resetProjectDetection.md"
+          "showPathStatus.md" "validateProjectIsolation.md"
+        )
+
+        # Check both languages
+        for lang in zh en; do
+          echo "Checking templates_${lang}..."
+          for tool in "${TOOLS[@]}"; do
+            file="dist/prompts/templates_${lang}/toolsDescription/${tool}"
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing: $file"
+              exit 1
+            else
+              echo "✅ Found: $file"
+            fi
+          done
+        done
+
+        echo "✅ All template files verified!"
+
   lint:
     runs-on: ubuntu-latest
 
