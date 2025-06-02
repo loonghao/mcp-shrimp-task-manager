@@ -37,6 +37,8 @@ export interface Task {
   notes?: string; // 補充說明、特殊處理要求或實施建議（選填）
   status: TaskStatus; // 任務當前的執行狀態
   dependencies: TaskDependency[]; // 任務的前置依賴關係列表
+  priority?: number; // 任務優先級 (1-10，數字越大優先級越高)
+  urgency?: 'low' | 'medium' | 'high' | 'critical'; // 任務緊急程度
   createdAt: Date; // 任務創建的時間戳
   updatedAt: Date; // 任務最後更新的時間戳
   completedAt?: Date; // 任務完成的時間戳（僅適用於已完成的任務）
@@ -92,3 +94,80 @@ export interface TaskComplexityAssessment {
   };
   recommendations: string[]; // 處理建議列表
 }
+
+// ===== 增强 Prompt 系统类型定义 =====
+
+// Prompt 分类：定义 prompt 的分类信息
+export interface PromptCategory {
+  id: string; // 分类的唯一标识符
+  name: {
+    en: string; // 英文名称
+    zh: string; // 中文名称
+  };
+  description: {
+    en: string; // 英文描述
+    zh: string; // 中文描述
+  };
+  prompts: string[]; // 该分类下的 prompt 列表
+  enabled: boolean; // 是否启用该分类
+}
+
+// 链式执行步骤：定义链式 prompt 中的单个步骤
+export interface ChainStep {
+  promptId: string; // 步骤使用的 prompt ID
+  stepName: string; // 步骤名称
+  category?: string; // 所属分类（可选）
+  inputMapping?: Record<string, string>; // 输入参数映射
+  outputMapping?: Record<string, string>; // 输出参数映射
+  retryCount?: number; // 重试次数（可选）
+  timeout?: number; // 超时时间（可选）
+}
+
+// 链式 Prompt：定义完整的链式执行流程
+export interface ChainPrompt {
+  id: string; // 链式 prompt 的唯一标识符
+  name: {
+    en: string; // 英文名称
+    zh: string; // 中文名称
+  };
+  description: {
+    en: string; // 英文描述
+    zh: string; // 中文描述
+  };
+  steps: ChainStep[]; // 执行步骤列表
+  enabled: boolean; // 是否启用
+}
+
+// AI 提供商：定义 AI 服务提供商的基本信息
+export interface AIProvider {
+  id: string; // 提供商唯一标识符
+  name: string; // 提供商名称
+  apiEndpoint: string; // API 端点
+  models: {
+    main: string; // 主要模型
+    research: string; // 研究模型
+    fallback: string; // 备用模型
+  };
+  capabilities: string[]; // 支持的功能列表
+  costPerToken: number; // 每 token 成本
+  maxTokens: number; // 最大 token 数
+  enabled: boolean; // 是否启用
+}
+
+// Prompt 配置：定义整个 prompt 系统的配置
+export interface PromptConfig {
+  version: string; // 配置版本
+  description: string; // 配置描述
+  categories: Record<string, PromptCategory>; // 分类配置
+  chains: Record<string, ChainPrompt>; // 链式 prompt 配置
+  settings: {
+    defaultLanguage: string; // 默认语言
+    enableHotReload: boolean; // 是否启用热重载
+    cacheEnabled: boolean; // 是否启用缓存
+    maxCacheSize: number; // 最大缓存大小
+    loadingStrategy: 'eager' | 'lazy'; // 加载策略
+  };
+}
+
+// 导出任务记忆相关类型
+export * from './taskMemory.js';

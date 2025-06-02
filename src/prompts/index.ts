@@ -6,6 +6,33 @@
 // 匯出核心工具
 export { loadPrompt, generatePrompt } from "./loader.js";
 
+// 匯出增强 Prompt 系统功能
+export {
+  loadPromptConfig,
+  loadPromptByCategory,
+  getAvailableCategories,
+  getPromptsInCategory,
+  loadChainPrompt
+} from "./loader.js";
+
+// 匯出链式 Prompt 相关类
+export { MarkdownPromptParser } from "./parsers/MarkdownPromptParser.js";
+export { ChainPromptLoader } from "./loaders/ChainPromptLoader.js";
+export { ChainPromptGenerator } from "./generators/chainPrompt.js";
+
+// 匯出类型定义
+export type {
+  ParsedPromptContent
+} from "./parsers/MarkdownPromptParser.js";
+export type {
+  ChainExecutionContext,
+  ChainValidationResult
+} from "./loaders/ChainPromptLoader.js";
+export type {
+  ChainExecutionOptions,
+  ChainExecutionResult
+} from "./generators/chainPrompt.js";
+
 // 當完成各個模塊時，將在下方匯出各個 prompt 生成器
 // 例如：
 export { getPlanTaskPrompt } from "./generators/planTask.js";
