@@ -68,6 +68,18 @@ import {
   showPathStatusSchema,
   validateProjectIsolation,
   validateProjectIsolationSchema,
+  generateTeamCollaborationTasks,
+  generateTeamCollaborationTasksTool,
+  insertTaskDynamically,
+  insertTaskDynamicallyTool,
+  adjustTasksFromContext,
+  adjustTasksFromContextTool,
+  queryTaskMemory,
+  queryTaskMemoryTool,
+  shareTeamKnowledge,
+  shareTeamKnowledgeTool,
+  analyzeTeamCollaboration,
+  analyzeTeamCollaborationTool,
 } from "./tools/index.js";
 
 async function main() {
@@ -430,6 +442,36 @@ async function main() {
             ),
             inputSchema: zodToJsonSchema(validateProjectIsolationSchema),
           },
+          {
+            name: "generate_team_collaboration_tasks",
+            description: generateTeamCollaborationTasksTool.description,
+            inputSchema: zodToJsonSchema(generateTeamCollaborationTasksTool.inputSchema),
+          },
+          {
+            name: "insert_task_dynamically",
+            description: insertTaskDynamicallyTool.description,
+            inputSchema: zodToJsonSchema(insertTaskDynamicallyTool.inputSchema),
+          },
+          {
+            name: "adjust_tasks_from_context",
+            description: adjustTasksFromContextTool.description,
+            inputSchema: zodToJsonSchema(adjustTasksFromContextTool.inputSchema),
+          },
+          {
+            name: "query_task_memory",
+            description: queryTaskMemoryTool.description,
+            inputSchema: zodToJsonSchema(queryTaskMemoryTool.inputSchema),
+          },
+          {
+            name: "share_team_knowledge",
+            description: shareTeamKnowledgeTool.description,
+            inputSchema: zodToJsonSchema(shareTeamKnowledgeTool.inputSchema),
+          },
+          {
+            name: "analyze_team_collaboration",
+            description: analyzeTeamCollaborationTool.description,
+            inputSchema: zodToJsonSchema(analyzeTeamCollaborationTool.inputSchema),
+          },
         ],
       };
     });
@@ -671,6 +713,66 @@ async function main() {
                 );
               }
               return await validateProjectIsolation(parsedArgs.data);
+            case "generate_team_collaboration_tasks":
+              parsedArgs = await generateTeamCollaborationTasksTool.inputSchema.safeParseAsync(
+                request.params.arguments
+              );
+              if (!parsedArgs.success) {
+                throw new Error(
+                  `Invalid arguments for tool ${request.params.name}: ${parsedArgs.error.message}`
+                );
+              }
+              return await generateTeamCollaborationTasks(parsedArgs.data);
+            case "insert_task_dynamically":
+              parsedArgs = await insertTaskDynamicallyTool.inputSchema.safeParseAsync(
+                request.params.arguments
+              );
+              if (!parsedArgs.success) {
+                throw new Error(
+                  `Invalid arguments for tool ${request.params.name}: ${parsedArgs.error.message}`
+                );
+              }
+              return await insertTaskDynamically(parsedArgs.data);
+            case "adjust_tasks_from_context":
+              parsedArgs = await adjustTasksFromContextTool.inputSchema.safeParseAsync(
+                request.params.arguments
+              );
+              if (!parsedArgs.success) {
+                throw new Error(
+                  `Invalid arguments for tool ${request.params.name}: ${parsedArgs.error.message}`
+                );
+              }
+              return await adjustTasksFromContext(parsedArgs.data);
+            case "query_task_memory":
+              parsedArgs = await queryTaskMemoryTool.inputSchema.safeParseAsync(
+                request.params.arguments
+              );
+              if (!parsedArgs.success) {
+                throw new Error(
+                  `Invalid arguments for tool ${request.params.name}: ${parsedArgs.error.message}`
+                );
+              }
+              return await queryTaskMemory(parsedArgs.data);
+            case "share_team_knowledge":
+              parsedArgs = await shareTeamKnowledgeTool.inputSchema.safeParseAsync(
+                request.params.arguments
+              );
+              if (!parsedArgs.success) {
+                throw new Error(
+                  `Invalid arguments for tool ${request.params.name}: ${parsedArgs.error.message}`
+                );
+              }
+              return await shareTeamKnowledge(parsedArgs.data);
+            case "analyze_team_collaboration":
+              parsedArgs = await analyzeTeamCollaborationTool.inputSchema.safeParseAsync(
+                request.params.arguments
+              );
+              if (!parsedArgs.success) {
+                throw new Error(
+                  `Invalid arguments for tool ${request.params.name}: ${parsedArgs.error.message}`
+                );
+              }
+              return await analyzeTeamCollaboration(parsedArgs.data);
             default:
               throw new Error(`Tool ${request.params.name} does not exist`);
           }
