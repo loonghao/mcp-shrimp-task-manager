@@ -35,7 +35,13 @@ const EXPECTED_TOOLS = [
   'view_realtime_logs',
   'reset_project_detection',
   'show_path_status',
-  'validate_project_isolation'
+  'validate_project_isolation',
+  'generate_team_collaboration_tasks',
+  'insert_task_dynamically',
+  'adjust_tasks_from_context',
+  'query_task_memory',
+  'share_team_knowledge',
+  'analyze_team_collaboration'
 ];
 
 // 定义服务器路径在全局作用域

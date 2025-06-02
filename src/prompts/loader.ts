@@ -6,6 +6,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { PromptConfig, PromptCategory, ChainPrompt } from "../types/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -190,4 +191,115 @@ export function loadPromptFromTemplate(templatePath: string): string {
   content = processTemplateIncludes(content, path.dirname(finalPath));
 
   return content;
+}
+
+// ===== 增强 Prompt 系统功能 =====
+
+/**
+ * 加载 prompt 配置文件
+ * @returns Prompt 配置对象
+ */
+export function loadPromptConfig(): PromptConfig {
+  const configPath = path.join(__dirname, 'promptsConfig.json');
+
+  try {
+    const configContent = fs.readFileSync(configPath, 'utf-8');
+    return JSON.parse(configContent) as PromptConfig;
+  } catch (error) {
+    console.warn(`Failed to load prompt config from ${configPath}:`, error);
+    // 返回默认配置
+    return getDefaultPromptConfig();
+  }
+}
+
+/**
+ * 获取默认的 prompt 配置
+ * @returns 默认配置对象
+ */
+function getDefaultPromptConfig(): PromptConfig {
+  return {
+    version: "1.0.0",
+    description: "Default Enhanced Prompt System Configuration",
+    categories: {},
+    chains: {},
+    settings: {
+      defaultLanguage: "zh",
+      enableHotReload: false,
+      cacheEnabled: true,
+      maxCacheSize: 50,
+      loadingStrategy: "lazy"
+    }
+  };
+}
+
+/**
+ * 根据分类加载 prompt
+ * @param categoryId 分类 ID
+ * @param promptId prompt ID
+ * @returns prompt 内容
+ */
+export function loadPromptByCategory(categoryId: string, promptId: string): string {
+  const config = loadPromptConfig();
+  const category = config.categories[categoryId];
+
+  if (!category || !category.enabled) {
+    throw new Error(`Category '${categoryId}' not found or disabled`);
+  }
+
+  if (!category.prompts.includes(promptId)) {
+    throw new Error(`Prompt '${promptId}' not found in category '${categoryId}'`);
+  }
+
+  // 尝试从分类目录加载 prompt
+  const categoryPath = path.join(__dirname, 'categories', categoryId, `${promptId}.md`);
+
+  if (fs.existsSync(categoryPath)) {
+    let content = fs.readFileSync(categoryPath, 'utf-8');
+    content = processTemplateIncludes(content, path.dirname(categoryPath));
+    return content;
+  }
+
+  // 如果分类目录中没有，回退到原有的模板系统
+  return loadPromptFromTemplate(`${promptId}/index.md`);
+}
+
+/**
+ * 获取所有可用的分类
+ * @returns 分类列表
+ */
+export function getAvailableCategories(): PromptCategory[] {
+  const config = loadPromptConfig();
+  return Object.values(config.categories).filter(category => category.enabled);
+}
+
+/**
+ * 获取指定分类下的所有 prompt
+ * @param categoryId 分类 ID
+ * @returns prompt 列表
+ */
+export function getPromptsInCategory(categoryId: string): string[] {
+  const config = loadPromptConfig();
+  const category = config.categories[categoryId];
+
+  if (!category || !category.enabled) {
+    return [];
+  }
+
+  return category.prompts;
+}
+
+/**
+ * 加载链式 prompt
+ * @param chainId 链式 prompt ID
+ * @returns 链式 prompt 对象
+ */
+export function loadChainPrompt(chainId: string): ChainPrompt {
+  const config = loadPromptConfig();
+  const chain = config.chains[chainId];
+
+  if (!chain || !chain.enabled) {
+    throw new Error(`Chain prompt '${chainId}' not found or disabled`);
+  }
+
+  return chain;
 }
