@@ -21,6 +21,11 @@ vi.mock('../../../src/utils/pathManager.js', () => ({
   getProjectDataDir: vi.fn().mockResolvedValue('/test/data/dir')
 }));
 
+vi.mock('../../../src/taskManager.js', () => ({
+  loadTasks: vi.fn().mockResolvedValue([]),
+  batchCreateOrUpdateTasks: vi.fn().mockResolvedValue(true)
+}));
+
 describe('analyzeTeamCollaboration', () => {
   let testDir: string;
 

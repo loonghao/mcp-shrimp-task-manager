@@ -25,6 +25,7 @@
 ## 執行步驟
 
 {{include:shared/projectContextCheck.md}}
+{{include:shared/teamCollaborationTrigger.md}}
 
 1. **分析需求** - 理解任務需求和約束條件
 2. **設計方案** - 制定實施計劃和測試策略

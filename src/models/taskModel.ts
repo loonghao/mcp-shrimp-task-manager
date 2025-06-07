@@ -6,6 +6,8 @@ import {
   TaskComplexityThresholds,
   TaskComplexityAssessment,
   RelatedFile,
+  ChainExecutionStatus,
+  ChainExecutionResult,
 } from "../types/index.js";
 import fs from "fs/promises";
 import path from "path";
@@ -994,4 +996,266 @@ function filterCurrentTasks(
       });
     });
   }
+}
+
+// ===== 链式任务相关函数 =====
+
+/**
+ * 创建链式任务
+ * @param chainId 链式执行ID
+ * @param stepIndex 步骤索引
+ * @param name 任务名称
+ * @param description 任务描述
+ * @param parentStepId 父步骤ID（可选）
+ * @param chainData 链式数据（可选）
+ * @returns 创建的任务
+ */
+export async function createChainTask(
+  chainId: string,
+  stepIndex: number,
+  name: string,
+  description: string,
+  parentStepId?: string,
+  chainData?: Record<string, any>
+): Promise<Task> {
+  const tasks = await readTasks();
+
+  const newTask: Task = {
+    id: uuidv4(),
+    name,
+    description,
+    status: TaskStatus.PENDING,
+    dependencies: parentStepId ? [{ taskId: parentStepId }] : [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    // 链式执行字段
+    chainId,
+    stepIndex,
+    chainData: chainData || {},
+    parentStepId,
+    chainStatus: parentStepId ? ChainExecutionStatus.WAITING_FOR_PARENT : ChainExecutionStatus.READY_TO_EXECUTE,
+  };
+
+  tasks.push(newTask);
+  await writeTasks(tasks);
+
+  return newTask;
+}
+
+/**
+ * 获取链式任务列表
+ * @param chainId 链式执行ID
+ * @returns 链式任务列表（按步骤索引排序）
+ */
+export async function getChainTasks(chainId: string): Promise<Task[]> {
+  const tasks = await readTasks();
+  return tasks
+    .filter((task) => task.chainId === chainId)
+    .sort((a, b) => (a.stepIndex || 0) - (b.stepIndex || 0));
+}
+
+/**
+ * 获取链式任务的下一个步骤
+ * @param chainId 链式执行ID
+ * @param currentStepIndex 当前步骤索引
+ * @returns 下一个步骤的任务或null
+ */
+export async function getNextChainStep(
+  chainId: string,
+  currentStepIndex: number
+): Promise<Task | null> {
+  const tasks = await readTasks();
+  return tasks.find(
+    (task) => task.chainId === chainId && task.stepIndex === currentStepIndex + 1
+  ) || null;
+}
+
+/**
+ * 更新链式任务状态
+ * @param taskId 任务ID
+ * @param chainStatus 链式执行状态
+ * @param chainData 链式数据（可选）
+ * @returns 更新后的任务或null
+ */
+export async function updateChainTaskStatus(
+  taskId: string,
+  chainStatus: ChainExecutionStatus,
+  chainData?: Record<string, any>
+): Promise<Task | null> {
+  const updateData: Partial<Task> = { chainStatus };
+  if (chainData) {
+    updateData.chainData = chainData;
+  }
+  return await updateTask(taskId, updateData);
+}
+
+/**
+ * 传递数据到下一个链式步骤
+ * @param chainId 链式执行ID
+ * @param currentStepIndex 当前步骤索引
+ * @param data 要传递的数据
+ * @returns 是否成功传递
+ */
+export async function passDataToNextStep(
+  chainId: string,
+  currentStepIndex: number,
+  data: Record<string, any>
+): Promise<boolean> {
+  const nextTask = await getNextChainStep(chainId, currentStepIndex);
+  if (!nextTask) {
+    return false;
+  }
+
+  // 合并现有数据和新数据
+  const mergedData = { ...nextTask.chainData, ...data };
+
+  const updatedTask = await updateTask(nextTask.id, {
+    chainData: mergedData,
+    chainStatus: ChainExecutionStatus.READY_TO_EXECUTE,
+  });
+
+  return updatedTask !== null;
+}
+
+/**
+ * 检查链式任务是否可以执行
+ * @param taskId 任务ID
+ * @returns 检查结果
+ */
+export async function canExecuteChainTask(
+  taskId: string
+): Promise<{ canExecute: boolean; reason?: string }> {
+  const task = await getTaskById(taskId);
+
+  if (!task) {
+    return { canExecute: false, reason: "任务不存在" };
+  }
+
+  if (!task.chainId) {
+    // 非链式任务，使用原有逻辑
+    const result = await canExecuteTask(taskId);
+    return {
+      canExecute: result.canExecute,
+      reason: result.blockedBy ? `被以下任务阻塞: ${result.blockedBy.join(", ")}` : undefined,
+    };
+  }
+
+  // 链式任务检查
+  if (task.chainStatus === ChainExecutionStatus.CHAIN_FAILED) {
+    return { canExecute: false, reason: "链式执行已失败" };
+  }
+
+  if (task.chainStatus === ChainExecutionStatus.CHAIN_CANCELLED) {
+    return { canExecute: false, reason: "链式执行已取消" };
+  }
+
+  if (task.chainStatus === ChainExecutionStatus.WAITING_FOR_PARENT && task.parentStepId) {
+    const parentTask = await getTaskById(task.parentStepId);
+    if (!parentTask || parentTask.status !== TaskStatus.COMPLETED) {
+      return { canExecute: false, reason: "等待父步骤完成" };
+    }
+  }
+
+  if (task.chainStatus === ChainExecutionStatus.WAITING_FOR_DATA) {
+    return { canExecute: false, reason: "等待数据传递" };
+  }
+
+  return { canExecute: true };
+}
+
+/**
+ * 获取链式执行的进度信息
+ * @param chainId 链式执行ID
+ * @returns 进度信息
+ */
+export async function getChainProgress(chainId: string): Promise<{
+  totalSteps: number;
+  completedSteps: number;
+  currentStep: number;
+  progress: number;
+  status: "pending" | "running" | "completed" | "failed" | "cancelled";
+}> {
+  const chainTasks = await getChainTasks(chainId);
+
+  if (chainTasks.length === 0) {
+    return {
+      totalSteps: 0,
+      completedSteps: 0,
+      currentStep: 0,
+      progress: 0,
+      status: "pending",
+    };
+  }
+
+  const completedSteps = chainTasks.filter(task => task.status === TaskStatus.COMPLETED).length;
+  const failedTasks = chainTasks.filter(task =>
+    task.chainStatus === ChainExecutionStatus.CHAIN_FAILED
+  );
+  const cancelledTasks = chainTasks.filter(task =>
+    task.chainStatus === ChainExecutionStatus.CHAIN_CANCELLED
+  );
+  const runningTasks = chainTasks.filter(task => task.status === TaskStatus.IN_PROGRESS);
+
+  let status: "pending" | "running" | "completed" | "failed" | "cancelled";
+
+  if (cancelledTasks.length > 0) {
+    status = "cancelled";
+  } else if (failedTasks.length > 0) {
+    status = "failed";
+  } else if (completedSteps === chainTasks.length) {
+    status = "completed";
+  } else if (runningTasks.length > 0) {
+    status = "running";
+  } else {
+    status = "pending";
+  }
+
+  const currentStep = Math.max(0, completedSteps);
+  const progress = chainTasks.length > 0 ? (completedSteps / chainTasks.length) * 100 : 0;
+
+  return {
+    totalSteps: chainTasks.length,
+    completedSteps,
+    currentStep,
+    progress,
+    status,
+  };
+}
+
+/**
+ * 取消链式执行
+ * @param chainId 链式执行ID
+ * @returns 取消结果
+ */
+export async function cancelChainExecution(chainId: string): Promise<{
+  success: boolean;
+  message: string;
+  cancelledTasks: number;
+}> {
+  const chainTasks = await getChainTasks(chainId);
+
+  if (chainTasks.length === 0) {
+    return {
+      success: false,
+      message: "未找到指定的链式执行",
+      cancelledTasks: 0,
+    };
+  }
+
+  let cancelledCount = 0;
+
+  for (const task of chainTasks) {
+    if (task.status !== TaskStatus.COMPLETED) {
+      await updateTask(task.id, {
+        chainStatus: ChainExecutionStatus.CHAIN_CANCELLED,
+      });
+      cancelledCount++;
+    }
+  }
+
+  return {
+    success: true,
+    message: `已取消链式执行 ${chainId}`,
+    cancelledTasks: cancelledCount,
+  };
 }

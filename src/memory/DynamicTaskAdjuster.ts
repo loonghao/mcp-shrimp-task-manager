@@ -565,9 +565,9 @@ export class DynamicTaskAdjuster {
       description: task.description,
       notes: task.notes,
       dependencies: task.dependencies.map(dep => dep.taskId),
-      relatedFiles: task.relatedFiles,
-      implementationGuide: '', // 可以从任务中提取
-      verificationCriteria: '' // 可以从任务中提取
+      relatedFiles: task.relatedFiles || [],
+      implementationGuide: task.implementationGuide || '',
+      verificationCriteria: task.verificationCriteria || ''
     }));
   }
 

@@ -6,6 +6,18 @@ export enum TaskStatus {
   BLOCKED = "blocked", // 由於依賴關係而暫時無法執行的任務
 }
 
+// 链式执行状态枚举：定义链式执行中的特殊状态
+export enum ChainExecutionStatus {
+  WAITING_FOR_PARENT = "waiting_for_parent", // 等待父步骤完成
+  READY_TO_EXECUTE = "ready_to_execute", // 准备执行
+  EXECUTING = "executing", // 正在执行
+  WAITING_FOR_DATA = "waiting_for_data", // 等待数据传递
+  DATA_PROCESSING = "data_processing", // 数据处理中
+  STEP_COMPLETED = "step_completed", // 步骤完成
+  CHAIN_FAILED = "chain_failed", // 链式执行失败
+  CHAIN_CANCELLED = "chain_cancelled", // 链式执行取消
+}
+
 // 任務依賴關係：定義任務之間的前置條件關係
 export interface TaskDependency {
   taskId: string; // 前置任務的唯一標識符，當前任務執行前必須完成此依賴任務
@@ -53,6 +65,26 @@ export interface Task {
 
   // 新增欄位：保存驗證標準和檢驗方法
   verificationCriteria?: string; // 明確的驗證標準、測試要點和驗收條件
+
+  // ===== 链式执行相关字段 =====
+
+  // 链式执行标识符：标识任务所属的链式执行流程
+  chainId?: string; // 链式执行的唯一标识符，同一链中的所有任务共享此ID
+
+  // 步骤索引：在链式执行中的位置
+  stepIndex?: number; // 当前任务在链式执行中的步骤序号（从0开始）
+
+  // 链式数据：步骤间传递的数据
+  chainData?: Record<string, any>; // 存储从前一步骤传递过来的数据和要传递给下一步骤的数据
+
+  // 父步骤ID：链式执行中的前置步骤
+  parentStepId?: string; // 前一个步骤的任务ID，用于建立链式执行的顺序关系
+
+  // 子步骤ID列表：链式执行中的后续步骤
+  childStepIds?: string[]; // 后续步骤的任务ID列表，支持分支执行
+
+  // 链式执行状态：记录在链式执行中的特殊状态
+  chainStatus?: ChainExecutionStatus; // 链式执行的特殊状态信息
 }
 
 // 任務複雜度級別：定義任務的複雜程度分類
@@ -168,6 +200,105 @@ export interface PromptConfig {
     loadingStrategy: 'eager' | 'lazy'; // 加载策略
   };
 }
+
+// ===== 链式执行系统类型定义 =====
+
+// 链式执行结果：记录链式执行的结果信息
+export interface ChainExecutionResult {
+  chainId: string; // 链式执行的唯一标识符
+  success: boolean; // 执行是否成功
+  completedSteps: number; // 已完成的步骤数
+  totalSteps: number; // 总步骤数
+  executionTime: number; // 执行耗时（毫秒）
+  results: Record<string, any>; // 各步骤的执行结果
+  errors?: ChainExecutionError[]; // 执行过程中的错误信息
+  finalData?: Record<string, any>; // 最终输出数据
+}
+
+// 链式执行错误：记录链式执行中的错误信息
+export interface ChainExecutionError {
+  stepIndex: number; // 出错的步骤索引
+  taskId: string; // 出错的任务ID
+  errorType: ChainErrorType; // 错误类型
+  message: string; // 错误消息
+  timestamp: Date; // 错误发生时间
+  recoverable: boolean; // 是否可恢复
+  retryCount?: number; // 重试次数
+}
+
+// 链式执行错误类型枚举
+export enum ChainErrorType {
+  STEP_EXECUTION_FAILED = "step_execution_failed", // 步骤执行失败
+  DATA_MAPPING_ERROR = "data_mapping_error", // 数据映射错误
+  TIMEOUT_ERROR = "timeout_error", // 超时错误
+  DEPENDENCY_ERROR = "dependency_error", // 依赖错误
+  VALIDATION_ERROR = "validation_error", // 验证错误
+  SYSTEM_ERROR = "system_error", // 系统错误
+}
+
+// 链式执行配置：定义链式执行的配置参数
+export interface ChainExecutionConfig {
+  maxRetries: number; // 最大重试次数
+  stepTimeout: number; // 单步超时时间（毫秒）
+  totalTimeout: number; // 总超时时间（毫秒）
+  enableParallelExecution: boolean; // 是否启用并行执行
+  errorHandlingStrategy: ChainErrorHandlingStrategy; // 错误处理策略
+  dataValidation: boolean; // 是否启用数据验证
+  logLevel: ChainLogLevel; // 日志级别
+}
+
+// 链式执行错误处理策略枚举
+export enum ChainErrorHandlingStrategy {
+  FAIL_FAST = "fail_fast", // 快速失败，遇到错误立即停止
+  CONTINUE_ON_ERROR = "continue_on_error", // 遇到错误继续执行
+  RETRY_ON_ERROR = "retry_on_error", // 遇到错误重试
+  SKIP_ON_ERROR = "skip_on_error", // 遇到错误跳过当前步骤
+}
+
+// 链式执行日志级别枚举
+export enum ChainLogLevel {
+  DEBUG = "debug", // 调试级别
+  INFO = "info", // 信息级别
+  WARN = "warn", // 警告级别
+  ERROR = "error", // 错误级别
+}
+
+// 链式执行上下文：记录链式执行的上下文信息
+export interface ChainExecutionContext {
+  chainId: string; // 链式执行ID
+  currentStepIndex: number; // 当前步骤索引
+  totalSteps: number; // 总步骤数
+  startTime: Date; // 开始时间
+  config: ChainExecutionConfig; // 执行配置
+  sharedData: Record<string, any>; // 共享数据
+  stepResults: Record<number, any>; // 各步骤结果
+  executionHistory: ChainExecutionEvent[]; // 执行历史
+}
+
+// 链式执行事件：记录链式执行过程中的事件
+export interface ChainExecutionEvent {
+  eventType: ChainEventType; // 事件类型
+  stepIndex: number; // 步骤索引
+  taskId: string; // 任务ID
+  timestamp: Date; // 事件时间
+  data?: Record<string, any>; // 事件数据
+  message?: string; // 事件消息
+}
+
+// 链式执行事件类型枚举
+export enum ChainEventType {
+  CHAIN_STARTED = "chain_started", // 链式执行开始
+  STEP_STARTED = "step_started", // 步骤开始
+  STEP_COMPLETED = "step_completed", // 步骤完成
+  STEP_FAILED = "step_failed", // 步骤失败
+  STEP_RETRIED = "step_retried", // 步骤重试
+  DATA_PASSED = "data_passed", // 数据传递
+  CHAIN_COMPLETED = "chain_completed", // 链式执行完成
+  CHAIN_FAILED = "chain_failed", // 链式执行失败
+  CHAIN_CANCELLED = "chain_cancelled", // 链式执行取消
+}
+
+
 
 // 导出任务记忆相关类型
 export * from './taskMemory.js';
