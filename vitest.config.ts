@@ -11,7 +11,6 @@ export default defineConfig({
       'node_modules',
       'dist',
       // Temporarily exclude failing memory tests until they are fixed
-      'tests/tools/memory/shareTeamKnowledge.test.ts',
       'tests/tools/memory/analyzeTeamCollaboration.test.ts',
       'tests/memory/DynamicTaskAdjuster.test.ts',
       'tests/memory/TeamMemoryManager.test.ts',
