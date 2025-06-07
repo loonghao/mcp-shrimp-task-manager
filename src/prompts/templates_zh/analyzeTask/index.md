@@ -1,6 +1,8 @@
 ## 代碼庫分析
 
 {{include:shared/projectContextCheck.md}}
+{{include:shared/mcpToolsTrigger.md}}
+{{include:shared/documentationPathGuidance.md}}
 
 **任務摘要:** {summary}
 

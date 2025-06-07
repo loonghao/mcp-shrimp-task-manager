@@ -60,7 +60,8 @@ const CRITICAL_TOOL_DESCRIPTIONS = [
   'viewRealtimeLogs.md',
   'resetProjectDetection.md',
   'showPathStatus.md',
-  'validateProjectIsolation.md'
+  'validateProjectIsolation.md',
+  'getDocumentationPath.md'
 ];
 
 // 关键的共享模板文件
@@ -68,7 +69,10 @@ const CRITICAL_SHARED_TEMPLATES = [
   'systemContext.md',
   'dataStorageRules.md',
   'projectContextCheck.md',
-  'sessionContextRecovery.md'
+  'sessionContextRecovery.md',
+  'mcpToolsTrigger.md',
+  'teamCollaborationTrigger.md',
+  'documentationPathGuidance.md'
 ];
 
 describe('模板完整性测试', () => {

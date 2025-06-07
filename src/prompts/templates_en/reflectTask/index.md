@@ -1,5 +1,7 @@
 ## Reflection Results
 
+{{include:shared/documentationPathGuidance.md}}
+
 **Task Summary:** {summary}
 
 **Technical Analysis:** {analysis}

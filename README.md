@@ -33,6 +33,16 @@ Shrimp Task Manager guides Agents through structured workflows for systematic pr
 
 ## ✨ <a id="features1"></a>Features
 
+### 🎯 Core Differentiator: PRD-Driven Team Collaboration Task Generation
+
+- **🎯 PRD-Driven Task Generation**: Intelligently generate role-specific professional tasks based on Product Requirements Documents (PRD)
+- **👥 Role-Specialized Task Templates**: Professional task templates for Product Managers, Designers, Developers, QA Engineers, and more
+- **🤝 Cross-Role Collaboration Detection**: Automatically identify team collaboration needs and generate handoff points
+- **📊 Intelligent Workflow Management**: Generate complete project workflows, critical paths, and parallel execution tracks
+- **🔗 Smart Dependency Management**: Automatically analyze and validate task dependencies, preventing circular dependencies
+
+### 🚀 Advanced Task Management
+
 - **Task Planning and Analysis**: Deep understanding and analysis of complex task requirements
 - **Intelligent Task Decomposition**: Automatically break down large tasks into manageable smaller tasks
 - **Dependency Management**: Precisely handle dependencies between tasks, ensuring correct execution order
@@ -40,10 +50,26 @@ Shrimp Task Manager guides Agents through structured workflows for systematic pr
 - **Task Completeness Verification**: Ensure task results meet expected requirements
 - **Task Complexity Assessment**: Automatically evaluate task complexity and provide optimal handling suggestions
 - **Automatic Task Summary Updates**: Automatically generate summaries upon task completion, optimizing memory performance
+
+### 🧠 Intelligence & Memory
+
 - **Task Memory Function**: Automatically backup task history, providing long-term memory and reference capabilities
+- **🧠 Dynamic Task Memory & Context Awareness**: Intelligent task insertion and context-aware adjustments during execution
+- **💡 Team Knowledge Sharing**: Automatic knowledge accumulation and sharing across team members
+- **🔄 Smart Task Adjustment**: Dynamically adjust subsequent tasks based on execution discoveries and decisions
+- **📚 Execution History & Pattern Recognition**: Learn from past executions to improve future task planning
+- **🤝 Advanced Team Collaboration Memory (NEW!)**: Complete team memory system with knowledge sharing, collaboration pattern learning, and collective intelligence
+- **🔄 Dynamic Task Insertion (NEW!)**: Intelligent task insertion with context awareness and dependency resolution
+- **📊 Team Performance Analytics (NEW!)**: Analyze team collaboration effectiveness and identify improvement opportunities
 - **Research Mode**: Systematic technical research capabilities with guided workflows for exploring technologies, best practices, and solution comparisons
 - **Project Rules Initialization**: Define project standards and rules to maintain consistency across large projects
-- **<a id="web-gui"></a>Web GUI**: Provides an optional web-based graphical user interface for task management. Enable by setting `ENABLE_GUI=true` in your `.env` file. When enabled, a `WebGUI.md` file containing the access address will be created in your `DATA_DIR`.
+
+### 🔧 System Features
+
+- **<a id="web-gui"></a>Web GUI**: Provides an optional web-based graphical user interface for task management. Enable by setting `ENABLE_GUI=true` in your `.env` file. When enabled, a `WebGUI.md` file containing the access address will be created in your `DATA_DIR`
+- **📁 Documentation Path Management**: Structured document organization with project-specific paths for analysis, reflection, research, and team collaboration documents
+- **Multi-Project Support**: Automatic project detection with isolated data directories for different projects
+- **Real-time Data Isolation**: Each project's task data is completely isolated to avoid conflicts
 
 ## 🧭 <a id="usage-guide"></a>Usage Guide
 
@@ -63,6 +89,25 @@ Before diving into task planning, you can leverage the research mode for technic
 - You need to understand complex technical concepts
 
 Simply tell the Agent "research [your topic]" or "enter research mode for [technology/problem]" to begin systematic investigation. The research findings will then inform your subsequent task planning and development decisions.
+
+### PRD-Driven Team Collaboration (🌟 Core Feature)
+
+Our core differentiator is the ability to generate professional, role-specific tasks directly from Product Requirements Documents (PRD). This feature is designed for team collaboration and addresses the gap in existing task management tools.
+
+**How to use:**
+- Tell the Agent: "Generate team tasks from this PRD: [paste your PRD content]"
+- Or use the tool directly: `generate_team_collaboration_tasks` with your PRD content
+
+**What makes us different:**
+- **Role-Specialized Tasks**: Automatically generates tasks tailored for Product Managers, UI/UX Designers, Frontend/Backend Developers, QA Engineers, DevOps Engineers, and more
+- **Cross-Role Collaboration**: Identifies collaboration points and handoff requirements between different roles
+- **Intelligent Workflow**: Creates complete project workflows with critical paths and parallel execution tracks
+- **Smart Dependencies**: Automatically manages task dependencies and prevents circular dependencies
+
+**Supported Roles:**
+- Product Manager, UI Designer, UX Designer
+- Frontend Developer, Backend Developer, Fullstack Developer, Mobile Developer
+- QA Engineer, DevOps Engineer, Tech Lead, Project Manager
 
 ### First-Time Setup
 
@@ -87,6 +132,34 @@ If you prefer to execute all tasks in sequence without manual intervention for e
 ### Token Limitation Note
 
 Due to LLM token limits, context may be lost during lengthy conversations. If this occurs, simply open a new chat session and ask the Agent to continue execution. The system will pick up where it left off without requiring you to repeat the task details or context.
+
+### Documentation Management
+
+Shrimp Task Manager provides structured document organization with project-specific paths. All AI-generated documents (analysis, reflection, research, team collaboration) are automatically stored in organized directories:
+
+```
+$DATA_DIR/projects/$PROJECT_NAME/docs/
+├── project/          # Core project docs (README, architecture, roadmap)
+├── prd/              # Product requirements and milestones
+├── tasks/            # Task-related documentation
+│   ├── completed/    # Completed task summaries
+│   ├── in-progress/  # In-progress task analysis
+│   ├── pending/      # Pending task planning
+│   └── by-role/      # Role-based classification (frontend, backend, qa, devops, design)
+├── analysis/         # Analysis reports (complexity, risk, performance, security)
+├── reflection/       # Reflection summaries (sprint reviews, lessons learned, improvements)
+├── research/         # Research documents (tech research, competitor analysis, best practices)
+├── team/             # Team collaboration docs (knowledge base, collaboration patterns, roles)
+└── templates/        # Document templates
+```
+
+**Key Benefits:**
+- **Automatic Organization**: Documents are automatically categorized by type and purpose
+- **Project Isolation**: Each project maintains its own document structure
+- **Team Collaboration**: Structured paths for team knowledge sharing and collaboration
+- **Easy Navigation**: Clear hierarchy makes finding documents intuitive
+
+**Usage**: The system automatically uses correct paths when creating documents. You can also explicitly request document paths using the `get_documentation_path` tool.
 
 ### Prompt Language and Customization
 
@@ -156,6 +229,60 @@ Shrimp Task Manager has long-term memory capabilities, automatically saving task
 - **Knowledge Accumulation**: Form a continuously expanding knowledge base as system usage increases
 
 Through effective use of the task memory function, the system can continuously accumulate experience, with intelligence level and work efficiency continuously improving.
+
+### 🤝 Team Knowledge Sharing & Collaboration Memory
+
+Building on the individual task memory system, Shrimp Task Manager includes advanced **team collaboration memory** features designed specifically for team environments.
+
+#### Key Features
+
+- **🧠 Team Knowledge Sharing**: Share experiences, solutions, and best practices across team members
+- **📚 Collective Learning**: Build a shared knowledge base that grows with team experience
+- **🤝 Collaboration Pattern Learning**: Automatically learn and recommend effective collaboration patterns
+- **👥 Role-Based Knowledge Distribution**: Tailor knowledge sharing based on team roles and expertise
+- **📊 Team Performance Analytics**: Analyze team collaboration effectiveness and identify improvement opportunities
+
+#### Team Memory Components
+
+**Knowledge Sharing (`share_team_knowledge`)**:
+- Share technical solutions and best practices
+- Rate and validate team knowledge for quality assurance
+- Record collaboration patterns and their effectiveness
+- Document team learning experiences and lessons learned
+- Query relevant knowledge based on role and context
+
+**Collaboration Analysis (`analyze_team_collaboration`)**:
+- Analyze team performance and collaboration effectiveness
+- Identify knowledge gaps and skill distribution
+- Track learning trends and knowledge retention
+- Evaluate role contributions and specializations
+- Generate improvement recommendations and action plans
+
+#### Team-Oriented Benefits
+
+- **Knowledge Continuity**: New team members can quickly access accumulated team knowledge
+- **Avoid Repeated Mistakes**: Learn from team's collective experience and past failures
+- **Optimize Collaboration**: Data-driven insights to improve team workflows and communication
+- **Skill Development**: Identify learning opportunities and knowledge gaps across the team
+- **Best Practice Propagation**: Successful patterns and solutions spread naturally across the team
+
+#### Usage Examples
+
+**Sharing Knowledge**:
+```
+"Share this solution with the team: [describe your solution]"
+"Record this collaboration pattern as successful"
+"Rate this team knowledge as helpful"
+```
+
+**Analyzing Team Performance**:
+```
+"Analyze our team's collaboration effectiveness"
+"What are our knowledge gaps in frontend development?"
+"Show me learning trends for the past quarter"
+```
+
+This team-oriented memory system transforms individual task execution into collective team intelligence, ensuring that knowledge and experience benefit the entire team rather than staying isolated with individual contributors.
 
 ## 📋 <a id="project-rules"></a>Project Rules Initialization
 
@@ -509,21 +636,28 @@ If your tool doesn't support Custom modes, you can:
 
 After configuration, you can use the following tools:
 
-| Category                     | Tool Name            | Description                                      |
-| ---------------------------- | -------------------- | ------------------------------------------------ |
-| **Task Planning**            | `plan_task`          | Start planning tasks                             |
-| **Task Analysis**            | `analyze_task`       | In-depth analysis of task requirements           |
-|                              | `process_thought`    | Step-by-step reasoning for complex problems      |
-| **Solution Assessment**      | `reflect_task`       | Reflect and improve solution concepts            |
-| **Research & Investigation** | `research_mode`      | Enter systematic technical research mode         |
-| **Project Management**       | `init_project_rules` | Initialize or update project standards and rules |
-| **Task Management**          | `split_tasks`        | Break tasks into subtasks                        |
-|                              | `list_tasks`         | Display all tasks and status                     |
-|                              | `query_task`         | Search and list tasks                            |
-|                              | `get_task_detail`    | Display complete task details                    |
-|                              | `delete_task`        | Delete incomplete tasks                          |
-| **Task Execution**           | `execute_task`       | Execute specific tasks                           |
-|                              | `verify_task`        | Verify task completion                           |
+| Category                     | Tool Name                          | Description                                      |
+| ---------------------------- | ---------------------------------- | ------------------------------------------------ |
+| **🎯 PRD & Team Collaboration** | `generate_team_collaboration_tasks` | Generate role-specific tasks from PRD documents |
+| **🧠 Task Memory & Dynamic Adjustment** | `insert_task_dynamically`          | Intelligently insert new tasks during execution |
+|                              | `adjust_tasks_from_context`        | Adjust tasks based on execution context         |
+|                              | `query_task_memory`                | Query task execution history and knowledge      |
+| **🤝 Team Knowledge & Collaboration** | `share_team_knowledge`              | Share knowledge and experiences across team members |
+|                              | `analyze_team_collaboration`       | Analyze team collaboration effectiveness and patterns |
+| **Task Planning**            | `plan_task`                        | Start planning tasks                             |
+| **Task Analysis**            | `analyze_task`                     | In-depth analysis of task requirements           |
+|                              | `process_thought`                  | Step-by-step reasoning for complex problems      |
+| **Solution Assessment**      | `reflect_task`                     | Reflect and improve solution concepts            |
+| **Research & Investigation** | `research_mode`                    | Enter systematic technical research mode         |
+| **📁 Documentation Management** | `get_documentation_path`           | Get project-specific documentation storage paths |
+| **Project Management**       | `init_project_rules`               | Initialize or update project standards and rules |
+| **Task Management**          | `split_tasks`                      | Break tasks into subtasks                        |
+|                              | `list_tasks`                       | Display all tasks and status                     |
+|                              | `query_task`                       | Search and list tasks                            |
+|                              | `get_task_detail`                  | Display complete task details                    |
+|                              | `delete_task`                      | Delete incomplete tasks                          |
+| **Task Execution**           | `execute_task`                     | Execute specific tasks                           |
+|                              | `verify_task`                      | Verify task completion                           |
 
 ## 🔧 Technical Implementation
 

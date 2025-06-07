@@ -53,3 +53,9 @@ export {
   validateProjectIsolation,
   validateProjectIsolationSchema,
 } from "./validateProjectIsolation.js";
+
+// getDocumentationPath
+export {
+  getDocumentationPath,
+  getDocumentationPathSchema,
+} from "./getDocumentationPath.js";

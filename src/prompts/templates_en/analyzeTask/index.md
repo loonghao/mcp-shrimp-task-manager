@@ -1,6 +1,8 @@
 ## Codebase Analysis
 
 {{include:shared/projectContextCheck.md}}
+{{include:shared/mcpToolsTrigger.md}}
+{{include:shared/documentationPathGuidance.md}}
 
 **Task Summary:** {summary}
 
