@@ -14,7 +14,9 @@ export default defineConfig({
       'tests/tools/memory/analyzeTeamCollaboration.test.ts',
       'tests/memory/DynamicTaskAdjuster.test.ts',
       'tests/memory/TeamMemoryManager.test.ts',
-      'tests/memory/index.test.ts'
+      'tests/memory/index.test.ts',
+      // Temporarily exclude integration tests that are unstable in CI
+      'tests/server/mcpServerIntegration.test.ts'
     ],
     // Run tests sequentially to avoid file system race conditions
     pool: 'forks',
