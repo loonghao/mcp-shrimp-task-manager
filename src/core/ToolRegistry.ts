@@ -94,6 +94,10 @@ import {
   getCurrentAiStatusTool,
   getCurrentAiStatusSchema,
   getCurrentAiStatusToolDefinition,
+  // 智能指令处理工具
+  processIntelligentCommandTool,
+  processIntelligentCommandSchema,
+  processIntelligentCommandToolDefinition,
 } from "../tools/index.js";
 
 export interface ToolDefinition {
@@ -477,6 +481,12 @@ export class ToolRegistry {
         handler: getCurrentAiStatusTool,
         schema: getCurrentAiStatusSchema,
         descriptionFile: "toolsDescription/getCurrentAiStatus.md"
+      },
+      {
+        name: "process_intelligent_command",
+        handler: processIntelligentCommandTool,
+        schema: processIntelligentCommandSchema,
+        descriptionFile: "toolsDescription/processIntelligentCommand.md"
       }
     ];
 

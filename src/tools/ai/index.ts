@@ -23,3 +23,10 @@ export {
   getCurrentAiStatusSchema,
   getCurrentAiStatusToolDefinition
 } from "./getCurrentAiStatus.js";
+
+// 导出智能指令处理工具
+export {
+  processIntelligentCommandTool,
+  processIntelligentCommandSchema,
+  processIntelligentCommandToolDefinition
+} from "./processIntelligentCommand.js";
