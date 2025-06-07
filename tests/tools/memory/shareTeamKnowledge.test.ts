@@ -312,7 +312,7 @@ describe('shareTeamKnowledge', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('不支持的操作类型');
+      expect(result.error).toContain('Invalid enum value');
     });
 
     it('应该处理参数验证错误', async () => {
