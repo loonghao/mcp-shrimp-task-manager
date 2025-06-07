@@ -1,5 +1,7 @@
 ## 反思結果
 
+{{include:shared/documentationPathGuidance.md}}
+
 **任務摘要:** {summary}
 
 **技術分析:** {analysis}

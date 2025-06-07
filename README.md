@@ -67,6 +67,7 @@ Shrimp Task Manager guides Agents through structured workflows for systematic pr
 ### 🔧 System Features
 
 - **<a id="web-gui"></a>Web GUI**: Provides an optional web-based graphical user interface for task management. Enable by setting `ENABLE_GUI=true` in your `.env` file. When enabled, a `WebGUI.md` file containing the access address will be created in your `DATA_DIR`
+- **📁 Documentation Path Management**: Structured document organization with project-specific paths for analysis, reflection, research, and team collaboration documents
 - **Multi-Project Support**: Automatic project detection with isolated data directories for different projects
 - **Real-time Data Isolation**: Each project's task data is completely isolated to avoid conflicts
 
@@ -131,6 +132,34 @@ If you prefer to execute all tasks in sequence without manual intervention for e
 ### Token Limitation Note
 
 Due to LLM token limits, context may be lost during lengthy conversations. If this occurs, simply open a new chat session and ask the Agent to continue execution. The system will pick up where it left off without requiring you to repeat the task details or context.
+
+### Documentation Management
+
+Shrimp Task Manager provides structured document organization with project-specific paths. All AI-generated documents (analysis, reflection, research, team collaboration) are automatically stored in organized directories:
+
+```
+$DATA_DIR/projects/$PROJECT_NAME/docs/
+├── project/          # Core project docs (README, architecture, roadmap)
+├── prd/              # Product requirements and milestones
+├── tasks/            # Task-related documentation
+│   ├── completed/    # Completed task summaries
+│   ├── in-progress/  # In-progress task analysis
+│   ├── pending/      # Pending task planning
+│   └── by-role/      # Role-based classification (frontend, backend, qa, devops, design)
+├── analysis/         # Analysis reports (complexity, risk, performance, security)
+├── reflection/       # Reflection summaries (sprint reviews, lessons learned, improvements)
+├── research/         # Research documents (tech research, competitor analysis, best practices)
+├── team/             # Team collaboration docs (knowledge base, collaboration patterns, roles)
+└── templates/        # Document templates
+```
+
+**Key Benefits:**
+- **Automatic Organization**: Documents are automatically categorized by type and purpose
+- **Project Isolation**: Each project maintains its own document structure
+- **Team Collaboration**: Structured paths for team knowledge sharing and collaboration
+- **Easy Navigation**: Clear hierarchy makes finding documents intuitive
+
+**Usage**: The system automatically uses correct paths when creating documents. You can also explicitly request document paths using the `get_documentation_path` tool.
 
 ### Prompt Language and Customization
 
@@ -620,6 +649,7 @@ After configuration, you can use the following tools:
 |                              | `process_thought`                  | Step-by-step reasoning for complex problems      |
 | **Solution Assessment**      | `reflect_task`                     | Reflect and improve solution concepts            |
 | **Research & Investigation** | `research_mode`                    | Enter systematic technical research mode         |
+| **📁 Documentation Management** | `get_documentation_path`           | Get project-specific documentation storage paths |
 | **Project Management**       | `init_project_rules`               | Initialize or update project standards and rules |
 | **Task Management**          | `split_tasks`                      | Break tasks into subtasks                        |
 |                              | `list_tasks`                       | Display all tasks and status                     |

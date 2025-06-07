@@ -4,6 +4,7 @@
  */
 
 import path from "path";
+import fs from "fs/promises";
 import { getProjectContext } from "./projectDetector.js";
 
 /**
@@ -129,6 +130,25 @@ class PathManager {
   }
 
   /**
+   * 获取文档目录
+   * 用于存储AI生成的分析、反思、总结等文档
+   * 自动创建目录结构
+   */
+  public async getDocumentationDir(forceRefresh: boolean = false): Promise<string> {
+    const projectDataDir = await this.getProjectDataDir(forceRefresh);
+    const docsDir = path.join(projectDataDir, "docs");
+
+    // 自动创建目录结构
+    try {
+      await fs.mkdir(docsDir, { recursive: true });
+    } catch (error) {
+      console.warn("创建文档目录失败:", error);
+    }
+
+    return docsDir;
+  }
+
+  /**
    * 获取缓存的项目信息
    */
   public getCachedProjectInfo(): any {
@@ -180,6 +200,7 @@ class PathManager {
     tasksFile: string;
     configDir: string;
     tempDir: string;
+    documentationDir: string;
     projectInfo: any;
   }> {
     const baseDataDir = this.getBaseDataDir();
@@ -188,6 +209,7 @@ class PathManager {
     const tasksFile = await this.getTasksFilePath();
     const configDir = await this.getConfigDir();
     const tempDir = await this.getTempDir();
+    const documentationDir = await this.getDocumentationDir();
     const projectInfo = this.getCachedProjectInfo();
 
     return {
@@ -197,6 +219,7 @@ class PathManager {
       tasksFile,
       configDir,
       tempDir,
+      documentationDir,
       projectInfo
     };
   }
@@ -211,6 +234,7 @@ export const getLogDir = (forceRefresh?: boolean) => pathManager.getLogDir(force
 export const getTasksFilePath = (forceRefresh?: boolean) => pathManager.getTasksFilePath(forceRefresh);
 export const getConfigDir = (forceRefresh?: boolean) => pathManager.getConfigDir(forceRefresh);
 export const getTempDir = (forceRefresh?: boolean) => pathManager.getTempDir(forceRefresh);
+export const getDocumentationDir = (forceRefresh?: boolean) => pathManager.getDocumentationDir(forceRefresh);
 export const getPathSummary = () => pathManager.getPathSummary();
 export const clearPathCache = () => pathManager.clearCache();
 export const updateProjectPath = (projectPath: string) => pathManager.updateProjectPath(projectPath);

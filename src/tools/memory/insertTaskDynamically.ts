@@ -8,6 +8,8 @@ import { TaskMemoryManager } from "../../memory/TaskMemoryManager.js";
 import { DynamicTaskAdjuster, TaskInsertionRequest } from "../../memory/DynamicTaskAdjuster.js";
 import { getProjectContext } from "../../utils/projectDetector.js";
 import { getProjectDataDir } from "../../utils/pathManager.js";
+import { handleError, createSuccessResponse, validateAndHandle, type ApiResponse } from "../../utils/errorHandler.js";
+import { adaptToMcpResponse, type McpToolResponse } from "../../utils/mcpAdapter.js";
 import { join } from "path";
 
 // 输入参数验证
@@ -29,10 +31,14 @@ type InsertTaskDynamicallyInput = z.infer<typeof InsertTaskDynamicallySchema>;
 /**
  * 动态插入任务
  */
-export async function insertTaskDynamically(args: InsertTaskDynamicallyInput) {
+export async function insertTaskDynamically(args: InsertTaskDynamicallyInput): Promise<McpToolResponse> {
   try {
     // 验证输入参数
-    const validatedArgs = InsertTaskDynamicallySchema.parse(args);
+    const validationResult = validateAndHandle(InsertTaskDynamicallySchema, args, '参数验证');
+    if (typeof validationResult === 'object' && validationResult !== null && 'success' in validationResult && !validationResult.success) {
+      return adaptToMcpResponse(validationResult as ApiResponse);
+    }
+    const validatedArgs = validationResult as InsertTaskDynamicallyInput;
     const { 
       title, 
       description, 
@@ -99,9 +105,7 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput) {
       }
 
       // 生成返回结果
-      const response = {
-        success: true,
-        data: {
+      const responseData = {
           insertedTask: result.insertedTask ? {
             id: result.insertedTask.id,
             title: result.insertedTask.name,
@@ -140,7 +144,6 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput) {
             "根据需要手动调整任务优先级",
             "开始执行调整后的任务计划"
           ]
-        }
       };
 
       // 输出详细信息
@@ -167,23 +170,19 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput) {
         });
       }
 
-      return response;
+      return adaptToMcpResponse(createSuccessResponse(responseData, result.warnings));
 
     } else {
       console.error('❌ 任务插入失败');
-      return {
+      return adaptToMcpResponse({
         success: false,
         error: result.summary,
         warnings: result.warnings
-      };
+      });
     }
 
   } catch (error) {
-    console.error("❌ 动态任务插入失败:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error)
-    };
+    return adaptToMcpResponse(handleError(error, '动态任务插入'));
   }
 }
 
