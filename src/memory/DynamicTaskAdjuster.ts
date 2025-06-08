@@ -399,13 +399,32 @@ export class DynamicTaskAdjuster {
       pendingTasks.forEach(task => {
         suggestions.push({
           taskId: task.id,
-          adjustmentType: 'approach',
-          currentValue: '当前方法',
-          suggestedValue: '风险缓解方法',
+          adjustmentType: 'priority',
+          currentValue: task.priority?.toString() || '2',
+          suggestedValue: '3',
           reasoning: `基于发现的风险因素: ${contextAnalysis.riskFactors.join(', ')}`,
-          confidence: 0.6,
+          confidence: 0.9,
           impact: {
-            timeChange: 1,
+            timeChange: 0,
+            riskChange: 'decreased',
+            affectedTasks: []
+          }
+        });
+      });
+    }
+
+    // 基于关键发现生成优先级调整建议
+    if (contextAnalysis.keyFindings.length > 0) {
+      pendingTasks.forEach(task => {
+        suggestions.push({
+          taskId: task.id,
+          adjustmentType: 'priority',
+          currentValue: task.priority?.toString() || '2',
+          suggestedValue: '3',
+          reasoning: `基于关键发现: ${contextAnalysis.keyFindings.join(', ')}`,
+          confidence: 0.85,
+          impact: {
+            timeChange: 0,
             riskChange: 'decreased',
             affectedTasks: []
           }
