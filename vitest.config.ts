@@ -10,10 +10,8 @@ export default defineConfig({
     exclude: [
       'node_modules',
       'dist',
-      // Temporarily exclude failing memory tests until they are fixed
+      // Temporarily exclude failing memory tool tests until they are fixed
       'tests/tools/memory/analyzeTeamCollaboration.test.ts',
-      'tests/memory/DynamicTaskAdjuster.test.ts',
-      'tests/memory/TeamMemoryManager.test.ts',
       'tests/memory/index.test.ts',
       // Temporarily exclude integration tests that are unstable in CI
       'tests/server/**',

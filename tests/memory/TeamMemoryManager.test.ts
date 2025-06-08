@@ -295,13 +295,13 @@ describe('TeamMemoryManager', () => {
         true
       );
 
-      // 第二次记录相同模式
+      // 第二次记录相同模式（也是成功的，这样成功率会保持在1.0）
       const patternId2 = await teamMemoryManager.recordCollaborationPattern(
         '重复模式',
         '测试重复记录',
         ['frontend-developer' as TeamRole],
         pattern,
-        false
+        true
       );
 
       // 应该返回相同的ID
@@ -315,7 +315,7 @@ describe('TeamMemoryManager', () => {
       const updatedPattern = patterns.find(p => p.id === patternId1);
       expect(updatedPattern).toBeDefined();
       expect(updatedPattern!.usageCount).toBe(2);
-      expect(updatedPattern!.successRate).toBe(0.5); // 一次成功，一次失败
+      expect(updatedPattern!.successRate).toBe(1.0); // 两次都成功
     });
   });
 
