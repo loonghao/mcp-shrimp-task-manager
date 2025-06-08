@@ -45,18 +45,24 @@ export class TaskMemoryManager {
    * 确保内存目录存在
    */
   private ensureMemoryDirectory(): void {
-    if (!existsSync(this.memoryDir)) {
-      mkdirSync(this.memoryDir, { recursive: true });
-    }
-
-    // 创建子目录
-    const subDirs = ['contexts', 'knowledge', 'checkpoints', 'decisions', 'discoveries'];
-    subDirs.forEach(dir => {
-      const dirPath = join(this.memoryDir, dir);
-      if (!existsSync(dirPath)) {
-        mkdirSync(dirPath, { recursive: true });
+    try {
+      if (!existsSync(this.memoryDir)) {
+        mkdirSync(this.memoryDir, { recursive: true });
       }
-    });
+
+      // 创建子目录
+      const subDirs = ['contexts', 'knowledge', 'checkpoints', 'decisions', 'discoveries'];
+      subDirs.forEach(dir => {
+        const dirPath = join(this.memoryDir, dir);
+        if (!existsSync(dirPath)) {
+          mkdirSync(dirPath, { recursive: true });
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to create memory directories:', error);
+      // 优雅地处理文件系统错误，不抛出异常
+      // 这允许 TaskMemoryManager 在只读环境中仍能实例化
+    }
   }
 
   /**

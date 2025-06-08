@@ -98,17 +98,23 @@ export class TeamMemoryManager {
    * 确保团队记忆目录存在
    */
   private ensureTeamMemoryDirectory(): void {
-    if (!existsSync(this.teamMemoryDir)) {
-      mkdirSync(this.teamMemoryDir, { recursive: true });
-    }
-
-    const subDirs = ['knowledge', 'patterns', 'learning', 'members', 'shared'];
-    subDirs.forEach(dir => {
-      const dirPath = join(this.teamMemoryDir, dir);
-      if (!existsSync(dirPath)) {
-        mkdirSync(dirPath, { recursive: true });
+    try {
+      if (!existsSync(this.teamMemoryDir)) {
+        mkdirSync(this.teamMemoryDir, { recursive: true });
       }
-    });
+
+      const subDirs = ['knowledge', 'patterns', 'learning', 'members', 'shared'];
+      subDirs.forEach(dir => {
+        const dirPath = join(this.teamMemoryDir, dir);
+        if (!existsSync(dirPath)) {
+          mkdirSync(dirPath, { recursive: true });
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to create team memory directories:', error);
+      // 优雅地处理文件系统错误，不抛出异常
+      // 这允许 TeamMemoryManager 在只读环境中仍能实例化
+    }
   }
 
   /**
