@@ -3,9 +3,9 @@
  * 将控制台日志同时输出到文件，保存在 DATA_DIR/logs 目录
  */
 
-import fs from "fs/promises";
-import fsSync from "fs";
-import path from "path";
+import fs from 'fs/promises';
+import fsSync from 'fs';
+import path from 'path';
 
 export enum LogLevel {
   DEBUG = 0,
@@ -16,7 +16,7 @@ export enum LogLevel {
 
 class Logger {
   private logLevel: LogLevel = LogLevel.INFO;
-  private logDir: string = "";
+  private logDir: string = '';
   private initialized: boolean = false;
   private logBuffer: string[] = [];
   private flushTimer: NodeJS.Timeout | null = null;
@@ -31,8 +31,8 @@ class Logger {
 
     try {
       // 获取基础数据目录，避免循环依赖
-      const baseDataDir = process.env.DATA_DIR || path.join(process.cwd(), "data");
-      this.logDir = path.join(baseDataDir, "logs");
+      const baseDataDir = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+      this.logDir = path.join(baseDataDir, 'logs');
 
       // 创建日志目录
       await fs.mkdir(this.logDir, { recursive: true });
@@ -47,9 +47,9 @@ class Logger {
 
       // 记录初始化成功
       console.log(`[INFO] 日志系统初始化成功 - 目录: ${this.logDir}`);
-      this.addToBuffer("INFO", "Logger", "日志系统初始化成功", { logDir: this.logDir });
+      this.addToBuffer('INFO', 'Logger', '日志系统初始化成功', { logDir: this.logDir });
     } catch (error) {
-      console.error("日志系统初始化失败:", error);
+      console.error('日志系统初始化失败:', error);
       // 即使初始化失败，也标记为已初始化，避免重复尝试
       this.initialized = true;
     }
@@ -155,10 +155,10 @@ class Logger {
       const logFile = this.getLogFilePath();
 
       // 使用同步写入确保实时性
-      fsSync.appendFileSync(logFile, logContent, "utf-8");
+      fsSync.appendFileSync(logFile, logContent, 'utf-8');
     } catch (error) {
       // 如果写入失败，输出到控制台并重新加入缓冲区
-      console.error("写入日志文件失败:", error);
+      console.error('写入日志文件失败:', error);
       // 重新加入缓冲区，避免丢失日志
       this.logBuffer.unshift(...entries);
     }
@@ -248,7 +248,7 @@ class Logger {
    */
   async setProjectLogDir(projectDataDir: string): Promise<void> {
     try {
-      const newLogDir = path.join(projectDataDir, "logs");
+      const newLogDir = path.join(projectDataDir, 'logs');
 
       // 如果目录不同，则更新
       if (newLogDir !== this.logDir) {
@@ -257,10 +257,10 @@ class Logger {
 
         // 记录目录更新
         console.log(`[INFO] [Logger] 日志目录更新为: ${this.logDir}`);
-        this.addToBuffer("INFO", "Logger", "日志目录更新", { newLogDir: this.logDir });
+        this.addToBuffer('INFO', 'Logger', '日志目录更新', { newLogDir: this.logDir });
       }
     } catch (error) {
-      console.error("设置项目日志目录失败:", error);
+      console.error('设置项目日志目录失败:', error);
     }
   }
 }

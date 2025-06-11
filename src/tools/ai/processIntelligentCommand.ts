@@ -3,28 +3,28 @@
  * 实现自然语言指令的智能识别、解析和自动任务拆分
  */
 
-import { z } from "zod";
-import { log } from "../../utils/logger.js";
-import { splitTasks } from "../task/splitTasks.js";
-import { PRDParser } from "../../prd/parser.js";
-import { TaskMemoryManager } from "../../memory/TaskMemoryManager.js";
-import { getProjectContext } from "../project/getProjectContext.js";
-import { RelatedFileType } from "../../types/index.js";
+import { z } from 'zod';
+import { log } from '../../utils/logger.js';
+import { splitTasks } from '../task/splitTasks.js';
+import { PRDParser } from '../../prd/parser.js';
+import { TaskMemoryManager } from '../../memory/TaskMemoryManager.js';
+import { getProjectContext } from '../project/getProjectContext.js';
+import { RelatedFileType } from '../../types/index.js';
 
 // 指令意图类型
-export type CommandIntent = 
-  | 'development'      // 开发相关
-  | 'testing'          // 测试相关
-  | 'documentation'    // 文档相关
-  | 'deployment'       // 部署相关
-  | 'analysis'         // 分析相关
-  | 'refactoring'      // 重构相关
-  | 'bug-fixing'       // 修复相关
-  | 'feature-request'  // 功能请求
-  | 'optimization'     // 优化相关
-  | 'research'         // 研究相关
-  | 'collaboration'    // 协作相关
-  | 'unknown';         // 未知意图
+export type CommandIntent =
+  | 'development' // 开发相关
+  | 'testing' // 测试相关
+  | 'documentation' // 文档相关
+  | 'deployment' // 部署相关
+  | 'analysis' // 分析相关
+  | 'refactoring' // 重构相关
+  | 'bug-fixing' // 修复相关
+  | 'feature-request' // 功能请求
+  | 'optimization' // 优化相关
+  | 'research' // 研究相关
+  | 'collaboration' // 协作相关
+  | 'unknown'; // 未知意图
 
 // 指令复杂度
 export type CommandComplexity = 'simple' | 'medium' | 'complex';
@@ -57,22 +57,17 @@ export interface ParsedCommand {
 
 // 输入参数 Schema
 export const processIntelligentCommandSchema = z.object({
-  command: z.string()
-    .min(5, "指令内容过短，请提供更详细的描述")
-    .max(2000, "指令内容过长，请简化描述")
-    .describe("用户的自然语言指令，描述需要完成的开发任务或需求"),
-  
-  context: z.string()
-    .optional()
-    .describe("可选的上下文信息，如项目背景、相关技术栈、时间要求等"),
-  
-  autoExecute: z.boolean()
-    .default(true)
-    .describe("是否自动执行拆分的任务（默认为true）"),
-  
-  language: z.enum(['zh', 'en'])
-    .default('zh')
-    .describe("指令语言（中文或英文，默认为中文）")
+  command: z
+    .string()
+    .min(5, '指令内容过短，请提供更详细的描述')
+    .max(2000, '指令内容过长，请简化描述')
+    .describe('用户的自然语言指令，描述需要完成的开发任务或需求'),
+
+  context: z.string().optional().describe('可选的上下文信息，如项目背景、相关技术栈、时间要求等'),
+
+  autoExecute: z.boolean().default(true).describe('是否自动执行拆分的任务（默认为true）'),
+
+  language: z.enum(['zh', 'en']).default('zh').describe('指令语言（中文或英文，默认为中文）'),
 });
 
 /**
@@ -80,11 +75,11 @@ export const processIntelligentCommandSchema = z.object({
  */
 export async function processIntelligentCommandTool(args: z.infer<typeof processIntelligentCommandSchema>) {
   try {
-    log.info("ProcessIntelligentCommand", "开始处理智能指令", {
+    log.info('ProcessIntelligentCommand', '开始处理智能指令', {
       commandLength: args.command.length,
       hasContext: !!args.context,
       autoExecute: args.autoExecute,
-      language: args.language
+      language: args.language,
     });
 
     // 1. 获取项目上下文
@@ -92,15 +87,15 @@ export async function processIntelligentCommandTool(args: z.infer<typeof process
       includeEnvVars: false,
       includeDataDir: true,
       includeAiSuggestions: false,
-      includeMcpInfo: false
+      includeMcpInfo: false,
     });
-    
+
     // 2. 解析指令
     const parsedCommand = await parseCommand(args.command, args.context, args.language);
-    
+
     // 3. 生成任务建议
     const taskSuggestions = await generateTaskSuggestions(parsedCommand, projectContext);
-    
+
     // 4. 如果启用自动执行，则创建任务
     let executionResult = null;
     if (args.autoExecute && taskSuggestions.length > 0) {
@@ -113,11 +108,11 @@ export async function processIntelligentCommandTool(args: z.infer<typeof process
     // 6. 生成响应
     const response = generateResponse(parsedCommand, taskSuggestions, executionResult, args.language);
 
-    log.info("ProcessIntelligentCommand", "智能指令处理完成", {
+    log.info('ProcessIntelligentCommand', '智能指令处理完成', {
       intent: parsedCommand.intent,
       complexity: parsedCommand.complexity,
       tasksGenerated: taskSuggestions.length,
-      autoExecuted: args.autoExecute && !!executionResult
+      autoExecuted: args.autoExecute && !!executionResult,
     });
 
     return {
@@ -128,30 +123,29 @@ export async function processIntelligentCommandTool(args: z.infer<typeof process
         executionResult,
         projectContext: {
           projectName: 'current-project',
-          projectType: 'unknown'
-        }
+          projectType: 'unknown',
+        },
       },
       content: [
         {
-          type: "text" as const,
-          text: response
-        }
-      ]
+          type: 'text' as const,
+          text: response,
+        },
+      ],
     };
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    log.error("ProcessIntelligentCommand", "智能指令处理失败", error as Error);
+    log.error('ProcessIntelligentCommand', '智能指令处理失败', error as Error);
 
     return {
       success: false,
       error: errorMessage,
       content: [
         {
-          type: "text" as const,
-          text: `## ❌ 智能指令处理失败\n\n**错误信息**: ${errorMessage}\n\n请检查指令格式是否正确，或尝试简化指令描述。`
-        }
-      ]
+          type: 'text' as const,
+          text: `## ❌ 智能指令处理失败\n\n**错误信息**: ${errorMessage}\n\n请检查指令格式是否正确，或尝试简化指令描述。`,
+        },
+      ],
     };
   }
 }
@@ -172,31 +166,62 @@ async function parseCommand(command: string, context?: string, language: string 
     'feature-request': ['功能', '特性', '需求', '新增', 'feature', 'requirement', 'add'],
     optimization: ['优化', '性能', '提升', '改善', 'optimize', 'performance', 'improve'],
     research: ['调研', '研究', '学习', '探索', 'research', 'study', 'learn', 'explore'],
-    collaboration: ['协作', '团队', '分配', '合作', 'collaborate', 'team', 'assign', 'cooperation']
+    collaboration: ['协作', '团队', '分配', '合作', 'collaborate', 'team', 'assign', 'cooperation'],
   };
 
   // 技术栈关键词
   const techKeywords = [
-    'react', 'vue', 'angular', 'typescript', 'javascript', 'node.js', 'express',
-    'python', 'django', 'flask', 'java', 'spring', 'go', 'rust', 'c++',
-    'mysql', 'postgresql', 'mongodb', 'redis', 'docker', 'kubernetes',
-    'aws', 'azure', 'gcp', 'git', 'github', 'gitlab'
+    'react',
+    'vue',
+    'angular',
+    'typescript',
+    'javascript',
+    'node.js',
+    'express',
+    'python',
+    'django',
+    'flask',
+    'java',
+    'spring',
+    'go',
+    'rust',
+    'c++',
+    'mysql',
+    'postgresql',
+    'mongodb',
+    'redis',
+    'docker',
+    'kubernetes',
+    'aws',
+    'azure',
+    'gcp',
+    'git',
+    'github',
+    'gitlab',
   ];
 
   // 角色关键词
   const roleKeywords = [
-    'frontend', 'backend', 'fullstack', 'devops', 'qa', 'tester',
-    'designer', 'product manager', 'tech lead', 'architect'
+    'frontend',
+    'backend',
+    'fullstack',
+    'devops',
+    'qa',
+    'tester',
+    'designer',
+    'product manager',
+    'tech lead',
+    'architect',
   ];
 
   const fullText = `${command} ${context || ''}`.toLowerCase();
-  
+
   // 识别意图
   let intent: CommandIntent = 'unknown';
   let maxMatches = 0;
-  
+
   for (const [intentType, keywords] of Object.entries(intentKeywords)) {
-    const matches = keywords.filter(keyword => fullText.includes(keyword.toLowerCase())).length;
+    const matches = keywords.filter((keyword) => fullText.includes(keyword.toLowerCase())).length;
     if (matches > maxMatches) {
       maxMatches = matches;
       intent = intentType as CommandIntent;
@@ -205,25 +230,25 @@ async function parseCommand(command: string, context?: string, language: string 
 
   // 提取关键词
   const keywords = extractKeywords(fullText);
-  
+
   // 识别技术栈
-  const technologies = techKeywords.filter(tech => fullText.includes(tech.toLowerCase()));
-  
+  const technologies = techKeywords.filter((tech) => fullText.includes(tech.toLowerCase()));
+
   // 识别角色
-  const roles = roleKeywords.filter(role => fullText.includes(role.toLowerCase()));
-  
+  const roles = roleKeywords.filter((role) => fullText.includes(role.toLowerCase()));
+
   // 识别文件
   const files = extractFileReferences(command);
-  
+
   // 识别功能
   const features = extractFeatures(command);
-  
+
   // 评估复杂度
   const complexity = assessComplexity(command, context);
-  
+
   // 评估紧急程度
   const urgency = assessUrgency(fullText);
-  
+
   // 评估范围
   const scope = assessScope(fullText);
 
@@ -236,13 +261,13 @@ async function parseCommand(command: string, context?: string, language: string 
       technologies,
       files,
       features,
-      roles
+      roles,
     },
     context: {
       urgency,
-      scope
+      scope,
     },
-    suggestedTasks: [] // 将在后续步骤中填充
+    suggestedTasks: [], // 将在后续步骤中填充
   };
 }
 
@@ -251,13 +276,30 @@ async function parseCommand(command: string, context?: string, language: string 
  */
 function extractKeywords(text: string): string[] {
   // 移除常见停用词
-  const stopWords = ['的', '是', '在', '有', '和', '与', '或', '但', '如果', 'the', 'is', 'in', 'and', 'or', 'but', 'if'];
+  const stopWords = [
+    '的',
+    '是',
+    '在',
+    '有',
+    '和',
+    '与',
+    '或',
+    '但',
+    '如果',
+    'the',
+    'is',
+    'in',
+    'and',
+    'or',
+    'but',
+    'if',
+  ];
 
   // 分词并过滤
   const words = text
     .replace(/[^\w\s\u4e00-\u9fa5]/g, ' ') // 保留中英文字符
     .split(/\s+/)
-    .filter(word => word.length > 1 && !stopWords.includes(word.toLowerCase()))
+    .filter((word) => word.length > 1 && !stopWords.includes(word.toLowerCase()))
     .slice(0, 10); // 限制关键词数量
 
   return [...new Set(words)]; // 去重
@@ -271,7 +313,7 @@ function extractFileReferences(command: string): string[] {
     /[\w\-\.]+\.(js|ts|jsx|tsx|py|java|go|rs|cpp|c|h|css|scss|html|md|json|yaml|yml|xml|sql)/gi,
     /src\/[\w\/\-\.]+/gi,
     /\.\/[\w\/\-\.]+/gi,
-    /\/[\w\/\-\.]+/gi
+    /\/[\w\/\-\.]+/gi,
   ];
 
   const files: string[] = [];
@@ -296,7 +338,7 @@ function extractFeatures(command: string): string[] {
     /开发\s*([^，,。.！!？?]+)/g,
     /build\s+([^，,。.！!？?\s]+)/gi,
     /create\s+([^，,。.！!？?\s]+)/gi,
-    /implement\s+([^，,。.！!？?\s]+)/gi
+    /implement\s+([^，,。.！!？?\s]+)/gi,
   ];
 
   const features: string[] = [];
@@ -318,21 +360,34 @@ function assessComplexity(command: string, context?: string): CommandComplexity 
 
   // 复杂度指标
   const complexityIndicators = {
-    high: ['架构', '系统', '集成', '算法', '性能优化', '分布式', '微服务', 'architecture', 'system', 'integration', 'algorithm', 'distributed'],
+    high: [
+      '架构',
+      '系统',
+      '集成',
+      '算法',
+      '性能优化',
+      '分布式',
+      '微服务',
+      'architecture',
+      'system',
+      'integration',
+      'algorithm',
+      'distributed',
+    ],
     medium: ['功能', '模块', '组件', '接口', 'api', 'feature', 'module', 'component', 'interface'],
-    simple: ['修改', '更新', '调整', '简单', 'modify', 'update', 'simple', 'basic']
+    simple: ['修改', '更新', '调整', '简单', 'modify', 'update', 'simple', 'basic'],
   };
 
   // 计算复杂度分数
   let complexityScore = 0;
 
-  if (complexityIndicators.high.some(indicator => fullText.includes(indicator))) {
+  if (complexityIndicators.high.some((indicator) => fullText.includes(indicator))) {
     complexityScore += 3;
   }
-  if (complexityIndicators.medium.some(indicator => fullText.includes(indicator))) {
+  if (complexityIndicators.medium.some((indicator) => fullText.includes(indicator))) {
     complexityScore += 2;
   }
-  if (complexityIndicators.simple.some(indicator => fullText.includes(indicator))) {
+  if (complexityIndicators.simple.some((indicator) => fullText.includes(indicator))) {
     complexityScore += 1;
   }
 
@@ -356,11 +411,11 @@ function assessUrgency(text: string): 'low' | 'medium' | 'high' {
   const urgencyKeywords = {
     high: ['紧急', '立即', '马上', '尽快', '急需', 'urgent', 'immediately', 'asap', 'critical'],
     medium: ['重要', '优先', '及时', 'important', 'priority', 'soon'],
-    low: ['可选', '建议', '有时间', 'optional', 'when possible', 'nice to have']
+    low: ['可选', '建议', '有时间', 'optional', 'when possible', 'nice to have'],
   };
 
-  if (urgencyKeywords.high.some(keyword => text.includes(keyword))) return 'high';
-  if (urgencyKeywords.medium.some(keyword => text.includes(keyword))) return 'medium';
+  if (urgencyKeywords.high.some((keyword) => text.includes(keyword))) return 'high';
+  if (urgencyKeywords.medium.some((keyword) => text.includes(keyword))) return 'medium';
   return 'low';
 }
 
@@ -371,11 +426,11 @@ function assessScope(text: string): 'small' | 'medium' | 'large' {
   const scopeKeywords = {
     large: ['整个项目', '全面', '完整系统', '大规模', 'entire project', 'full system', 'large scale'],
     medium: ['模块', '子系统', '功能组', 'module', 'subsystem', 'feature set'],
-    small: ['小功能', '单个', '简单', 'small feature', 'single', 'simple']
+    small: ['小功能', '单个', '简单', 'small feature', 'single', 'simple'],
   };
 
-  if (scopeKeywords.large.some(keyword => text.includes(keyword))) return 'large';
-  if (scopeKeywords.medium.some(keyword => text.includes(keyword))) return 'medium';
+  if (scopeKeywords.large.some((keyword) => text.includes(keyword))) return 'large';
+  if (scopeKeywords.medium.some((keyword) => text.includes(keyword))) return 'medium';
   return 'small';
 }
 
@@ -400,8 +455,9 @@ async function generateTaskSuggestions(parsedCommand: ParsedCommand, projectCont
       name: `实现${feature}功能`,
       description: `开发和实现${feature}功能，包括前端界面、后端逻辑和数据处理`,
       priority: 2,
-      estimatedEffort: parsedCommand.complexity === 'complex' ? '1-2周' : parsedCommand.complexity === 'medium' ? '3-5天' : '1-2天',
-      dependencies: []
+      estimatedEffort:
+        parsedCommand.complexity === 'complex' ? '1-2周' : parsedCommand.complexity === 'medium' ? '3-5天' : '1-2天',
+      dependencies: [],
     });
   }
 
@@ -412,7 +468,7 @@ async function generateTaskSuggestions(parsedCommand: ParsedCommand, projectCont
       description: `处理和修改相关文件: ${parsedCommand.entities.files.join(', ')}`,
       priority: 1,
       estimatedEffort: '1-2天',
-      dependencies: []
+      dependencies: [],
     });
   }
 
@@ -423,7 +479,7 @@ async function generateTaskSuggestions(parsedCommand: ParsedCommand, projectCont
       description: '进行详细的架构设计和技术方案规划',
       priority: 1,
       estimatedEffort: '2-3天',
-      dependencies: []
+      dependencies: [],
     });
 
     tasks.push({
@@ -431,7 +487,7 @@ async function generateTaskSuggestions(parsedCommand: ParsedCommand, projectCont
       description: '进行全面的集成测试和功能验证',
       priority: 3,
       estimatedEffort: '3-5天',
-      dependencies: ['架构设计和规划']
+      dependencies: ['架构设计和规划'],
     });
   }
 
@@ -442,7 +498,7 @@ async function generateTaskSuggestions(parsedCommand: ParsedCommand, projectCont
       description: '更新相关技术文档和使用说明',
       priority: 3,
       estimatedEffort: '1天',
-      dependencies: []
+      dependencies: [],
     });
   }
 
@@ -460,15 +516,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '分析开发需求，设计技术方案和实现路径',
         priority: 1,
         estimatedEffort: '1-2天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '核心功能开发',
         description: '实现核心业务逻辑和功能模块',
         priority: 2,
         estimatedEffort: '3-7天',
-        dependencies: ['需求分析和设计']
-      }
+        dependencies: ['需求分析和设计'],
+      },
     ],
     testing: [
       {
@@ -476,15 +532,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '制定详细的测试计划和测试用例',
         priority: 1,
         estimatedEffort: '1天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '单元测试编写',
         description: '编写和执行单元测试用例',
         priority: 2,
         estimatedEffort: '2-3天',
-        dependencies: ['测试计划制定']
-      }
+        dependencies: ['测试计划制定'],
+      },
     ],
     documentation: [
       {
@@ -492,15 +548,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '规划文档结构和内容组织',
         priority: 1,
         estimatedEffort: '半天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '文档内容编写',
         description: '编写详细的技术文档和使用说明',
         priority: 2,
         estimatedEffort: '1-3天',
-        dependencies: ['文档结构规划']
-      }
+        dependencies: ['文档结构规划'],
+      },
     ],
     deployment: [
       {
@@ -508,15 +564,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '准备和配置部署环境',
         priority: 1,
         estimatedEffort: '1天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '应用部署和配置',
         description: '部署应用并进行相关配置',
         priority: 2,
         estimatedEffort: '1-2天',
-        dependencies: ['部署环境准备']
-      }
+        dependencies: ['部署环境准备'],
+      },
     ],
     analysis: [
       {
@@ -524,15 +580,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '分析当前系统状态和存在的问题',
         priority: 1,
         estimatedEffort: '1-2天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '解决方案设计',
         description: '基于分析结果设计解决方案',
         priority: 2,
         estimatedEffort: '1-3天',
-        dependencies: ['现状分析']
-      }
+        dependencies: ['现状分析'],
+      },
     ],
     refactoring: [
       {
@@ -540,15 +596,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '审查现有代码，识别重构点',
         priority: 1,
         estimatedEffort: '1天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '重构实施',
         description: '执行代码重构和优化',
         priority: 2,
         estimatedEffort: '2-5天',
-        dependencies: ['代码审查和分析']
-      }
+        dependencies: ['代码审查和分析'],
+      },
     ],
     'bug-fixing': [
       {
@@ -556,15 +612,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '定位问题根因并分析影响范围',
         priority: 1,
         estimatedEffort: '半天-1天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '修复实施和验证',
         description: '实施修复方案并进行验证',
         priority: 2,
         estimatedEffort: '1-2天',
-        dependencies: ['问题定位和分析']
-      }
+        dependencies: ['问题定位和分析'],
+      },
     ],
     'feature-request': [
       {
@@ -572,15 +628,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '详细分析功能需求和技术可行性',
         priority: 1,
         estimatedEffort: '1天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '功能开发实现',
         description: '开发和实现新功能',
         priority: 2,
         estimatedEffort: '3-7天',
-        dependencies: ['功能需求分析']
-      }
+        dependencies: ['功能需求分析'],
+      },
     ],
     optimization: [
       {
@@ -588,15 +644,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '分析当前性能瓶颈和优化点',
         priority: 1,
         estimatedEffort: '1天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '优化实施',
         description: '实施性能优化方案',
         priority: 2,
         estimatedEffort: '2-5天',
-        dependencies: ['性能分析']
-      }
+        dependencies: ['性能分析'],
+      },
     ],
     research: [
       {
@@ -604,15 +660,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '进行相关技术和解决方案调研',
         priority: 1,
         estimatedEffort: '1-3天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '调研报告整理',
         description: '整理调研结果和建议方案',
         priority: 2,
         estimatedEffort: '1天',
-        dependencies: ['技术调研']
-      }
+        dependencies: ['技术调研'],
+      },
     ],
     collaboration: [
       {
@@ -620,15 +676,15 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '规划团队协作流程和任务分配',
         priority: 1,
         estimatedEffort: '半天',
-        dependencies: []
+        dependencies: [],
       },
       {
         name: '协作执行和跟踪',
         description: '执行协作计划并跟踪进度',
         priority: 2,
         estimatedEffort: '持续',
-        dependencies: ['团队协作规划']
-      }
+        dependencies: ['团队协作规划'],
+      },
     ],
     unknown: [
       {
@@ -636,9 +692,9 @@ function getTaskTemplatesByIntent(intent: CommandIntent): any[] {
         description: '澄清具体需求和目标',
         priority: 1,
         estimatedEffort: '半天',
-        dependencies: []
-      }
-    ]
+        dependencies: [],
+      },
+    ],
   };
 
   return templates[intent] || templates.unknown;
@@ -699,38 +755,37 @@ function adjustEffortForComplexity(originalEffort: string, multiplier: number): 
 async function executeTaskCreation(taskSuggestions: any[], parsedCommand: ParsedCommand): Promise<any> {
   try {
     // 转换为splitTasks所需的格式
-    const tasksForSplit = taskSuggestions.map(task => ({
+    const tasksForSplit = taskSuggestions.map((task) => ({
       name: task.name,
       description: task.description,
       implementationGuide: `基于智能指令"${parsedCommand.originalCommand}"生成的任务。\n\n实施步骤：\n1. 分析具体需求\n2. 设计实现方案\n3. 编码实现\n4. 测试验证\n5. 文档更新`,
       dependencies: task.dependencies,
       notes: `意图: ${parsedCommand.intent}, 复杂度: ${parsedCommand.complexity}, 优先级: ${task.priority}`,
       verificationCriteria: `任务完成标准：\n- 功能正常运行\n- 代码质量良好\n- 通过相关测试\n- 文档完整准确`,
-      relatedFiles: parsedCommand.entities.files.map(file => ({
+      relatedFiles: parsedCommand.entities.files.map((file) => ({
         path: file,
         type: RelatedFileType.TO_MODIFY,
-        description: `与指令相关的文件: ${file}`
-      }))
+        description: `与指令相关的文件: ${file}`,
+      })),
     }));
 
     // 调用splitTasks工具
     const result = await splitTasks({
       updateMode: 'append',
       tasks: tasksForSplit,
-      globalAnalysisResult: `基于智能指令"${parsedCommand.originalCommand}"的自动任务拆分。意图: ${parsedCommand.intent}, 复杂度: ${parsedCommand.complexity}`
+      globalAnalysisResult: `基于智能指令"${parsedCommand.originalCommand}"的自动任务拆分。意图: ${parsedCommand.intent}, 复杂度: ${parsedCommand.complexity}`,
     });
 
     return {
       success: true,
       tasksCreated: tasksForSplit.length,
-      splitTasksResult: result
+      splitTasksResult: result,
     };
-
   } catch (error) {
-    log.error("ProcessIntelligentCommand", "任务创建失败", error as Error);
+    log.error('ProcessIntelligentCommand', '任务创建失败', error as Error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -738,42 +793,61 @@ async function executeTaskCreation(taskSuggestions: any[], parsedCommand: Parsed
 /**
  * 记录指令记忆
  */
-async function recordCommandMemory(parsedCommand: ParsedCommand, taskSuggestions: any[], executionResult: any): Promise<void> {
+async function recordCommandMemory(
+  parsedCommand: ParsedCommand,
+  taskSuggestions: any[],
+  executionResult: any
+): Promise<void> {
   try {
     // 这里可以集成TaskMemoryManager来记录指令处理历史
     // 暂时使用日志记录
-    log.info("ProcessIntelligentCommand", "记录指令处理历史", {
+    log.info('ProcessIntelligentCommand', '记录指令处理历史', {
       command: parsedCommand.originalCommand,
       intent: parsedCommand.intent,
       complexity: parsedCommand.complexity,
       tasksGenerated: taskSuggestions.length,
-      executionSuccess: executionResult?.success || false
+      executionSuccess: executionResult?.success || false,
     });
   } catch (error) {
-    log.error("ProcessIntelligentCommand", "记录指令记忆失败", error as Error);
+    log.error('ProcessIntelligentCommand', '记录指令记忆失败', error as Error);
   }
 }
 
 /**
  * 生成响应内容
  */
-function generateResponse(parsedCommand: ParsedCommand, taskSuggestions: any[], executionResult: any, language: string): string {
+function generateResponse(
+  parsedCommand: ParsedCommand,
+  taskSuggestions: any[],
+  executionResult: any,
+  language: string
+): string {
   const isZh = language === 'zh';
 
   let response = isZh ? '# 🤖 智能指令处理结果\n\n' : '# 🤖 Intelligent Command Processing Result\n\n';
 
   // 指令解析结果
   response += isZh ? '## 📋 指令解析\n\n' : '## 📋 Command Analysis\n\n';
-  response += isZh ? `**原始指令**: ${parsedCommand.originalCommand}\n\n` : `**Original Command**: ${parsedCommand.originalCommand}\n\n`;
-  response += isZh ? `**识别意图**: ${getIntentDisplayName(parsedCommand.intent, isZh)}\n\n` : `**Detected Intent**: ${getIntentDisplayName(parsedCommand.intent, isZh)}\n\n`;
-  response += isZh ? `**复杂度评估**: ${getComplexityDisplayName(parsedCommand.complexity, isZh)}\n\n` : `**Complexity Assessment**: ${getComplexityDisplayName(parsedCommand.complexity, isZh)}\n\n`;
+  response += isZh
+    ? `**原始指令**: ${parsedCommand.originalCommand}\n\n`
+    : `**Original Command**: ${parsedCommand.originalCommand}\n\n`;
+  response += isZh
+    ? `**识别意图**: ${getIntentDisplayName(parsedCommand.intent, isZh)}\n\n`
+    : `**Detected Intent**: ${getIntentDisplayName(parsedCommand.intent, isZh)}\n\n`;
+  response += isZh
+    ? `**复杂度评估**: ${getComplexityDisplayName(parsedCommand.complexity, isZh)}\n\n`
+    : `**Complexity Assessment**: ${getComplexityDisplayName(parsedCommand.complexity, isZh)}\n\n`;
 
   if (parsedCommand.entities.technologies.length > 0) {
-    response += isZh ? `**涉及技术**: ${parsedCommand.entities.technologies.join(', ')}\n\n` : `**Technologies Involved**: ${parsedCommand.entities.technologies.join(', ')}\n\n`;
+    response += isZh
+      ? `**涉及技术**: ${parsedCommand.entities.technologies.join(', ')}\n\n`
+      : `**Technologies Involved**: ${parsedCommand.entities.technologies.join(', ')}\n\n`;
   }
 
   if (parsedCommand.entities.files.length > 0) {
-    response += isZh ? `**相关文件**: ${parsedCommand.entities.files.join(', ')}\n\n` : `**Related Files**: ${parsedCommand.entities.files.join(', ')}\n\n`;
+    response += isZh
+      ? `**相关文件**: ${parsedCommand.entities.files.join(', ')}\n\n`
+      : `**Related Files**: ${parsedCommand.entities.files.join(', ')}\n\n`;
   }
 
   // 任务建议
@@ -783,10 +857,14 @@ function generateResponse(parsedCommand: ParsedCommand, taskSuggestions: any[], 
     taskSuggestions.forEach((task, index) => {
       response += `### ${index + 1}. ${task.name}\n\n`;
       response += `${task.description}\n\n`;
-      response += isZh ? `**优先级**: ${task.priority} | **预估工作量**: ${task.estimatedEffort}\n\n` : `**Priority**: ${task.priority} | **Estimated Effort**: ${task.estimatedEffort}\n\n`;
+      response += isZh
+        ? `**优先级**: ${task.priority} | **预估工作量**: ${task.estimatedEffort}\n\n`
+        : `**Priority**: ${task.priority} | **Estimated Effort**: ${task.estimatedEffort}\n\n`;
 
       if (task.dependencies && task.dependencies.length > 0) {
-        response += isZh ? `**依赖任务**: ${task.dependencies.join(', ')}\n\n` : `**Dependencies**: ${task.dependencies.join(', ')}\n\n`;
+        response += isZh
+          ? `**依赖任务**: ${task.dependencies.join(', ')}\n\n`
+          : `**Dependencies**: ${task.dependencies.join(', ')}\n\n`;
       }
     });
   } else {
@@ -798,10 +876,16 @@ function generateResponse(parsedCommand: ParsedCommand, taskSuggestions: any[], 
     response += isZh ? '## ⚡ 执行结果\n\n' : '## ⚡ Execution Result\n\n';
 
     if (executionResult.success) {
-      response += isZh ? `✅ 成功创建了 ${executionResult.tasksCreated} 个任务\n\n` : `✅ Successfully created ${executionResult.tasksCreated} tasks\n\n`;
-      response += isZh ? '任务已添加到项目任务列表中，可以开始执行。\n\n' : 'Tasks have been added to the project task list and are ready for execution.\n\n';
+      response += isZh
+        ? `✅ 成功创建了 ${executionResult.tasksCreated} 个任务\n\n`
+        : `✅ Successfully created ${executionResult.tasksCreated} tasks\n\n`;
+      response += isZh
+        ? '任务已添加到项目任务列表中，可以开始执行。\n\n'
+        : 'Tasks have been added to the project task list and are ready for execution.\n\n';
     } else {
-      response += isZh ? `❌ 任务创建失败: ${executionResult.error}\n\n` : `❌ Task creation failed: ${executionResult.error}\n\n`;
+      response += isZh
+        ? `❌ 任务创建失败: ${executionResult.error}\n\n`
+        : `❌ Task creation failed: ${executionResult.error}\n\n`;
     }
   }
 
@@ -837,7 +921,7 @@ function getIntentDisplayName(intent: CommandIntent, isZh: boolean): string {
     optimization: isZh ? '性能优化' : 'Optimization',
     research: isZh ? '技术调研' : 'Research',
     collaboration: isZh ? '团队协作' : 'Collaboration',
-    unknown: isZh ? '未知类型' : 'Unknown'
+    unknown: isZh ? '未知类型' : 'Unknown',
   };
 
   return names[intent] || names.unknown;
@@ -850,7 +934,7 @@ function getComplexityDisplayName(complexity: CommandComplexity, isZh: boolean):
   const names = {
     simple: isZh ? '简单' : 'Simple',
     medium: isZh ? '中等' : 'Medium',
-    complex: isZh ? '复杂' : 'Complex'
+    complex: isZh ? '复杂' : 'Complex',
   };
 
   return names[complexity];
@@ -858,7 +942,7 @@ function getComplexityDisplayName(complexity: CommandComplexity, isZh: boolean):
 
 // 工具定义
 export const processIntelligentCommandToolDefinition = {
-  name: "process_intelligent_command",
+  name: 'process_intelligent_command',
   description: `智能指令处理工具 - 自然语言指令的智能识别和自动任务拆分
 
 这个工具能够理解和处理自然语言开发指令，自动识别意图、分析复杂度，并生成相应的可执行任务。
@@ -905,5 +989,5 @@ export const processIntelligentCommandToolDefinition = {
 
 这个工具特别适合需要快速响应需求变化、提高开发效率的团队使用。`,
   inputSchema: processIntelligentCommandSchema,
-  handler: processIntelligentCommandTool
+  handler: processIntelligentCommandTool,
 };

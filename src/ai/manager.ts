@@ -3,19 +3,19 @@
  * 统一管理多个 AI 提供商，提供智能选择和失败回退功能
  */
 
-import { 
-  AIProvider, 
-  AIManagerConfig, 
-  AIExecutionOptions, 
-  AIResponse, 
+import {
+  AIProvider,
+  AIManagerConfig,
+  AIExecutionOptions,
+  AIResponse,
   AIExecutionResult,
   ProviderSelectionRequirements,
   UsageStats,
   ProviderHealthStatus,
-  CurrentAIProvider as CurrentAIConfig
-} from "./types.js";
-import { AIConfigManager } from "./config.js";
-import { CurrentAIProvider } from "./providers/CurrentAIProvider.js";
+  CurrentAIProvider as CurrentAIConfig,
+} from './types.js';
+import { AIConfigManager } from './config.js';
+import { CurrentAIProvider } from './providers/CurrentAIProvider.js';
 
 export class AIManager {
   private providers: Map<string, AIProvider> = new Map();
@@ -49,7 +49,7 @@ export class AIManager {
     try {
       // 选择提供商
       const selectedProviders = await this.selectProviders(requirements);
-      
+
       if (selectedProviders.length === 0) {
         throw new Error('No available AI providers found');
       }
@@ -57,7 +57,7 @@ export class AIManager {
       // 尝试执行
       for (const provider of selectedProviders) {
         attemptedProviders.push(provider.id);
-        
+
         try {
           // 检查是否为当前 AI 提供商
           if (provider instanceof CurrentAIProvider) {
@@ -72,7 +72,7 @@ export class AIManager {
 
           // 执行 prompt
           const response = await provider.executePrompt(prompt, options);
-          
+
           // 更新统计信息
           this.updateUsageStats(provider.id, response);
           this.updateHealthStatus(provider.id, true);
@@ -83,15 +83,14 @@ export class AIManager {
             providerId: provider.id,
             attemptedProviders,
             executionTime: Date.now() - startTime,
-            retryCount: attemptedProviders.length - 1
+            retryCount: attemptedProviders.length - 1,
           };
-
         } catch (error) {
           lastError = error as Error;
           const errorMessage = error instanceof Error ? error.message : String(error);
           this.updateHealthStatus(provider.id, false, errorMessage);
           console.warn(`Provider ${provider.id} failed:`, errorMessage);
-          
+
           // 如果不是最后一个提供商，继续尝试下一个
           if (provider !== selectedProviders[selectedProviders.length - 1]) {
             continue;
@@ -106,9 +105,8 @@ export class AIManager {
         providerId: attemptedProviders[attemptedProviders.length - 1] || 'unknown',
         attemptedProviders,
         executionTime: Date.now() - startTime,
-        retryCount: attemptedProviders.length - 1
+        retryCount: attemptedProviders.length - 1,
       };
-
     } catch (error) {
       return {
         success: false,
@@ -116,7 +114,7 @@ export class AIManager {
         providerId: 'unknown',
         attemptedProviders,
         executionTime: Date.now() - startTime,
-        retryCount: 0
+        retryCount: 0,
       };
     }
   }
@@ -145,8 +143,8 @@ export class AIManager {
         shouldDelegate: true,
         originalPrompt: prompt,
         options: options,
-        marker: provider.createCurrentAIMarker()
-      }
+        marker: provider.createCurrentAIMarker(),
+      },
     };
 
     return {
@@ -155,7 +153,7 @@ export class AIManager {
       providerId: provider.id,
       attemptedProviders,
       executionTime: Date.now() - startTime,
-      retryCount: 0
+      retryCount: 0,
     };
   }
 
@@ -165,8 +163,7 @@ export class AIManager {
    * @returns 按优先级排序的提供商列表
    */
   async selectProviders(requirements?: ProviderSelectionRequirements): Promise<AIProvider[]> {
-    const availableProviders = Array.from(this.providers.values())
-      .filter(provider => provider.enabled);
+    const availableProviders = Array.from(this.providers.values()).filter((provider) => provider.enabled);
 
     if (availableProviders.length === 0) {
       return [];
@@ -175,7 +172,7 @@ export class AIManager {
     // 如果没有特殊要求，检查是否应该使用当前 AI
     if (!requirements || !requirements.preferredProvider) {
       const currentAIConfig = this.configManager.getCurrentAIConfig();
-      
+
       if (currentAIConfig.useCurrentAI) {
         const currentAIProvider = this.providers.get('current-ai');
         if (currentAIProvider) {
@@ -191,24 +188,24 @@ export class AIManager {
       // 排除指定的提供商
       if (requirements.excludeProviders) {
         filteredProviders = filteredProviders.filter(
-          provider => !requirements.excludeProviders!.includes(provider.id)
+          (provider) => !requirements.excludeProviders!.includes(provider.id)
         );
       }
 
       // 如果指定了首选提供商，优先使用
       if (requirements.preferredProvider) {
-        const preferred = filteredProviders.find(p => p.id === requirements.preferredProvider);
+        const preferred = filteredProviders.find((p) => p.id === requirements.preferredProvider);
         if (preferred) {
-          return [preferred, ...filteredProviders.filter(p => p.id !== requirements.preferredProvider)];
+          return [preferred, ...filteredProviders.filter((p) => p.id !== requirements.preferredProvider)];
         }
       }
 
       // 根据任务类型过滤（如果提供商支持能力标识）
       if (requirements.requiredCapabilities) {
-        filteredProviders = filteredProviders.filter(provider => {
+        filteredProviders = filteredProviders.filter((provider) => {
           const config = provider.getConfig();
           const capabilities = config.models.configs?.[config.models.default]?.capabilities || [];
-          return requirements.requiredCapabilities!.every(cap => capabilities.includes(cap));
+          return requirements.requiredCapabilities!.every((cap) => capabilities.includes(cap));
         });
       }
     }
@@ -226,20 +223,20 @@ export class AIManager {
     switch (this.config.fallbackStrategy) {
       case 'priority':
         return providers.sort((a, b) => a.priority - b.priority);
-      
+
       case 'cost-optimized':
         return providers.sort((a, b) => {
           const costA = a.getCost(1000); // 比较 1000 token 的成本
           const costB = b.getCost(1000);
           return costA - costB;
         });
-      
+
       case 'round-robin':
         // 简单的轮询实现
         const now = Date.now();
         const index = Math.floor(now / 60000) % providers.length; // 每分钟轮换
         return [...providers.slice(index), ...providers.slice(0, index)];
-      
+
       default:
         return providers.sort((a, b) => a.priority - b.priority);
     }
@@ -317,7 +314,7 @@ export class AIManager {
 
     // 加载其他配置的提供商
     const providerConfigs = this.configManager.getAllProviderConfigs();
-    
+
     for (const config of providerConfigs) {
       if (config.id !== 'current-ai' && this.config.enabledProviders.includes(config.id)) {
         // 这里可以根据配置创建具体的提供商实例
@@ -336,7 +333,7 @@ export class AIManager {
       providerId,
       healthy: true,
       lastChecked: new Date(),
-      availability: 100
+      availability: 100,
     });
   }
 
@@ -348,7 +345,7 @@ export class AIManager {
   private updateUsageStats(providerId: string, response: AIResponse): void {
     const today = new Date().toISOString().split('T')[0];
     const key = `${providerId}-${today}`;
-    
+
     let stats = this.usageStats.get(key);
     if (!stats) {
       stats = {
@@ -359,14 +356,15 @@ export class AIManager {
         totalCost: 0,
         averageResponseTime: 0,
         successRate: 100,
-        errors: {}
+        errors: {},
       };
     }
 
     stats.requestCount++;
     stats.totalTokens += response.tokensUsed;
     stats.totalCost += response.cost;
-    stats.averageResponseTime = (stats.averageResponseTime * (stats.requestCount - 1) + response.responseTime) / stats.requestCount;
+    stats.averageResponseTime =
+      (stats.averageResponseTime * (stats.requestCount - 1) + response.responseTime) / stats.requestCount;
 
     this.usageStats.set(key, stats);
   }
@@ -385,7 +383,7 @@ export class AIManager {
       if (error) {
         status.error = error;
       }
-      
+
       // 更新可用性百分比（简单的滑动窗口）
       if (healthy) {
         status.availability = Math.min(100, status.availability + 1);

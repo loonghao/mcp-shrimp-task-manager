@@ -3,7 +3,7 @@
  * 提供全局访问MCP服务器实例的功能
  */
 
-import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import type { Server } from '@modelcontextprotocol/sdk/server/index.js';
 
 /**
  * 全局MCP服务器实例

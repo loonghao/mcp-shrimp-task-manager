@@ -30,7 +30,7 @@ export enum ErrorType {
   NOT_FOUND = 'NOT_FOUND',
   PERMISSION = 'PERMISSION_ERROR',
   NETWORK = 'NETWORK_ERROR',
-  TIMEOUT = 'TIMEOUT_ERROR'
+  TIMEOUT = 'TIMEOUT_ERROR',
 }
 
 /**
@@ -39,47 +39,41 @@ export enum ErrorType {
 const ERROR_MESSAGES = {
   [ErrorType.VALIDATION]: {
     zh: '参数验证失败',
-    en: 'Parameter validation failed'
+    en: 'Parameter validation failed',
   },
   [ErrorType.SYSTEM]: {
     zh: '系统错误',
-    en: 'System error'
+    en: 'System error',
   },
   [ErrorType.NOT_FOUND]: {
     zh: '资源未找到',
-    en: 'Resource not found'
+    en: 'Resource not found',
   },
   [ErrorType.PERMISSION]: {
     zh: '权限不足',
-    en: 'Insufficient permissions'
+    en: 'Insufficient permissions',
   },
   [ErrorType.NETWORK]: {
     zh: '网络错误',
-    en: 'Network error'
+    en: 'Network error',
   },
   [ErrorType.TIMEOUT]: {
     zh: '操作超时',
-    en: 'Operation timeout'
-  }
+    en: 'Operation timeout',
+  },
 };
 
 /**
  * 统一错误处理函数
  */
-export function handleError(
-  error: unknown,
-  context?: string,
-  language: 'zh' | 'en' = 'zh'
-): ErrorResponse {
+export function handleError(error: unknown, context?: string, language: 'zh' | 'en' = 'zh'): ErrorResponse {
   console.error(`❌ ${context || '操作失败'}:`, error);
 
   // 处理 Zod 验证错误
   if (error instanceof ZodError) {
-    const validationErrors = error.errors.map(err => {
+    const validationErrors = error.errors.map((err) => {
       const field = err.path.join('.');
-      const message = language === 'zh' ? 
-        translateZodError(err) : 
-        err.message;
+      const message = language === 'zh' ? translateZodError(err) : err.message;
       return `${field}: ${message}`;
     });
 
@@ -87,7 +81,7 @@ export function handleError(
       success: false,
       error: `${ERROR_MESSAGES[ErrorType.VALIDATION][language]}: ${validationErrors.join(', ')}`,
       errorCode: ErrorType.VALIDATION,
-      details: error.errors
+      details: error.errors,
     };
   }
 
@@ -97,7 +91,7 @@ export function handleError(
     return {
       success: false,
       error: `${ERROR_MESSAGES[errorType][language]}: ${error.message}`,
-      errorCode: errorType
+      errorCode: errorType,
     };
   }
 
@@ -105,21 +99,18 @@ export function handleError(
   return {
     success: false,
     error: `${ERROR_MESSAGES[ErrorType.SYSTEM][language]}: ${String(error)}`,
-    errorCode: ErrorType.SYSTEM
+    errorCode: ErrorType.SYSTEM,
   };
 }
 
 /**
  * 创建成功响应
  */
-export function createSuccessResponse<T>(
-  data: T,
-  warnings?: string[]
-): SuccessResponse<T> {
+export function createSuccessResponse<T>(data: T, warnings?: string[]): SuccessResponse<T> {
   return {
     success: true,
     data,
-    warnings
+    warnings,
   };
 }
 
@@ -136,7 +127,7 @@ function translateZodError(error: any): string {
         return `数值不能小于 ${error.minimum}`;
       }
       return `值太小`;
-    
+
     case 'too_big':
       if (error.type === 'string') {
         return `字符串长度不能超过 ${error.maximum} 个字符`;
@@ -145,16 +136,16 @@ function translateZodError(error: any): string {
         return `数值不能大于 ${error.maximum}`;
       }
       return `值太大`;
-    
+
     case 'invalid_type':
       return `类型错误，期望 ${error.expected}，实际 ${error.received}`;
-    
+
     case 'invalid_string':
       return `字符串格式无效`;
-    
+
     case 'invalid_enum_value':
       return `无效的枚举值，允许的值: ${error.options.join(', ')}`;
-    
+
     default:
       return error.message || '验证失败';
   }
@@ -165,37 +156,45 @@ function translateZodError(error: any): string {
  */
 function classifyError(error: Error): ErrorType {
   const message = error.message.toLowerCase();
-  
+
   if (message.includes('timeout') || message.includes('超时')) {
     return ErrorType.TIMEOUT;
   }
-  
-  if (message.includes('network') || message.includes('网络') || 
-      message.includes('connection') || message.includes('连接')) {
+
+  if (
+    message.includes('network') ||
+    message.includes('网络') ||
+    message.includes('connection') ||
+    message.includes('连接')
+  ) {
     return ErrorType.NETWORK;
   }
-  
-  if (message.includes('not found') || message.includes('未找到') ||
-      message.includes('does not exist') || message.includes('不存在')) {
+
+  if (
+    message.includes('not found') ||
+    message.includes('未找到') ||
+    message.includes('does not exist') ||
+    message.includes('不存在')
+  ) {
     return ErrorType.NOT_FOUND;
   }
-  
-  if (message.includes('permission') || message.includes('权限') ||
-      message.includes('unauthorized') || message.includes('forbidden')) {
+
+  if (
+    message.includes('permission') ||
+    message.includes('权限') ||
+    message.includes('unauthorized') ||
+    message.includes('forbidden')
+  ) {
     return ErrorType.PERMISSION;
   }
-  
+
   return ErrorType.SYSTEM;
 }
 
 /**
  * 验证并处理输入参数
  */
-export function validateAndHandle<T>(
-  schema: any,
-  input: unknown,
-  context?: string
-): T | ErrorResponse {
+export function validateAndHandle<T>(schema: any, input: unknown, context?: string): T | ErrorResponse {
   try {
     return schema.parse(input);
   } catch (error) {

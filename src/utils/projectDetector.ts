@@ -3,10 +3,10 @@
  * 提供简单、可靠的项目上下文检测，遵循MCP最佳实践
  */
 
-import fs from "fs/promises";
-import path from "path";
-import os from "os";
-import { log } from "./logger.js";
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
+import { log } from './logger.js';
 
 /**
  * 项目上下文信息
@@ -40,8 +40,6 @@ export interface ProjectContext {
     timestamp: Date;
   };
 }
-
-
 
 /**
  * 项目检测配置
@@ -78,9 +76,7 @@ function sanitizeProjectId(name: string): string {
  */
 function normalizePath(inputPath: string): string {
   // 展开主目录
-  const expandedPath = inputPath.startsWith('~')
-    ? path.join(os.homedir(), inputPath.slice(1))
-    : inputPath;
+  const expandedPath = inputPath.startsWith('~') ? path.join(os.homedir(), inputPath.slice(1)) : inputPath;
 
   // 解析为绝对路径并标准化
   return path.normalize(path.resolve(expandedPath));
@@ -120,7 +116,9 @@ async function hasGitRepository(dirPath: string): Promise<boolean> {
  * @param dirPath 要检查的目录路径
  * @returns 包信息，如果未找到则返回null
  */
-async function readPackageJson(dirPath: string): Promise<{ name?: string; version?: string; description?: string } | null> {
+async function readPackageJson(
+  dirPath: string
+): Promise<{ name?: string; version?: string; description?: string } | null> {
   try {
     const packageJsonPath = path.join(dirPath, 'package.json');
     const content = await fs.readFile(packageJsonPath, 'utf-8');
@@ -128,7 +126,7 @@ async function readPackageJson(dirPath: string): Promise<{ name?: string; versio
     return {
       name: packageData.name,
       version: packageData.version,
-      description: packageData.description
+      description: packageData.description,
     };
   } catch {
     return null;
@@ -147,7 +145,7 @@ async function detectProjectType(dirPath: string) {
     validatePath(path.join(dirPath, 'node_modules')),
     validatePath(path.join(dirPath, 'pyproject.toml')),
     validatePath(path.join(dirPath, 'Cargo.toml')),
-    validatePath(path.join(dirPath, 'go.mod'))
+    validatePath(path.join(dirPath, 'go.mod')),
   ]);
 
   return {
@@ -156,7 +154,7 @@ async function detectProjectType(dirPath: string) {
     hasNodeModules: checks[2].status === 'fulfilled' ? checks[2].value : false,
     hasPyprojectToml: checks[3].status === 'fulfilled' ? checks[3].value : false,
     hasCargoToml: checks[4].status === 'fulfilled' ? checks[4].value : false,
-    hasGoMod: checks[5].status === 'fulfilled' ? checks[5].value : false
+    hasGoMod: checks[5].status === 'fulfilled' ? checks[5].value : false,
   };
 }
 
@@ -166,14 +164,7 @@ async function detectProjectType(dirPath: string) {
  * @returns 项目根路径，如果未找到则返回null
  */
 async function findProjectRoot(startPath: string): Promise<string | null> {
-  const projectIndicators = [
-    '.git',
-    'package.json',
-    'pyproject.toml',
-    'Cargo.toml',
-    'go.mod',
-    '.shrimp-config.json'
-  ];
+  const projectIndicators = ['.git', 'package.json', 'pyproject.toml', 'Cargo.toml', 'go.mod', '.shrimp-config.json'];
 
   let currentDir = normalizePath(startPath);
   const rootDir = path.parse(currentDir).root;
@@ -183,9 +174,9 @@ async function findProjectRoot(startPath: string): Promise<string | null> {
     for (const indicator of projectIndicators) {
       const indicatorPath = path.join(currentDir, indicator);
       if (await validatePath(indicatorPath)) {
-        log.debug("ProjectDetector", "找到项目指标", {
+        log.debug('ProjectDetector', '找到项目指标', {
           indicator,
-          projectRoot: currentDir
+          projectRoot: currentDir,
         });
         return currentDir;
       }
@@ -200,8 +191,6 @@ async function findProjectRoot(startPath: string): Promise<string | null> {
   return null;
 }
 
-
-
 /**
  * 获取项目上下文信息，使用MCP风格的简单可靠检测
  * @param config 检测配置
@@ -212,7 +201,7 @@ export async function getProjectContext(config: ProjectDetectorConfig = {}): Pro
     allowedPaths = [],
     projectPathEnv = 'SHRIMP_PROJECT_PATH',
     autoDetect = true,
-    fallbackDir = process.cwd()
+    fallbackDir = process.cwd(),
   } = config;
 
   let projectRoot: string | undefined;
@@ -225,7 +214,7 @@ export async function getProjectContext(config: ProjectDetectorConfig = {}): Pro
       if (await validatePath(normalizedPath)) {
         projectRoot = normalizedPath;
         detectionMethod = 'explicit';
-        log.info("ProjectDetector", "使用显式配置的路径", { projectRoot });
+        log.info('ProjectDetector', '使用显式配置的路径', { projectRoot });
         break;
       }
     }
@@ -239,14 +228,14 @@ export async function getProjectContext(config: ProjectDetectorConfig = {}): Pro
       if (await validatePath(normalizedEnvPath)) {
         projectRoot = normalizedEnvPath;
         detectionMethod = 'environment';
-        log.info("ProjectDetector", "使用环境变量路径", {
+        log.info('ProjectDetector', '使用环境变量路径', {
           envVar: projectPathEnv,
-          projectRoot
+          projectRoot,
         });
       } else {
-        log.warn("ProjectDetector", "环境变量路径不可访问", {
+        log.warn('ProjectDetector', '环境变量路径不可访问', {
           envVar: projectPathEnv,
-          envPath: normalizedEnvPath
+          envPath: normalizedEnvPath,
         });
       }
     }
@@ -263,22 +252,22 @@ export async function getProjectContext(config: ProjectDetectorConfig = {}): Pro
       /Programs.*Claude/i,
       /AppData.*Local.*Programs/i,
       /node_modules/i,
-      /\.vscode/i
+      /\.vscode/i,
     ];
 
-    const isInIdeDirectory = suspiciousPatterns.some(pattern => pattern.test(cwd));
+    const isInIdeDirectory = suspiciousPatterns.some((pattern) => pattern.test(cwd));
 
     if (isInIdeDirectory) {
-      log.warn("ProjectDetector", "检测到在IDE安装目录中运行，跳过自动检测", {
+      log.warn('ProjectDetector', '检测到在IDE安装目录中运行，跳过自动检测', {
         cwd,
-        reason: "可能是MCP环境，process.cwd()指向IDE安装目录"
+        reason: '可能是MCP环境，process.cwd()指向IDE安装目录',
       });
     } else {
       const detectedRoot = await findProjectRoot(cwd);
       if (detectedRoot) {
         projectRoot = detectedRoot;
         detectionMethod = 'cwd';
-        log.info("ProjectDetector", "自动检测到项目根目录", { projectRoot });
+        log.info('ProjectDetector', '自动检测到项目根目录', { projectRoot });
       }
     }
   }
@@ -287,7 +276,7 @@ export async function getProjectContext(config: ProjectDetectorConfig = {}): Pro
   if (!projectRoot) {
     projectRoot = normalizePath(fallbackDir);
     detectionMethod = 'fallback';
-    log.info("ProjectDetector", "使用回退目录", { projectRoot });
+    log.info('ProjectDetector', '使用回退目录', { projectRoot });
   }
 
   // 分析项目
@@ -307,8 +296,8 @@ export async function getProjectContext(config: ProjectDetectorConfig = {}): Pro
     metadata: {
       detectionMethod,
       configuredPaths: allowedPaths,
-      timestamp: new Date()
-    }
+      timestamp: new Date(),
+    },
   };
 }
 
@@ -328,7 +317,7 @@ export async function detectProjectRoot(workingDir?: string): Promise<string> {
   // 否则使用标准的项目上下文检测
   const config: ProjectDetectorConfig = {
     autoDetect: true,
-    fallbackDir: process.cwd()
+    fallbackDir: process.cwd(),
   };
 
   const projectContext = await getProjectContext(config);

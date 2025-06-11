@@ -16,9 +16,9 @@ import {
   ParallelTrack,
   HandoffPoint,
   CollaborationPattern,
-  WorkflowPhase
-} from "./types.js";
-import { RoleDefinitions } from "./roles/RoleDefinitions.js";
+  WorkflowPhase,
+} from './types.js';
+import { RoleDefinitions } from './roles/RoleDefinitions.js';
 
 export class TeamCollaborativeTaskGenerator {
   private options: TaskGenerationOptions;
@@ -32,7 +32,7 @@ export class TeamCollaborativeTaskGenerator {
       includeDependencies: true,
       workflowStyle: 'agile',
       sprintDuration: 2,
-      ...options
+      ...options,
     };
   }
 
@@ -47,20 +47,21 @@ export class TeamCollaborativeTaskGenerator {
     }
 
     const analysis = prdDocument.analysis;
-    
+
     // 1. 生成基于角色的专业化任务
     const roleBasedTasks = await this.generateRoleBasedTasks(prdDocument);
-    
+
     // 2. 生成跨角色协作任务
     const crossRoleTasks = await this.generateCrossRoleTasks(prdDocument);
-    
+
     // 3. 生成里程碑
     const milestones = await this.generateMilestones(prdDocument);
-    
+
     // 4. 生成工作流
     const workflow = await this.generateTaskWorkflow(roleBasedTasks, crossRoleTasks, milestones);
 
-    const totalTasks = Object.values(roleBasedTasks).reduce((sum, tasks) => sum + tasks.length, 0) + crossRoleTasks.length;
+    const totalTasks =
+      Object.values(roleBasedTasks).reduce((sum, tasks) => sum + tasks.length, 0) + crossRoleTasks.length;
 
     return {
       metadata: {
@@ -68,12 +69,12 @@ export class TeamCollaborativeTaskGenerator {
         generatedAt: new Date(),
         totalTasks,
         estimatedDuration: analysis.estimatedDuration,
-        involvedRoles: this.options.targetRoles
+        involvedRoles: this.options.targetRoles,
       },
       roleBasedTasks,
       crossRoleTasks,
       milestones,
-      workflow
+      workflow,
     };
   }
 
@@ -178,17 +179,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: ['需求分析', '用户研究', '优先级排序'],
       deliverables: ['需求分析报告', '优先级矩阵', '细化用户故事'],
-      acceptanceCriteria: [
-        '所有需求都有明确的优先级',
-        '用户故事符合INVEST原则',
-        '需求可追溯到业务目标'
-      ],
+      acceptanceCriteria: ['所有需求都有明确的优先级', '用户故事符合INVEST原则', '需求可追溯到业务目标'],
       dependencies: [],
       blockedBy: [],
       blocks: ['ui-001', 'ux-001', 'fe-001'],
       collaboratesWith: ['ui-designer', 'ux-designer', 'tech-lead'],
       phase: '需求分析阶段',
-      tags: ['需求', '分析', '优先级']
+      tags: ['需求', '分析', '优先级'],
     });
 
     // 用户验收测试任务
@@ -203,17 +200,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: ['测试计划', '验收标准', '用户场景'],
       deliverables: ['UAT测试计划', '验收标准文档', '测试场景清单'],
-      acceptanceCriteria: [
-        '覆盖所有核心功能',
-        '测试场景真实可执行',
-        '验收标准明确可衡量'
-      ],
+      acceptanceCriteria: ['覆盖所有核心功能', '测试场景真实可执行', '验收标准明确可衡量'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: ['qa-003'],
       collaboratesWith: ['qa-engineer'],
       phase: '测试准备阶段',
-      tags: ['测试', '验收', 'UAT']
+      tags: ['测试', '验收', 'UAT'],
     });
 
     return tasks;
@@ -236,17 +229,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['设计系统', 'Figma', '组件设计'],
       deliverables: ['设计系统文档', 'UI组件库', '设计规范'],
-      acceptanceCriteria: [
-        '设计系统完整且一致',
-        '组件可复用性强',
-        '符合品牌视觉规范'
-      ],
+      acceptanceCriteria: ['设计系统完整且一致', '组件可复用性强', '符合品牌视觉规范'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: ['ui-002', 'fe-002'],
       collaboratesWith: ['ux-designer', 'frontend-developer'],
       phase: '设计阶段',
-      tags: ['设计系统', 'UI', '组件']
+      tags: ['设计系统', 'UI', '组件'],
     });
 
     tasks.push({
@@ -260,17 +249,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['界面设计', '视觉设计', '交互设计'],
       deliverables: ['高保真设计稿', '设计标注', '切图资源'],
-      acceptanceCriteria: [
-        '所有界面设计完成',
-        '设计稿标注清晰',
-        '符合设计系统规范'
-      ],
+      acceptanceCriteria: ['所有界面设计完成', '设计稿标注清晰', '符合设计系统规范'],
       dependencies: ['ui-001', 'ux-002'],
       blockedBy: ['ui-001', 'ux-002'],
       blocks: ['fe-002'],
       collaboratesWith: ['ux-designer', 'frontend-developer'],
       phase: '设计阶段',
-      tags: ['界面设计', '视觉', '高保真']
+      tags: ['界面设计', '视觉', '高保真'],
     });
 
     return tasks;
@@ -293,17 +278,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: ['用户研究', '数据分析', '用户访谈'],
       deliverables: ['用户研究报告', '用户画像', '用户旅程图'],
-      acceptanceCriteria: [
-        '用户研究方法科学',
-        '数据分析结论可信',
-        '用户画像准确完整'
-      ],
+      acceptanceCriteria: ['用户研究方法科学', '数据分析结论可信', '用户画像准确完整'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: ['ux-002'],
       collaboratesWith: ['product-manager'],
       phase: '研究阶段',
-      tags: ['用户研究', '分析', '画像']
+      tags: ['用户研究', '分析', '画像'],
     });
 
     tasks.push({
@@ -317,17 +298,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['交互设计', '信息架构', '原型设计'],
       deliverables: ['交互流程图', '信息架构图', '低保真原型'],
-      acceptanceCriteria: [
-        '交互流程逻辑清晰',
-        '信息架构合理',
-        '原型可用性良好'
-      ],
+      acceptanceCriteria: ['交互流程逻辑清晰', '信息架构合理', '原型可用性良好'],
       dependencies: ['ux-001'],
       blockedBy: ['ux-001'],
       blocks: ['ui-002'],
       collaboratesWith: ['ui-designer', 'frontend-developer'],
       phase: '设计阶段',
-      tags: ['交互', '流程', '原型']
+      tags: ['交互', '流程', '原型'],
     });
 
     return tasks;
@@ -350,17 +327,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['前端架构', '技术选型', '工程化'],
       deliverables: ['前端架构文档', '技术选型报告', '项目脚手架'],
-      acceptanceCriteria: [
-        '架构设计合理可扩展',
-        '技术选型符合项目需求',
-        '开发环境配置完整'
-      ],
+      acceptanceCriteria: ['架构设计合理可扩展', '技术选型符合项目需求', '开发环境配置完整'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: ['fe-002'],
       collaboratesWith: ['tech-lead', 'backend-developer'],
       phase: '架构设计阶段',
-      tags: ['架构', '技术选型', '前端']
+      tags: ['架构', '技术选型', '前端'],
     });
 
     tasks.push({
@@ -374,17 +347,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['React/Vue', '组件开发', 'CSS'],
       deliverables: ['前端组件库', '页面实现', '单元测试'],
-      acceptanceCriteria: [
-        '组件功能完整正确',
-        '页面还原度高',
-        '代码质量良好'
-      ],
+      acceptanceCriteria: ['组件功能完整正确', '页面还原度高', '代码质量良好'],
       dependencies: ['fe-001', 'ui-002'],
       blockedBy: ['fe-001', 'ui-002'],
       blocks: ['qa-001'],
       collaboratesWith: ['ui-designer', 'backend-developer'],
       phase: '开发阶段',
-      tags: ['组件', '开发', '前端']
+      tags: ['组件', '开发', '前端'],
     });
 
     return tasks;
@@ -407,17 +376,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['数据库设计', 'SQL', '数据建模'],
       deliverables: ['数据库设计文档', 'ER图', '建表脚本'],
-      acceptanceCriteria: [
-        '数据模型设计合理',
-        '数据库性能优化',
-        '支持业务扩展'
-      ],
+      acceptanceCriteria: ['数据模型设计合理', '数据库性能优化', '支持业务扩展'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: ['be-002'],
       collaboratesWith: ['tech-lead', 'data-engineer'],
       phase: '设计阶段',
-      tags: ['数据库', '设计', '建模']
+      tags: ['数据库', '设计', '建模'],
     });
 
     tasks.push({
@@ -431,17 +396,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['API开发', '业务逻辑', '后端框架'],
       deliverables: ['API接口', '接口文档', '单元测试'],
-      acceptanceCriteria: [
-        'API功能完整正确',
-        '接口文档清晰',
-        '性能满足要求'
-      ],
+      acceptanceCriteria: ['API功能完整正确', '接口文档清晰', '性能满足要求'],
       dependencies: ['be-001'],
       blockedBy: ['be-001'],
       blocks: ['fe-003', 'qa-002'],
       collaboratesWith: ['frontend-developer', 'qa-engineer'],
       phase: '开发阶段',
-      tags: ['API', '开发', '后端']
+      tags: ['API', '开发', '后端'],
     });
 
     return tasks;
@@ -464,17 +425,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: ['测试计划', '测试策略', '风险评估'],
       deliverables: ['测试计划文档', '测试用例设计', '测试环境规划'],
-      acceptanceCriteria: [
-        '测试计划覆盖所有功能模块',
-        '测试用例设计完整',
-        '测试环境需求明确'
-      ],
+      acceptanceCriteria: ['测试计划覆盖所有功能模块', '测试用例设计完整', '测试环境需求明确'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: ['qa-002'],
       collaboratesWith: ['product-manager', 'frontend-developer', 'backend-developer'],
       phase: '测试准备阶段',
-      tags: ['测试', '计划', 'QA']
+      tags: ['测试', '计划', 'QA'],
     });
 
     tasks.push({
@@ -488,17 +445,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['自动化测试', '测试框架', 'CI/CD'],
       deliverables: ['自动化测试框架', '测试脚本', 'CI集成配置'],
-      acceptanceCriteria: [
-        '自动化测试框架可用',
-        '测试脚本覆盖核心功能',
-        'CI集成正常运行'
-      ],
+      acceptanceCriteria: ['自动化测试框架可用', '测试脚本覆盖核心功能', 'CI集成正常运行'],
       dependencies: ['qa-001', 'fe-002', 'be-002'],
       blockedBy: ['qa-001', 'fe-002', 'be-002'],
       blocks: [],
       collaboratesWith: ['devops-engineer', 'frontend-developer', 'backend-developer'],
       phase: '测试实施阶段',
-      tags: ['自动化', '测试', '框架']
+      tags: ['自动化', '测试', '框架'],
     });
 
     return tasks;
@@ -521,17 +474,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['CI/CD', 'Docker', 'Kubernetes', '自动化部署'],
       deliverables: ['CI/CD配置', '部署脚本', '监控配置'],
-      acceptanceCriteria: [
-        'CI/CD流水线正常运行',
-        '自动化部署成功',
-        '监控告警配置完成'
-      ],
+      acceptanceCriteria: ['CI/CD流水线正常运行', '自动化部署成功', '监控告警配置完成'],
       dependencies: ['be-001', 'fe-001'],
       blockedBy: ['be-001', 'fe-001'],
       blocks: ['devops-002'],
       collaboratesWith: ['backend-developer', 'frontend-developer', 'qa-engineer'],
       phase: '基础设施阶段',
-      tags: ['CI/CD', '部署', '自动化']
+      tags: ['CI/CD', '部署', '自动化'],
     });
 
     tasks.push({
@@ -545,17 +494,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['云平台', '安全配置', '负载均衡', '监控'],
       deliverables: ['生产环境', '安全配置', '监控系统'],
-      acceptanceCriteria: [
-        '生产环境稳定运行',
-        '安全配置符合标准',
-        '监控系统正常工作'
-      ],
+      acceptanceCriteria: ['生产环境稳定运行', '安全配置符合标准', '监控系统正常工作'],
       dependencies: ['devops-001'],
       blockedBy: ['devops-001'],
       blocks: [],
       collaboratesWith: ['security-engineer', 'backend-developer'],
       phase: '部署阶段',
-      tags: ['生产', '部署', '监控']
+      tags: ['生产', '部署', '监控'],
     });
 
     return tasks;
@@ -578,17 +523,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['系统架构', '技术选型', '设计模式', '性能优化'],
       deliverables: ['技术架构文档', '技术选型报告', '开发规范'],
-      acceptanceCriteria: [
-        '技术架构设计合理',
-        '技术选型符合需求',
-        '开发规范完整'
-      ],
+      acceptanceCriteria: ['技术架构设计合理', '技术选型符合需求', '开发规范完整'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: ['fe-001', 'be-001'],
       collaboratesWith: ['product-manager', 'frontend-developer', 'backend-developer'],
       phase: '架构设计阶段',
-      tags: ['架构', '技术选型', '规范']
+      tags: ['架构', '技术选型', '规范'],
     });
 
     tasks.push({
@@ -602,17 +543,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: ['代码评审', '质量标准', '团队管理', '技术指导'],
       deliverables: ['代码评审流程', '质量标准文档', '评审报告'],
-      acceptanceCriteria: [
-        '代码评审流程建立',
-        '质量标准明确',
-        '团队遵循规范'
-      ],
+      acceptanceCriteria: ['代码评审流程建立', '质量标准明确', '团队遵循规范'],
       dependencies: ['tl-001'],
       blockedBy: ['tl-001'],
       blocks: [],
       collaboratesWith: ['frontend-developer', 'backend-developer', 'qa-engineer'],
       phase: '开发阶段',
-      tags: ['代码评审', '质量', '管理']
+      tags: ['代码评审', '质量', '管理'],
     });
 
     return tasks;
@@ -635,17 +572,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: ['项目管理', '资源规划', '风险管理', '进度控制'],
       deliverables: ['项目计划', '资源分配表', '风险管理计划'],
-      acceptanceCriteria: [
-        '项目计划详细可执行',
-        '资源分配合理',
-        '风险识别充分'
-      ],
+      acceptanceCriteria: ['项目计划详细可执行', '资源分配合理', '风险识别充分'],
       dependencies: ['pm-001', 'tl-001'],
       blockedBy: ['pm-001', 'tl-001'],
       blocks: ['pjm-002'],
       collaboratesWith: ['product-manager', 'tech-lead'],
       phase: '项目启动阶段',
-      tags: ['项目计划', '资源', '风险']
+      tags: ['项目计划', '资源', '风险'],
     });
 
     tasks.push({
@@ -659,17 +592,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: ['进度跟踪', '团队协调', '沟通管理', '问题解决'],
       deliverables: ['进度报告', '团队协调记录', '问题解决方案'],
-      acceptanceCriteria: [
-        '进度跟踪及时准确',
-        '团队协调有效',
-        '问题及时解决'
-      ],
+      acceptanceCriteria: ['进度跟踪及时准确', '团队协调有效', '问题及时解决'],
       dependencies: ['pjm-001'],
       blockedBy: ['pjm-001'],
       blocks: [],
       collaboratesWith: ['product-manager', 'tech-lead', 'qa-engineer'],
       phase: '项目执行阶段',
-      tags: ['进度', '协调', '管理']
+      tags: ['进度', '协调', '管理'],
     });
 
     return tasks;
@@ -686,7 +615,7 @@ export class TeamCollaborativeTaskGenerator {
       ...task,
       id: `fs-${String(index + 1).padStart(3, '0')}`,
       role: 'fullstack-developer' as TeamRole,
-      collaboratesWith: ['ui-designer', 'ux-designer', 'qa-engineer', 'devops-engineer'] as TeamRole[]
+      collaboratesWith: ['ui-designer', 'ux-designer', 'qa-engineer', 'devops-engineer'] as TeamRole[],
     }));
 
     return fullstackTasks;
@@ -706,17 +635,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'high',
       skills: ['移动架构', 'React Native/Flutter', '性能优化'],
       deliverables: ['移动架构文档', '技术选型报告', '开发环境'],
-      acceptanceCriteria: [
-        '架构设计合理',
-        '技术选型适合',
-        '开发环境配置完成'
-      ],
+      acceptanceCriteria: ['架构设计合理', '技术选型适合', '开发环境配置完成'],
       dependencies: ['pm-001', 'tl-001'],
       blockedBy: ['pm-001', 'tl-001'],
       blocks: ['mob-002'],
       collaboratesWith: ['ui-designer', 'ux-designer', 'backend-developer'],
       phase: '架构设计阶段',
-      tags: ['移动', '架构', '技术选型']
+      tags: ['移动', '架构', '技术选型'],
     });
 
     return tasks;
@@ -738,16 +663,13 @@ export class TeamCollaborativeTaskGenerator {
       complexity: 'medium',
       skills: roleDefinition.skills.slice(0, 3),
       deliverables: ['需求分析报告', '工作计划'],
-      acceptanceCriteria: [
-        '需求理解准确',
-        '工作计划可执行'
-      ],
+      acceptanceCriteria: ['需求理解准确', '工作计划可执行'],
       dependencies: ['pm-001'],
       blockedBy: ['pm-001'],
       blocks: [],
       collaboratesWith: roleDefinition.collaboratesWith,
       phase: '需求分析阶段',
-      tags: [roleDefinition.name.zh, '需求', '分析']
+      tags: [roleDefinition.name.zh, '需求', '分析'],
     });
 
     return tasks;
@@ -769,7 +691,7 @@ export class TeamCollaborativeTaskGenerator {
       type: 'review',
       estimatedHours: 4,
       deliverables: ['设计评审报告', '修改建议清单'],
-      dependencies: ['ui-002', 'ux-002']
+      dependencies: ['ui-002', 'ux-002'],
     });
 
     // 技术方案评审
@@ -782,7 +704,7 @@ export class TeamCollaborativeTaskGenerator {
       type: 'review',
       estimatedHours: 6,
       deliverables: ['技术方案评审报告', '架构优化建议'],
-      dependencies: ['fe-001', 'be-001']
+      dependencies: ['fe-001', 'be-001'],
     });
 
     return crossRoleTasks;
@@ -801,7 +723,7 @@ export class TeamCollaborativeTaskGenerator {
       criteria: ['需求分析报告完成', '设计方案确定', '技术方案评审通过'],
       involvedRoles: ['product-manager', 'ui-designer', 'ux-designer', 'tech-lead'],
       dependencies: ['pm-001', 'ui-001', 'ux-001'],
-      deliverables: ['需求分析报告', '设计方案', '技术方案']
+      deliverables: ['需求分析报告', '设计方案', '技术方案'],
     });
 
     milestones.push({
@@ -811,7 +733,7 @@ export class TeamCollaborativeTaskGenerator {
       criteria: ['前端开发完成', '后端开发完成', '集成测试通过'],
       involvedRoles: ['frontend-developer', 'backend-developer', 'qa-engineer'],
       dependencies: ['fe-002', 'be-002'],
-      deliverables: ['前端应用', '后端服务', '集成测试报告']
+      deliverables: ['前端应用', '后端服务', '集成测试报告'],
     });
 
     return milestones;
@@ -841,7 +763,7 @@ export class TeamCollaborativeTaskGenerator {
       phases,
       criticalPath,
       parallelTracks,
-      handoffPoints
+      handoffPoints,
     };
   }
 
@@ -863,7 +785,7 @@ export class TeamCollaborativeTaskGenerator {
       involvedRoles: ['product-manager', 'ux-designer', 'tech-lead'],
       deliverables: ['需求分析报告', '用户研究报告', '技术可行性报告'],
       dependencies: [],
-      parallelizable: false
+      parallelizable: false,
     });
 
     // 设计阶段
@@ -875,7 +797,7 @@ export class TeamCollaborativeTaskGenerator {
       involvedRoles: ['ui-designer', 'ux-designer', 'tech-lead', 'backend-developer'],
       deliverables: ['设计系统', '交互原型', '技术架构文档', '数据库设计'],
       dependencies: ['phase-001'],
-      parallelizable: true
+      parallelizable: true,
     });
 
     // 开发阶段
@@ -887,7 +809,7 @@ export class TeamCollaborativeTaskGenerator {
       involvedRoles: ['frontend-developer', 'backend-developer', 'mobile-developer', 'fullstack-developer'],
       deliverables: ['前端应用', '后端服务', '移动应用', 'API接口'],
       dependencies: ['phase-002'],
-      parallelizable: true
+      parallelizable: true,
     });
 
     // 测试阶段
@@ -899,7 +821,7 @@ export class TeamCollaborativeTaskGenerator {
       involvedRoles: ['qa-engineer', 'product-manager', 'security-engineer'],
       deliverables: ['测试报告', '缺陷修复', '性能优化', '安全评估'],
       dependencies: ['phase-003'],
-      parallelizable: false
+      parallelizable: false,
     });
 
     // 部署阶段
@@ -911,7 +833,7 @@ export class TeamCollaborativeTaskGenerator {
       involvedRoles: ['devops-engineer', 'backend-developer', 'project-manager'],
       deliverables: ['生产环境', '监控系统', '部署文档'],
       dependencies: ['phase-004'],
-      parallelizable: false
+      parallelizable: false,
     });
 
     return phases;
@@ -925,11 +847,11 @@ export class TeamCollaborativeTaskGenerator {
     const allTasks = Object.values(roleBasedTasks).flat();
 
     // 简化的关键路径计算：找出依赖链最长的路径
-    const taskMap = new Map(allTasks.map(task => [task.id, task]));
+    const taskMap = new Map(allTasks.map((task) => [task.id, task]));
     const visited = new Set<string>();
 
     // 从没有依赖的任务开始
-    const startTasks = allTasks.filter(task => task.dependencies.length === 0);
+    const startTasks = allTasks.filter((task) => task.dependencies.length === 0);
 
     for (const startTask of startTasks) {
       const path = this.findLongestPath(startTask, taskMap, visited);
@@ -944,11 +866,7 @@ export class TeamCollaborativeTaskGenerator {
   /**
    * 找到最长路径（递归）
    */
-  private findLongestPath(
-    task: RoleTask,
-    taskMap: Map<string, RoleTask>,
-    visited: Set<string>
-  ): string[] {
+  private findLongestPath(task: RoleTask, taskMap: Map<string, RoleTask>, visited: Set<string>): string[] {
     if (visited.has(task.id)) {
       return [];
     }
@@ -957,9 +875,7 @@ export class TeamCollaborativeTaskGenerator {
     let longestPath = [task.id];
 
     // 找到所有被当前任务阻塞的任务
-    const blockedTasks = Array.from(taskMap.values()).filter(t =>
-      t.dependencies.includes(task.id)
-    );
+    const blockedTasks = Array.from(taskMap.values()).filter((t) => t.dependencies.includes(task.id));
 
     for (const blockedTask of blockedTasks) {
       const path = this.findLongestPath(blockedTask, taskMap, visited);
@@ -984,7 +900,7 @@ export class TeamCollaborativeTaskGenerator {
       name: '设计并行轨道',
       tasks: ['ui-001', 'ui-002', 'ux-001', 'ux-002'],
       roles: ['ui-designer', 'ux-designer'],
-      canRunInParallel: true
+      canRunInParallel: true,
     });
 
     // 开发阶段并行轨道
@@ -993,7 +909,7 @@ export class TeamCollaborativeTaskGenerator {
       name: '开发并行轨道',
       tasks: ['fe-002', 'be-002', 'mob-001'],
       roles: ['frontend-developer', 'backend-developer', 'mobile-developer'],
-      canRunInParallel: true
+      canRunInParallel: true,
     });
 
     // 基础设施并行轨道
@@ -1002,7 +918,7 @@ export class TeamCollaborativeTaskGenerator {
       name: '基础设施并行轨道',
       tasks: ['devops-001', 'devops-002'],
       roles: ['devops-engineer'],
-      canRunInParallel: false
+      canRunInParallel: false,
     });
 
     return parallelTracks;
@@ -1021,7 +937,7 @@ export class TeamCollaborativeTaskGenerator {
       to: 'ui-designer',
       deliverable: '需求分析报告和用户故事',
       criteria: ['需求明确完整', '用户故事符合INVEST原则', '验收标准清晰'],
-      estimatedTime: '1天'
+      estimatedTime: '1天',
     });
 
     handoffPoints.push({
@@ -1030,7 +946,7 @@ export class TeamCollaborativeTaskGenerator {
       to: 'ux-designer',
       deliverable: '用户研究报告和交互需求',
       criteria: ['用户画像准确', '交互需求明确', '用户旅程完整'],
-      estimatedTime: '1天'
+      estimatedTime: '1天',
     });
 
     // 设计到开发的交接
@@ -1040,7 +956,7 @@ export class TeamCollaborativeTaskGenerator {
       to: 'frontend-developer',
       deliverable: '设计稿和设计系统',
       criteria: ['设计稿完整', '设计系统规范', '切图资源齐全'],
-      estimatedTime: '2天'
+      estimatedTime: '2天',
     });
 
     handoffPoints.push({
@@ -1049,7 +965,7 @@ export class TeamCollaborativeTaskGenerator {
       to: 'frontend-developer',
       deliverable: '交互原型和流程图',
       criteria: ['交互逻辑清晰', '原型可用', '流程图准确'],
-      estimatedTime: '1天'
+      estimatedTime: '1天',
     });
 
     // 后端到前端的交接
@@ -1059,7 +975,7 @@ export class TeamCollaborativeTaskGenerator {
       to: 'frontend-developer',
       deliverable: 'API接口和文档',
       criteria: ['API功能完整', '接口文档清晰', '测试环境可用'],
-      estimatedTime: '1天'
+      estimatedTime: '1天',
     });
 
     // 开发到测试的交接
@@ -1069,7 +985,7 @@ export class TeamCollaborativeTaskGenerator {
       to: 'qa-engineer',
       deliverable: '前端应用和部署包',
       criteria: ['功能开发完成', '自测通过', '部署包可用'],
-      estimatedTime: '1天'
+      estimatedTime: '1天',
     });
 
     handoffPoints.push({
@@ -1078,7 +994,7 @@ export class TeamCollaborativeTaskGenerator {
       to: 'qa-engineer',
       deliverable: '后端服务和API',
       criteria: ['API开发完成', '单元测试通过', '服务稳定运行'],
-      estimatedTime: '1天'
+      estimatedTime: '1天',
     });
 
     return handoffPoints;

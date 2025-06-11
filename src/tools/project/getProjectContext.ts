@@ -3,10 +3,10 @@
  * 用于让AI了解当前工作的项目环境和配置
  */
 
-import { z } from "zod";
-import { getProjectContext as getProjectContextUtil } from "../../utils/projectDetector.js";
-import { getPathSummary } from "../../utils/pathManager.js";
-import fs from "fs/promises";
+import { z } from 'zod';
+import { getProjectContext as getProjectContextUtil } from '../../utils/projectDetector.js';
+import { getPathSummary } from '../../utils/pathManager.js';
+import fs from 'fs/promises';
 
 /**
  * 检测MCP客户端类型
@@ -26,9 +26,7 @@ function detectMcpClientType(): string {
   ];
 
   for (const indicator of indicators) {
-    if (indicator.pattern.test(processTitle) ||
-        indicator.pattern.test(execPath) ||
-        indicator.pattern.test(argv0)) {
+    if (indicator.pattern.test(processTitle) || indicator.pattern.test(execPath) || indicator.pattern.test(argv0)) {
       return indicator.client;
     }
   }
@@ -43,15 +41,15 @@ function generateAiSuggestions(context: any): string[] {
   const suggestions: string[] = [];
 
   if (context.debug?.isMcpEnvironment) {
-    suggestions.push("🔧 检测到MCP环境问题，建议使用 set_project_working_directory 工具手动设置正确的项目目录");
+    suggestions.push('🔧 检测到MCP环境问题，建议使用 set_project_working_directory 工具手动设置正确的项目目录');
   }
 
   if (!context.project.detected) {
-    suggestions.push("📁 未检测到项目，建议检查当前目录是否包含项目文件，或手动指定项目目录");
+    suggestions.push('📁 未检测到项目，建议检查当前目录是否包含项目文件，或手动指定项目目录');
   }
 
   if (context.debug?.detectionMethod === 'process.cwd') {
-    suggestions.push("⚠️ 使用了process.cwd()检测，在MCP环境下可能不准确，建议设置环境变量或使用配置文件");
+    suggestions.push('⚠️ 使用了process.cwd()检测，在MCP环境下可能不准确，建议设置环境变量或使用配置文件');
   }
 
   const currentDir = process.cwd();
@@ -62,12 +60,12 @@ function generateAiSuggestions(context: any): string[] {
     /AppData.*Local.*Programs/i,
   ];
 
-  if (suspiciousPatterns.some(pattern => pattern.test(currentDir))) {
-    suggestions.push("🚨 当前目录疑似程序安装目录，强烈建议使用 set_project_working_directory 设置正确的项目目录");
+  if (suspiciousPatterns.some((pattern) => pattern.test(currentDir))) {
+    suggestions.push('🚨 当前目录疑似程序安装目录，强烈建议使用 set_project_working_directory 设置正确的项目目录');
   }
 
   if (suggestions.length === 0) {
-    suggestions.push("✅ 项目检测正常，可以正常使用所有功能");
+    suggestions.push('✅ 项目检测正常，可以正常使用所有功能');
   }
 
   return suggestions;
@@ -77,10 +75,10 @@ function generateAiSuggestions(context: any): string[] {
  * 获取项目上下文的输入schema
  */
 export const getProjectContextSchema = z.object({
-  includeEnvVars: z.boolean().optional().default(false).describe("是否包含环境变量信息"),
-  includeDataDir: z.boolean().optional().default(true).describe("是否包含数据目录信息"),
-  includeAiSuggestions: z.boolean().optional().default(true).describe("是否包含AI使用建议"),
-  includeMcpInfo: z.boolean().optional().default(true).describe("是否包含MCP环境信息"),
+  includeEnvVars: z.boolean().optional().default(false).describe('是否包含环境变量信息'),
+  includeDataDir: z.boolean().optional().default(true).describe('是否包含数据目录信息'),
+  includeAiSuggestions: z.boolean().optional().default(true).describe('是否包含AI使用建议'),
+  includeMcpInfo: z.boolean().optional().default(true).describe('是否包含MCP环境信息'),
 });
 
 export type GetProjectContextInput = z.infer<typeof getProjectContextSchema>;
@@ -125,7 +123,7 @@ export async function getProjectContext(input: GetProjectContextInput) {
       autoDetection: {
         enabled: process.env.PROJECT_AUTO_DETECT === 'true',
         method: projectContext.metadata.detectionMethod,
-        timestamp: projectContext.metadata.timestamp
+        timestamp: projectContext.metadata.timestamp,
       },
     };
 
@@ -166,13 +164,8 @@ export async function getProjectContext(input: GetProjectContextInput) {
       context.mcpEnvironment = {
         clientType: detectMcpClientType(),
         transportType: process.env.MCP_TRANSPORT_TYPE || 'stdio',
-        serverVersion: "1.0.19",
-        detectionCapabilities: [
-          'environment-variables',
-          'config-files',
-          'heuristic-detection',
-          'manual-override'
-        ]
+        serverVersion: '1.0.19',
+        detectionCapabilities: ['environment-variables', 'config-files', 'heuristic-detection', 'manual-override'],
       };
     }
 
@@ -183,7 +176,7 @@ export async function getProjectContext(input: GetProjectContextInput) {
         'set_project_working_directory',
         'diagnose_mcp_environment',
         'analyze_working_directory',
-        'get_project_context'
+        'get_project_context',
       ];
     }
 
@@ -193,7 +186,7 @@ export async function getProjectContext(input: GetProjectContextInput) {
     return {
       content: [
         {
-          type: "text" as const,
+          type: 'text' as const,
           text: `# 🎯 当前项目上下文信息
 
 ${summary}
@@ -210,9 +203,10 @@ ${JSON.stringify(context, null, 2)}
 - **数据隔离**: ${context.autoDetection.enabled ? '✅ 启用' : '❌ 禁用'}
 - **任务存储**: \`${context.dataDirectory?.project || pathSummary.baseDataDir}\`
 
-${context.project.detected ? 
-  `当前工作在项目 **${context.project.info.rawName}** (ID: \`${context.project.info.id}\`)，任务将存储在独立的项目目录中。` :
-  '⚠️ 未检测到项目信息，任务将存储在默认目录中。'
+${
+  context.project.detected
+    ? `当前工作在项目 **${context.project.info.rawName}** (ID: \`${context.project.info.id}\`)，任务将存储在独立的项目目录中。`
+    : '⚠️ 未检测到项目信息，任务将存储在默认目录中。'
 }`,
         },
       ],
@@ -222,7 +216,7 @@ ${context.project.detected ?
     return {
       content: [
         {
-          type: "text" as const,
+          type: 'text' as const,
           text: `❌ 获取项目上下文失败: ${errorMsg}`,
         },
       ],

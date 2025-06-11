@@ -2,14 +2,14 @@
  * 获取当前 AI 状态工具
  */
 
-import { z } from "zod";
-import { AIManager } from "../../ai/manager.js";
-import { log } from "../../utils/logger.js";
+import { z } from 'zod';
+import { AIManager } from '../../ai/manager.js';
+import { log } from '../../utils/logger.js';
 
 // 输入参数 Schema
 export const getCurrentAiStatusSchema = z.object({
-  includeHistory: z.boolean().optional().describe("是否包含切换历史（可选，默认为 false）"),
-  includeStatistics: z.boolean().optional().describe("是否包含使用统计（可选，默认为 false）")
+  includeHistory: z.boolean().optional().describe('是否包含切换历史（可选，默认为 false）'),
+  includeStatistics: z.boolean().optional().describe('是否包含使用统计（可选，默认为 false）'),
 });
 
 /**
@@ -19,28 +19,28 @@ export async function getCurrentAiStatusTool(args: z.infer<typeof getCurrentAiSt
   try {
     // 注意：这是一个简化的实现，实际的 AIManager 接口与预期不同
 
-    log.info("GetCurrentAiStatus", "获取当前 AI 状态", {
+    log.info('GetCurrentAiStatus', '获取当前 AI 状态', {
       includeHistory: args.includeHistory || false,
-      includeStatistics: args.includeStatistics || false
+      includeStatistics: args.includeStatistics || false,
     });
 
     // 模拟当前提供商和所有提供商
     const mockCurrentProvider = {
-      providerId: "current-ai",
-      providerName: "Current AI",
-      model: "current-model",
-      apiEndpoint: "internal://current-ai",
-      capabilities: ["text-generation", "code-analysis"],
+      providerId: 'current-ai',
+      providerName: 'Current AI',
+      model: 'current-model',
+      apiEndpoint: 'internal://current-ai',
+      capabilities: ['text-generation', 'code-analysis'],
       maxTokens: 100000,
       costPerToken: 0,
-      enabled: true
+      enabled: true,
     };
 
     const mockAllProviders = [mockCurrentProvider];
 
     const result: any = {
       success: true,
-      message: "获取 AI 状态成功",
+      message: '获取 AI 状态成功',
       data: {
         // 当前使用的提供商和模型
         current: mockCurrentProvider,
@@ -55,29 +55,31 @@ export async function getCurrentAiStatusTool(args: z.infer<typeof getCurrentAiSt
             name: p.providerName,
             enabled: p.enabled,
             models: { main: p.model, research: p.model, fallback: p.model },
-            capabilities: p.capabilities.length
-          }))
+            capabilities: p.capabilities.length,
+          })),
         },
 
         // 系统状态
         system: {
           hasCurrentProvider: true,
           isReady: true,
-          lastUpdated: new Date().toISOString()
-        }
-      }
+          lastUpdated: new Date().toISOString(),
+        },
+      },
     };
 
     // 如果请求包含历史信息
     if (args.includeHistory) {
       result.data.history = {
         total: 1,
-        recent: [{
-          providerId: "current-ai",
-          modelType: "main",
-          timestamp: new Date().toISOString(),
-          reason: "系统初始化"
-        }]
+        recent: [
+          {
+            providerId: 'current-ai',
+            modelType: 'main',
+            timestamp: new Date().toISOString(),
+            reason: '系统初始化',
+          },
+        ],
       };
     }
 
@@ -85,36 +87,36 @@ export async function getCurrentAiStatusTool(args: z.infer<typeof getCurrentAiSt
     if (args.includeStatistics) {
       result.data.statistics = {
         totalSwitches: 1,
-        mostUsedProvider: "current-ai",
+        mostUsedProvider: 'current-ai',
         averageSwitchInterval: 0,
         providerUsage: {
-          "current-ai": 100
-        }
+          'current-ai': 100,
+        },
       };
     }
 
-    log.info("GetCurrentAiStatus", "AI 状态获取完成", {
+    log.info('GetCurrentAiStatus', 'AI 状态获取完成', {
       hasCurrentProvider: true,
       totalProviders: mockAllProviders.length,
-      enabledProviders: mockAllProviders.filter((p: any) => p.enabled).length
+      enabledProviders: mockAllProviders.filter((p: any) => p.enabled).length,
     });
 
     return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    log.error("GetCurrentAiStatus", "获取 AI 状态失败", error as Error);
+    log.error('GetCurrentAiStatus', '获取 AI 状态失败', error as Error);
 
     return {
       success: false,
       message: `获取 AI 状态失败: ${errorMessage}`,
-      error: errorMessage
+      error: errorMessage,
     };
   }
 }
 
 // 工具定义
 export const getCurrentAiStatusToolDefinition = {
-  name: "get_current_ai_status",
+  name: 'get_current_ai_status',
   description: `获取当前 AI 状态
 
 这个工具允许你查看当前 AI 系统的状态和配置信息。
@@ -142,5 +144,5 @@ export const getCurrentAiStatusToolDefinition = {
 
 这个工具对于系统管理和故障排查非常有用。`,
   inputSchema: getCurrentAiStatusSchema,
-  handler: getCurrentAiStatusTool
+  handler: getCurrentAiStatusTool,
 };

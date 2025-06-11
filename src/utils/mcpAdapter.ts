@@ -10,7 +10,7 @@ import { type ApiResponse } from './errorHandler.js';
  */
 export interface McpToolResponse {
   content: Array<{
-    type: "text";
+    type: 'text';
     text: string;
   }>;
 }
@@ -24,16 +24,16 @@ export function adaptToMcpResponse(response: ApiResponse): McpToolResponse {
     const result = {
       success: true,
       data: response.data,
-      warnings: response.warnings
+      warnings: response.warnings,
     };
 
     return {
       content: [
         {
-          type: "text",
-          text: JSON.stringify(result, null, 2)
-        }
-      ]
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
     };
   } else {
     // 错误响应
@@ -41,16 +41,16 @@ export function adaptToMcpResponse(response: ApiResponse): McpToolResponse {
       success: false,
       error: response.error,
       errorCode: response.errorCode,
-      details: response.details
+      details: response.details,
     };
 
     return {
       content: [
         {
-          type: "text", 
-          text: JSON.stringify(result, null, 2)
-        }
-      ]
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
     };
   }
 }
@@ -62,12 +62,16 @@ export function createMcpErrorResponse(error: string): McpToolResponse {
   return {
     content: [
       {
-        type: "text",
-        text: JSON.stringify({
-          success: false,
-          error
-        }, null, 2)
-      }
-    ]
+        type: 'text',
+        text: JSON.stringify(
+          {
+            success: false,
+            error,
+          },
+          null,
+          2
+        ),
+      },
+    ],
   };
 }

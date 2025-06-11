@@ -3,73 +3,84 @@
  * 支持团队成员之间的知识分享、经验传递和协作模式学习
  */
 
-import { z } from "zod";
-import { TeamMemoryManager, TeamMember } from "../../memory/TeamMemoryManager.js";
-import { getProjectContext } from "../../utils/projectDetector.js";
-import { getProjectDataDir } from "../../utils/pathManager.js";
-import { TaskKnowledge } from "../../types/taskMemory.js";
-import { TeamRole } from "../../prd/types.js";
+import { z } from 'zod';
+import { TeamMemoryManager, TeamMember } from '../../memory/TeamMemoryManager.js';
+import { getProjectContext } from '../../utils/projectDetector.js';
+import { getProjectDataDir } from '../../utils/pathManager.js';
+import { TaskKnowledge } from '../../types/taskMemory.js';
+import { TeamRole } from '../../prd/types.js';
 
 // 输入参数验证
 const ShareTeamKnowledgeSchema = z.object({
-  action: z.enum([
-    "share-knowledge", 
-    "get-team-knowledge", 
-    "rate-knowledge",
-    "record-collaboration",
-    "get-collaboration-patterns",
-    "record-learning",
-    "get-team-learning"
-  ]).describe("操作类型"),
+  action: z
+    .enum([
+      'share-knowledge',
+      'get-team-knowledge',
+      'rate-knowledge',
+      'record-collaboration',
+      'get-collaboration-patterns',
+      'record-learning',
+      'get-team-learning',
+    ])
+    .describe('操作类型'),
 
   // 知识分享相关
-  knowledgeType: z.enum(["pattern", "solution", "pitfall", "best-practice", "lesson-learned"]).optional().describe("知识类型"),
-  title: z.string().optional().describe("知识标题"),
-  content: z.string().optional().describe("知识内容"),
-  domain: z.string().optional().describe("知识领域"),
-  technologies: z.array(z.string()).optional().describe("相关技术"),
-  visibility: z.enum(["public", "team", "role-specific"]).optional().describe("可见性"),
-  applicableRoles: z.array(z.string()).optional().describe("适用角色"),
+  knowledgeType: z
+    .enum(['pattern', 'solution', 'pitfall', 'best-practice', 'lesson-learned'])
+    .optional()
+    .describe('知识类型'),
+  title: z.string().optional().describe('知识标题'),
+  content: z.string().optional().describe('知识内容'),
+  domain: z.string().optional().describe('知识领域'),
+  technologies: z.array(z.string()).optional().describe('相关技术'),
+  visibility: z.enum(['public', 'team', 'role-specific']).optional().describe('可见性'),
+  applicableRoles: z.array(z.string()).optional().describe('适用角色'),
 
   // 团队成员信息
-  contributorName: z.string().optional().describe("贡献者姓名"),
-  contributorRole: z.string().optional().describe("贡献者角色"),
-  contributorEmail: z.string().optional().describe("贡献者邮箱"),
-  contributorExpertise: z.array(z.string()).optional().describe("贡献者专长"),
+  contributorName: z.string().optional().describe('贡献者姓名'),
+  contributorRole: z.string().optional().describe('贡献者角色'),
+  contributorEmail: z.string().optional().describe('贡献者邮箱'),
+  contributorExpertise: z.array(z.string()).optional().describe('贡献者专长'),
 
   // 查询相关
-  requesterRole: z.string().optional().describe("请求者角色"),
-  queryContext: z.object({
-    technologies: z.array(z.string()).optional(),
-    projectType: z.string().optional(),
-    taskType: z.string().optional()
-  }).optional().describe("查询上下文"),
+  requesterRole: z.string().optional().describe('请求者角色'),
+  queryContext: z
+    .object({
+      technologies: z.array(z.string()).optional(),
+      projectType: z.string().optional(),
+      taskType: z.string().optional(),
+    })
+    .optional()
+    .describe('查询上下文'),
 
   // 评分相关
-  knowledgeId: z.string().optional().describe("知识ID"),
-  rating: z.number().min(1).max(5).optional().describe("评分 (1-5)"),
-  ratingComment: z.string().optional().describe("评分评论"),
+  knowledgeId: z.string().optional().describe('知识ID'),
+  rating: z.number().min(1).max(5).optional().describe('评分 (1-5)'),
+  ratingComment: z.string().optional().describe('评分评论'),
 
   // 协作模式相关
-  collaborationName: z.string().optional().describe("协作模式名称"),
-  collaborationDescription: z.string().optional().describe("协作模式描述"),
-  involvedRoles: z.array(z.string()).optional().describe("涉及角色"),
-  collaborationSuccess: z.boolean().optional().describe("协作是否成功"),
+  collaborationName: z.string().optional().describe('协作模式名称'),
+  collaborationDescription: z.string().optional().describe('协作模式描述'),
+  involvedRoles: z.array(z.string()).optional().describe('涉及角色'),
+  collaborationSuccess: z.boolean().optional().describe('协作是否成功'),
 
   // 学习记录相关
-  learningType: z.enum(["success", "failure", "improvement", "pattern"]).optional().describe("学习类型"),
-  learningTitle: z.string().optional().describe("学习标题"),
-  learningDescription: z.string().optional().describe("学习描述"),
-  lessons: z.array(z.string()).optional().describe("经验教训"),
-  recommendations: z.array(z.string()).optional().describe("建议"),
+  learningType: z.enum(['success', 'failure', 'improvement', 'pattern']).optional().describe('学习类型'),
+  learningTitle: z.string().optional().describe('学习标题'),
+  learningDescription: z.string().optional().describe('学习描述'),
+  lessons: z.array(z.string()).optional().describe('经验教训'),
+  recommendations: z.array(z.string()).optional().describe('建议'),
 
   // 过滤器
-  filters: z.object({
-    learningType: z.string().optional(),
-    roles: z.array(z.string()).optional(),
-    technologies: z.array(z.string()).optional(),
-    verified: z.boolean().optional()
-  }).optional().describe("过滤条件")
+  filters: z
+    .object({
+      learningType: z.string().optional(),
+      roles: z.array(z.string()).optional(),
+      technologies: z.array(z.string()).optional(),
+      verified: z.boolean().optional(),
+    })
+    .optional()
+    .describe('过滤条件'),
 });
 
 type ShareTeamKnowledgeInput = z.infer<typeof ShareTeamKnowledgeSchema>;
@@ -96,31 +107,31 @@ export async function shareTeamKnowledge(args: ShareTeamKnowledgeInput) {
     let result;
 
     switch (action) {
-      case "share-knowledge":
+      case 'share-knowledge':
         result = await handleShareKnowledge(teamMemoryManager, validatedArgs);
         break;
 
-      case "get-team-knowledge":
+      case 'get-team-knowledge':
         result = await handleGetTeamKnowledge(teamMemoryManager, validatedArgs);
         break;
 
-      case "rate-knowledge":
+      case 'rate-knowledge':
         result = await handleRateKnowledge(teamMemoryManager, validatedArgs);
         break;
 
-      case "record-collaboration":
+      case 'record-collaboration':
         result = await handleRecordCollaboration(teamMemoryManager, validatedArgs);
         break;
 
-      case "get-collaboration-patterns":
+      case 'get-collaboration-patterns':
         result = await handleGetCollaborationPatterns(teamMemoryManager, validatedArgs);
         break;
 
-      case "record-learning":
+      case 'record-learning':
         result = await handleRecordLearning(teamMemoryManager, validatedArgs, projectContext);
         break;
 
-      case "get-team-learning":
+      case 'get-team-learning':
         result = await handleGetTeamLearning(teamMemoryManager, validatedArgs);
         break;
 
@@ -135,23 +146,19 @@ export async function shareTeamKnowledge(args: ShareTeamKnowledgeInput) {
       action,
       data: result,
       timestamp: new Date().toISOString(),
-      projectName: projectContext.projectName
+      projectName: projectContext.projectName,
     };
-
   } catch (error) {
-    console.error("❌ 团队知识分享失败:", error);
+    console.error('❌ 团队知识分享失败:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
 
 // 处理知识分享
-async function handleShareKnowledge(
-  teamMemoryManager: TeamMemoryManager,
-  args: ShareTeamKnowledgeInput
-) {
+async function handleShareKnowledge(teamMemoryManager: TeamMemoryManager, args: ShareTeamKnowledgeInput) {
   const {
     knowledgeType,
     title,
@@ -163,11 +170,11 @@ async function handleShareKnowledge(
     contributorName,
     contributorRole,
     contributorEmail,
-    contributorExpertise
+    contributorExpertise,
   } = args;
 
   if (!knowledgeType || !title || !content || !contributorName || !contributorRole) {
-    throw new Error("分享知识需要提供：知识类型、标题、内容、贡献者姓名和角色");
+    throw new Error('分享知识需要提供：知识类型、标题、内容、贡献者姓名和角色');
   }
 
   // 创建团队成员信息
@@ -178,7 +185,7 @@ async function handleShareKnowledge(
     email: contributorEmail,
     expertise: contributorExpertise || [],
     joinedAt: new Date(),
-    contributionScore: 0
+    contributionScore: 0,
   };
 
   // 创建知识对象
@@ -192,30 +199,30 @@ async function handleShareKnowledge(
       technology: technologies || [],
       scenario: 'team-sharing',
       constraints: [],
-      assumptions: []
+      assumptions: [],
     },
     applicability: {
       taskTypes: [],
       projectTypes: [],
       conditions: [],
-      exclusions: []
+      exclusions: [],
     },
     confidence: 0.8, // 团队分享的知识默认置信度
     source: {
       type: 'user-input',
       timestamp: new Date(),
       reliability: 'high',
-      verificationStatus: 'unverified'
+      verificationStatus: 'unverified',
     },
     tags: technologies || [],
-    relatedKnowledge: []
+    relatedKnowledge: [],
   };
 
   const knowledgeId = await teamMemoryManager.shareKnowledge(
     knowledge,
     contributor,
     visibility || 'team',
-    applicableRoles?.map(role => role as TeamRole)
+    applicableRoles?.map((role) => role as TeamRole)
   );
 
   console.log(`📚 知识已分享: "${title}" (ID: ${knowledgeId})`);
@@ -225,31 +232,25 @@ async function handleShareKnowledge(
     title,
     contributor: contributorName,
     visibility,
-    message: "知识已成功分享到团队"
+    message: '知识已成功分享到团队',
   };
 }
 
 // 处理获取团队知识
-async function handleGetTeamKnowledge(
-  teamMemoryManager: TeamMemoryManager,
-  args: ShareTeamKnowledgeInput
-) {
+async function handleGetTeamKnowledge(teamMemoryManager: TeamMemoryManager, args: ShareTeamKnowledgeInput) {
   const { requesterRole, queryContext } = args;
 
   if (!requesterRole) {
-    throw new Error("获取团队知识需要提供请求者角色");
+    throw new Error('获取团队知识需要提供请求者角色');
   }
 
-  const knowledgeEntries = await teamMemoryManager.getTeamKnowledge(
-    requesterRole as TeamRole,
-    queryContext
-  );
+  const knowledgeEntries = await teamMemoryManager.getTeamKnowledge(requesterRole as TeamRole, queryContext);
 
   console.log(`🔍 找到 ${knowledgeEntries.length} 个相关知识条目`);
 
   return {
     knowledgeCount: knowledgeEntries.length,
-    knowledge: knowledgeEntries.slice(0, 10).map(entry => ({
+    knowledge: knowledgeEntries.slice(0, 10).map((entry) => ({
       id: entry.id,
       title: entry.knowledge.title,
       type: entry.knowledge.type,
@@ -257,33 +258,24 @@ async function handleGetTeamKnowledge(
       contributorRole: entry.contributor.role,
       sharedAt: entry.sharedAt,
       usageCount: entry.usageCount,
-      averageRating: entry.ratings.length > 0 
-        ? entry.ratings.reduce((sum, r) => sum + r.rating, 0) / entry.ratings.length 
-        : null,
+      averageRating:
+        entry.ratings.length > 0 ? entry.ratings.reduce((sum, r) => sum + r.rating, 0) / entry.ratings.length : null,
       tags: entry.tags,
-      visibility: entry.visibility
+      visibility: entry.visibility,
     })),
-    summary: `为角色 "${requesterRole}" 找到 ${knowledgeEntries.length} 个相关知识条目`
+    summary: `为角色 "${requesterRole}" 找到 ${knowledgeEntries.length} 个相关知识条目`,
   };
 }
 
 // 处理知识评分
-async function handleRateKnowledge(
-  teamMemoryManager: TeamMemoryManager,
-  args: ShareTeamKnowledgeInput
-) {
+async function handleRateKnowledge(teamMemoryManager: TeamMemoryManager, args: ShareTeamKnowledgeInput) {
   const { knowledgeId, rating, ratingComment, contributorName } = args;
 
   if (!knowledgeId || !rating || !contributorName) {
-    throw new Error("评分知识需要提供：知识ID、评分和评分者姓名");
+    throw new Error('评分知识需要提供：知识ID、评分和评分者姓名');
   }
 
-  await teamMemoryManager.rateKnowledge(
-    knowledgeId,
-    contributorName,
-    rating,
-    ratingComment
-  );
+  await teamMemoryManager.rateKnowledge(knowledgeId, contributorName, rating, ratingComment);
 
   console.log(`⭐ 知识评分完成: ${rating}/5`);
 
@@ -292,35 +284,27 @@ async function handleRateKnowledge(
     rating,
     rater: contributorName,
     comment: ratingComment,
-    message: "知识评分已记录"
+    message: '知识评分已记录',
   };
 }
 
 // 处理协作模式记录
-async function handleRecordCollaboration(
-  teamMemoryManager: TeamMemoryManager,
-  args: ShareTeamKnowledgeInput
-) {
-  const {
-    collaborationName,
-    collaborationDescription,
-    involvedRoles,
-    collaborationSuccess
-  } = args;
+async function handleRecordCollaboration(teamMemoryManager: TeamMemoryManager, args: ShareTeamKnowledgeInput) {
+  const { collaborationName, collaborationDescription, involvedRoles, collaborationSuccess } = args;
 
   if (!collaborationName || !collaborationDescription || !involvedRoles || collaborationSuccess === undefined) {
-    throw new Error("记录协作模式需要提供：名称、描述、涉及角色和成功状态");
+    throw new Error('记录协作模式需要提供：名称、描述、涉及角色和成功状态');
   }
 
   // 简化的协作模式对象
   const pattern = {
     type: 'team-collaboration' as const,
     description: collaborationDescription,
-    participants: involvedRoles.map(role => ({ role: role as TeamRole, responsibility: '' })),
+    participants: involvedRoles.map((role) => ({ role: role as TeamRole, responsibility: '' })),
     workflow: [],
     communicationChannels: [],
     deliverables: [],
-    successMetrics: []
+    successMetrics: [],
   };
 
   const patternId = await teamMemoryManager.recordCollaborationPattern(
@@ -338,39 +322,34 @@ async function handleRecordCollaboration(
     name: collaborationName,
     involvedRoles,
     success: collaborationSuccess,
-    message: "协作模式已记录"
+    message: '协作模式已记录',
   };
 }
 
 // 处理获取协作模式
-async function handleGetCollaborationPatterns(
-  teamMemoryManager: TeamMemoryManager,
-  args: ShareTeamKnowledgeInput
-) {
+async function handleGetCollaborationPatterns(teamMemoryManager: TeamMemoryManager, args: ShareTeamKnowledgeInput) {
   const { involvedRoles } = args;
 
   if (!involvedRoles) {
-    throw new Error("获取协作模式需要提供涉及的角色");
+    throw new Error('获取协作模式需要提供涉及的角色');
   }
 
-  const patterns = await teamMemoryManager.getRecommendedCollaborationPatterns(
-    involvedRoles as TeamRole[]
-  );
+  const patterns = await teamMemoryManager.getRecommendedCollaborationPatterns(involvedRoles as TeamRole[]);
 
   console.log(`🔍 找到 ${patterns.length} 个推荐的协作模式`);
 
   return {
     patternCount: patterns.length,
-    patterns: patterns.map(pattern => ({
+    patterns: patterns.map((pattern) => ({
       id: pattern.id,
       name: pattern.name,
       description: pattern.description,
       involvedRoles: pattern.involvedRoles,
       successRate: Math.round(pattern.successRate * 100),
       usageCount: pattern.usageCount,
-      lastUsed: pattern.lastUsed
+      lastUsed: pattern.lastUsed,
     })),
-    summary: `为角色组合找到 ${patterns.length} 个推荐的协作模式`
+    summary: `为角色组合找到 ${patterns.length} 个推荐的协作模式`,
   };
 }
 
@@ -388,18 +367,18 @@ async function handleRecordLearning(
     recommendations,
     contributorName,
     contributorRole,
-    technologies
+    technologies,
   } = args;
 
   if (!learningType || !learningTitle || !learningDescription || !contributorName) {
-    throw new Error("记录学习需要提供：学习类型、标题、描述和记录者姓名");
+    throw new Error('记录学习需要提供：学习类型、标题、描述和记录者姓名');
   }
 
   const context = {
     roles: contributorRole ? [contributorRole as TeamRole] : [],
     technologies: technologies || [],
     projectPhase: 'development',
-    complexity: 'medium' as const
+    complexity: 'medium' as const,
   };
 
   const learningId = await teamMemoryManager.recordTeamLearning(
@@ -421,27 +400,28 @@ async function handleRecordLearning(
     title: learningTitle,
     type: learningType,
     contributor: contributorName,
-    message: "团队学习记录已保存"
+    message: '团队学习记录已保存',
   };
 }
 
 // 处理获取团队学习
-async function handleGetTeamLearning(
-  teamMemoryManager: TeamMemoryManager,
-  args: ShareTeamKnowledgeInput
-) {
+async function handleGetTeamLearning(teamMemoryManager: TeamMemoryManager, args: ShareTeamKnowledgeInput) {
   const { filters } = args;
 
-  const learningRecords = await teamMemoryManager.getTeamLearning(filters ? {
-    ...filters,
-    roles: filters.roles?.map(role => role as TeamRole)
-  } : undefined);
+  const learningRecords = await teamMemoryManager.getTeamLearning(
+    filters
+      ? {
+          ...filters,
+          roles: filters.roles?.map((role) => role as TeamRole),
+        }
+      : undefined
+  );
 
   console.log(`📚 找到 ${learningRecords.length} 个团队学习记录`);
 
   return {
     recordCount: learningRecords.length,
-    records: learningRecords.slice(0, 10).map(record => ({
+    records: learningRecords.slice(0, 10).map((record) => ({
       id: record.id,
       title: record.title,
       type: record.learningType,
@@ -451,15 +431,15 @@ async function handleGetTeamLearning(
       createdBy: record.createdBy,
       createdAt: record.createdAt,
       verified: record.verified,
-      context: record.context
+      context: record.context,
     })),
-    summary: `找到 ${learningRecords.length} 个团队学习记录`
+    summary: `找到 ${learningRecords.length} 个团队学习记录`,
   };
 }
 
 // 工具定义
 export const shareTeamKnowledgeTool = {
-  name: "share_team_knowledge",
+  name: 'share_team_knowledge',
   description: `团队知识分享和协作学习工具 - 专为团队协作设计的记忆系统
 
 🤝 **团队协作特色**：
@@ -491,5 +471,5 @@ export const shareTeamKnowledgeTool = {
 
 这个工具让团队的集体智慧得以保存、传递和持续改进，
 真正实现团队协作的知识共享和经验传承。`,
-  inputSchema: ShareTeamKnowledgeSchema
+  inputSchema: ShareTeamKnowledgeSchema,
 };

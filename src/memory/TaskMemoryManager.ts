@@ -16,7 +16,7 @@ import {
   TaskAdjustment,
   TaskExecutionStep,
   TaskOutput,
-  TaskError
+  TaskError,
 } from '../types/taskMemory.js';
 import { getProjectContext } from '../utils/projectDetector.js';
 
@@ -52,7 +52,7 @@ export class TaskMemoryManager {
 
       // 创建子目录
       const subDirs = ['contexts', 'knowledge', 'checkpoints', 'decisions', 'discoveries'];
-      subDirs.forEach(dir => {
+      subDirs.forEach((dir) => {
         const dirPath = join(this.memoryDir, dir);
         if (!existsSync(dirPath)) {
           mkdirSync(dirPath, { recursive: true });
@@ -104,23 +104,23 @@ export class TaskMemoryManager {
           projectType: getProjectTypeString(projectContext.projectType),
           techStack: [], // 可以从项目检测中获取
           currentPhase: 'development',
-          teamMembers: []
+          teamMembers: [],
         },
         systemInfo: {
           platform: process.platform,
           nodeVersion: process.version,
           availableMemory: process.memoryUsage().heapTotal,
           diskSpace: 0, // 可以通过系统调用获取
-          networkStatus: 'online'
+          networkStatus: 'online',
         },
         toolsAvailable: [],
-        constraints: []
+        constraints: [],
       },
       resources: [],
       artifacts: [],
       knowledgeGenerated: [],
       knowledgeConsumed: [],
-      checkpoints: []
+      checkpoints: [],
     };
 
     this.contextCache.set(executionId, context);
@@ -132,11 +132,7 @@ export class TaskMemoryManager {
   /**
    * 结束任务执行
    */
-  async endTaskExecution(
-    executionId: string, 
-    status: 'completed' | 'failed',
-    summary?: string
-  ): Promise<void> {
+  async endTaskExecution(executionId: string, status: 'completed' | 'failed', summary?: string): Promise<void> {
     const context = this.contextCache.get(executionId);
     if (!context) {
       throw new Error(`Execution context not found: ${executionId}`);
@@ -182,8 +178,8 @@ export class TaskMemoryManager {
         timeImpact: 0,
         resourceImpact: [],
         qualityImpact: 'neutral',
-        futureConsiderations: []
-      }
+        futureConsiderations: [],
+      },
     };
 
     executionContext.decisions.push(decision);
@@ -217,10 +213,10 @@ export class TaskMemoryManager {
         currentTask: 'medium',
         futureTask: [],
         projectLevel: 'minor',
-        knowledgeValue: 'medium'
+        knowledgeValue: 'medium',
       },
       actionable: true,
-      suggestedActions: []
+      suggestedActions: [],
     };
 
     executionContext.discoveries.push(discovery);
@@ -233,11 +229,7 @@ export class TaskMemoryManager {
   /**
    * 创建检查点
    */
-  async createCheckpoint(
-    executionId: string,
-    description: string,
-    resumeInstructions: string
-  ): Promise<string> {
+  async createCheckpoint(executionId: string, description: string, resumeInstructions: string): Promise<string> {
     const executionContext = this.contextCache.get(executionId);
     if (!executionContext) {
       throw new Error(`Execution context not found: ${executionId}`);
@@ -253,10 +245,10 @@ export class TaskMemoryManager {
         pendingSteps: [],
         variables: {},
         resources: executionContext.resources,
-        artifacts: executionContext.artifacts
+        artifacts: executionContext.artifacts,
       },
       resumeInstructions,
-      metadata: {}
+      metadata: {},
     };
 
     executionContext.checkpoints.push(checkpoint);
@@ -269,19 +261,15 @@ export class TaskMemoryManager {
   /**
    * 获取任务相关知识
    */
-  async getRelevantKnowledge(
-    taskType: string,
-    projectType: string,
-    technologies: string[]
-  ): Promise<TaskKnowledge[]> {
+  async getRelevantKnowledge(taskType: string, projectType: string, technologies: string[]): Promise<TaskKnowledge[]> {
     const relevantKnowledge: TaskKnowledge[] = [];
 
     for (const knowledge of this.knowledgeBase.values()) {
       // 检查适用性
-      const isApplicable = 
+      const isApplicable =
         knowledge.applicability.taskTypes.includes(taskType) ||
         knowledge.applicability.projectTypes.includes(projectType) ||
-        technologies.some(tech => knowledge.context.technology.includes(tech));
+        technologies.some((tech) => knowledge.context.technology.includes(tech));
 
       if (isApplicable && knowledge.confidence > 0.5) {
         relevantKnowledge.push(knowledge);
@@ -297,7 +285,7 @@ export class TaskMemoryManager {
    */
   async getTaskExecutionHistory(taskId: string): Promise<TaskExecutionContext[]> {
     const historyFile = join(this.memoryDir, 'contexts', `task-${taskId}-history.json`);
-    
+
     if (!existsSync(historyFile)) {
       return [];
     }
@@ -321,12 +309,12 @@ export class TaskMemoryManager {
     recommendations: string[];
   }> {
     const relevantKnowledge = await this.getRelevantKnowledge(taskType, '', []);
-    
+
     const patterns = new Map<string, number>();
     const issues = new Map<string, number>();
     const practices = new Map<string, number>();
 
-    relevantKnowledge.forEach(knowledge => {
+    relevantKnowledge.forEach((knowledge) => {
       switch (knowledge.type) {
         case 'pattern':
           patterns.set(knowledge.title, (patterns.get(knowledge.title) || 0) + 1);
@@ -353,7 +341,7 @@ export class TaskMemoryManager {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([practice]) => practice),
-      recommendations: this.generateRecommendations(patterns, issues, practices)
+      recommendations: this.generateRecommendations(patterns, issues, practices),
     };
   }
 
@@ -394,7 +382,7 @@ export class TaskMemoryManager {
    */
   private async extractAndSaveKnowledge(context: TaskExecutionContext): Promise<void> {
     // 从执行上下文中提取知识
-    context.knowledgeGenerated.forEach(knowledge => {
+    context.knowledgeGenerated.forEach((knowledge) => {
       this.knowledgeBase.set(knowledge.knowledgeId, knowledge);
     });
 
@@ -442,17 +430,20 @@ export class TaskMemoryManager {
   /**
    * 记录执行步骤
    */
-  async recordStep(executionId: string, step: {
-    stepId: string;
-    action: string;
-    description: string;
-    timestamp: Date;
-    status: 'completed' | 'failed' | 'skipped';
-    output?: string;
-    duration?: number;
-    resources?: string[];
-    metadata?: Record<string, any>;
-  }): Promise<void> {
+  async recordStep(
+    executionId: string,
+    step: {
+      stepId: string;
+      action: string;
+      description: string;
+      timestamp: Date;
+      status: 'completed' | 'failed' | 'skipped';
+      output?: string;
+      duration?: number;
+      resources?: string[];
+      metadata?: Record<string, any>;
+    }
+  ): Promise<void> {
     const executionContext = this.contextCache.get(executionId);
     if (!executionContext) {
       throw new Error(`Execution context not found: ${executionId}`);
@@ -465,29 +456,37 @@ export class TaskMemoryManager {
       description: step.description,
       startTime: step.timestamp,
       endTime: step.status === 'completed' ? step.timestamp : undefined,
-      status: step.status === 'completed' ? 'completed' :
-              step.status === 'failed' ? 'failed' : 'skipped',
+      status: step.status === 'completed' ? 'completed' : step.status === 'failed' ? 'failed' : 'skipped',
       actions: [],
-      outputs: step.output ? [{
-        outputId: `output-${step.stepId}`,
-        type: 'data',
-        name: step.action,
-        content: step.output,
-        format: 'text',
-        size: step.output.length,
-        timestamp: step.timestamp,
-        metadata: step.metadata || {}
-      }] : [],
-      errors: step.status === 'failed' ? [{
-        errorId: `error-${step.stepId}`,
-        type: 'logic',
-        severity: 'major',
-        message: 'Step execution failed',
-        context: step.description,
-        timestamp: step.timestamp
-      }] : [],
+      outputs: step.output
+        ? [
+            {
+              outputId: `output-${step.stepId}`,
+              type: 'data',
+              name: step.action,
+              content: step.output,
+              format: 'text',
+              size: step.output.length,
+              timestamp: step.timestamp,
+              metadata: step.metadata || {},
+            },
+          ]
+        : [],
+      errors:
+        step.status === 'failed'
+          ? [
+              {
+                errorId: `error-${step.stepId}`,
+                type: 'logic',
+                severity: 'major',
+                message: 'Step execution failed',
+                context: step.description,
+                timestamp: step.timestamp,
+              },
+            ]
+          : [],
       metadata: step.metadata || {},
-      notes: step.description
+      notes: step.description,
     };
 
     executionContext.steps.push(fullStep);

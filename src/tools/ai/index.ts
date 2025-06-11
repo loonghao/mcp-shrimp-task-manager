@@ -7,26 +7,22 @@
 export {
   manageAiProvidersTool,
   manageAiProvidersSchema,
-  manageAiProvidersToolDefinition
-} from "./manageAiProviders.js";
+  manageAiProvidersToolDefinition,
+} from './manageAiProviders.js';
 
 // 导出切换 AI 模型工具
-export {
-  switchAiModelTool,
-  switchAiModelSchema,
-  switchAiModelToolDefinition
-} from "./switchAiModel.js";
+export { switchAiModelTool, switchAiModelSchema, switchAiModelToolDefinition } from './switchAiModel.js';
 
 // 导出获取当前 AI 状态工具
 export {
   getCurrentAiStatusTool,
   getCurrentAiStatusSchema,
-  getCurrentAiStatusToolDefinition
-} from "./getCurrentAiStatus.js";
+  getCurrentAiStatusToolDefinition,
+} from './getCurrentAiStatus.js';
 
 // 导出智能指令处理工具
 export {
   processIntelligentCommandTool,
   processIntelligentCommandSchema,
-  processIntelligentCommandToolDefinition
-} from "./processIntelligentCommand.js";
+  processIntelligentCommandToolDefinition,
+} from './processIntelligentCommand.js';

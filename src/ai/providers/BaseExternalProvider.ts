@@ -3,7 +3,7 @@
  * 为外部 AI 提供商提供通用的实现基础
  */
 
-import { AIProvider, AIProviderConfig, AIExecutionOptions, AIResponse } from "../types.js";
+import { AIProvider, AIProviderConfig, AIExecutionOptions, AIResponse } from '../types.js';
 
 export abstract class BaseExternalProvider implements AIProvider {
   protected config: AIProviderConfig;
@@ -27,9 +27,11 @@ export abstract class BaseExternalProvider implements AIProvider {
    */
   async isAvailable(): Promise<boolean> {
     // 如果最近检查过且结果为健康，直接返回
-    if (this.lastHealthCheck && 
-        Date.now() - this.lastHealthCheck.getTime() < 60000 && // 1分钟内
-        this.healthStatus) {
+    if (
+      this.lastHealthCheck &&
+      Date.now() - this.lastHealthCheck.getTime() < 60000 && // 1分钟内
+      this.healthStatus
+    ) {
       return true;
     }
 
@@ -106,12 +108,12 @@ export abstract class BaseExternalProvider implements AIProvider {
   protected async performHealthCheck(): Promise<boolean> {
     try {
       // 默认实现：尝试执行一个简单的测试请求
-      const testPrompt = "Hello";
+      const testPrompt = 'Hello';
       const response = await this.executePrompt(testPrompt, {
         maxTokens: 10,
-        timeout: 5000
+        timeout: 5000,
       });
-      
+
       return response.content.length > 0;
     } catch (error) {
       return false;
@@ -137,7 +139,7 @@ export abstract class BaseExternalProvider implements AIProvider {
       // HTTP 错误响应
       const status = error.response.status;
       const message = error.response.data?.message || error.message;
-      
+
       switch (status) {
         case 401:
           return new Error(`Authentication failed for ${this.name}: ${message}`);
@@ -185,7 +187,7 @@ export abstract class BaseExternalProvider implements AIProvider {
       timeout: 30000,
       retryCount: 2,
       stream: false,
-      ...options
+      ...options,
     };
   }
 
@@ -202,7 +204,9 @@ export abstract class BaseExternalProvider implements AIProvider {
     }
 
     if (options.maxTokens && options.maxTokens > this.config.limits.maxTokens) {
-      errors.push(`Max tokens (${options.maxTokens}) exceeds limit (${this.config.limits.maxTokens}) for provider ${this.name}`);
+      errors.push(
+        `Max tokens (${options.maxTokens}) exceeds limit (${this.config.limits.maxTokens}) for provider ${this.name}`
+      );
     }
 
     if (options.temperature && (options.temperature < 0 || options.temperature > 2)) {
@@ -211,7 +215,7 @@ export abstract class BaseExternalProvider implements AIProvider {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -241,8 +245,8 @@ export abstract class BaseExternalProvider implements AIProvider {
       metadata: {
         provider: this.name,
         timestamp: new Date().toISOString(),
-        ...metadata
-      }
+        ...metadata,
+      },
     };
   }
 
@@ -261,8 +265,8 @@ export abstract class BaseExternalProvider implements AIProvider {
       config: {
         models: this.config.models.available,
         limits: this.config.limits,
-        pricing: this.config.pricing
-      }
+        pricing: this.config.pricing,
+      },
     };
   }
 }

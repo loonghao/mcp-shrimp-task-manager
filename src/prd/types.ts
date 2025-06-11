@@ -5,20 +5,20 @@
 
 // ===== 团队角色定义 =====
 
-export type TeamRole = 
-  | 'product-manager'     // 产品经理
-  | 'ui-designer'         // UI 设计师
-  | 'ux-designer'         // UX 设计师
-  | 'frontend-developer'  // 前端开发
-  | 'backend-developer'   // 后端开发
+export type TeamRole =
+  | 'product-manager' // 产品经理
+  | 'ui-designer' // UI 设计师
+  | 'ux-designer' // UX 设计师
+  | 'frontend-developer' // 前端开发
+  | 'backend-developer' // 后端开发
   | 'fullstack-developer' // 全栈开发
-  | 'mobile-developer'    // 移动端开发
-  | 'devops-engineer'     // DevOps 工程师
-  | 'qa-engineer'         // 测试工程师
-  | 'data-engineer'       // 数据工程师
-  | 'security-engineer'   // 安全工程师
-  | 'tech-lead'           // 技术负责人
-  | 'project-manager';    // 项目经理
+  | 'mobile-developer' // 移动端开发
+  | 'devops-engineer' // DevOps 工程师
+  | 'qa-engineer' // 测试工程师
+  | 'data-engineer' // 数据工程师
+  | 'security-engineer' // 安全工程师
+  | 'tech-lead' // 技术负责人
+  | 'project-manager'; // 项目经理
 
 // 角色能力和职责定义
 export interface RoleDefinition {
@@ -104,7 +104,7 @@ export interface NonFunctionalRequirement {
 
 // ===== 项目和技术栈定义 =====
 
-export type ProjectType = 
+export type ProjectType =
   | 'web-application'
   | 'mobile-application'
   | 'desktop-application'
@@ -142,7 +142,7 @@ export interface PRDAnalysis {
 export interface ProjectComplexity {
   overall: 'low' | 'medium' | 'high' | 'very-high';
   technical: number; // 1-10
-  business: number;  // 1-10
+  business: number; // 1-10
   integration: number; // 1-10
   factors: string[];
 }

@@ -3,7 +3,7 @@
  * 解析 Markdown 格式的 prompt 文件，提取链式执行信息
  */
 
-import { ChainPrompt, ChainStep } from "../../types/index.js";
+import { ChainPrompt, ChainStep } from '../../types/index.js';
 
 export interface ParsedPromptContent {
   title: string;
@@ -22,14 +22,14 @@ export class MarkdownPromptParser {
    */
   parsePromptContent(content: string): ParsedPromptContent {
     const sections = this.extractSections(content);
-    
+
     return {
       title: this.extractTitle(content),
-      description: sections.description || "",
-      systemMessage: sections["system message"],
-      userMessageTemplate: sections["user message template"],
-      chainSteps: this.parseChainSteps(sections["chain steps"]),
-      metadata: this.parseMetadata(sections)
+      description: sections.description || '',
+      systemMessage: sections['system message'],
+      userMessageTemplate: sections['user message template'],
+      chainSteps: this.parseChainSteps(sections['chain steps']),
+      metadata: this.parseMetadata(sections),
     };
   }
 
@@ -41,19 +41,19 @@ export class MarkdownPromptParser {
   parseChainPrompt(content: string): ChainPrompt {
     const parsed = this.parsePromptContent(content);
     const configSection = this.extractConfigSection(content);
-    
+
     if (!configSection) {
-      throw new Error("Chain prompt must contain a Chain Configuration section");
+      throw new Error('Chain prompt must contain a Chain Configuration section');
     }
 
     const config = this.parseJsonFromMarkdown(configSection);
-    
+
     return {
       id: config.id,
       name: config.name || { en: parsed.title, zh: parsed.title },
       description: config.description || { en: parsed.description, zh: parsed.description },
       steps: parsed.chainSteps || [],
-      enabled: config.enabled !== false
+      enabled: config.enabled !== false,
     };
   }
 
@@ -64,7 +64,7 @@ export class MarkdownPromptParser {
    */
   private extractTitle(content: string): string {
     const titleMatch = content.match(/^#\s+(.+)$/m);
-    return titleMatch ? titleMatch[1].trim() : "Untitled";
+    return titleMatch ? titleMatch[1].trim() : 'Untitled';
   }
 
   /**
@@ -80,13 +80,13 @@ export class MarkdownPromptParser {
 
     for (const line of lines) {
       const headerMatch = line.match(/^##\s+(.+)$/);
-      
+
       if (headerMatch) {
         // 保存前一个部分
         if (currentSection) {
           sections[currentSection.toLowerCase()] = currentContent.join('\n').trim();
         }
-        
+
         // 开始新部分
         currentSection = headerMatch[1];
         currentContent = [];
@@ -141,7 +141,7 @@ export class MarkdownPromptParser {
         if (currentBlock.length > 0) {
           blocks.push(currentBlock.join('\n'));
         }
-        
+
         // 开始新块
         currentBlock = [line];
         inStepBlock = true;
@@ -182,8 +182,8 @@ export class MarkdownPromptParser {
     }
 
     // 解析输入输出映射
-    step.inputMapping = this.extractMapping(block, "Input Mapping");
-    step.outputMapping = this.extractMapping(block, "Output Mapping");
+    step.inputMapping = this.extractMapping(block, 'Input Mapping');
+    step.outputMapping = this.extractMapping(block, 'Output Mapping');
 
     if (!step.promptId || !step.stepName) {
       return null;
@@ -254,12 +254,12 @@ export class MarkdownPromptParser {
       metadata.notes = sections.notes;
     }
 
-    if (sections["usage example"]) {
-      metadata.usageExample = sections["usage example"];
+    if (sections['usage example']) {
+      metadata.usageExample = sections['usage example'];
     }
 
-    if (sections["error handling"]) {
-      metadata.errorHandling = sections["error handling"];
+    if (sections['error handling']) {
+      metadata.errorHandling = sections['error handling'];
     }
 
     if (sections.customization) {
@@ -278,11 +278,11 @@ export class MarkdownPromptParser {
     const errors: string[] = [];
 
     if (!chainPrompt.id) {
-      errors.push("Chain prompt must have an ID");
+      errors.push('Chain prompt must have an ID');
     }
 
     if (!chainPrompt.steps || chainPrompt.steps.length === 0) {
-      errors.push("Chain prompt must have at least one step");
+      errors.push('Chain prompt must have at least one step');
     }
 
     // 检查步骤的有效性
@@ -304,7 +304,7 @@ export class MarkdownPromptParser {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -338,7 +338,7 @@ export class MarkdownPromptParser {
         for (let i = stepIndex + 1; i < chainPrompt.steps.length; i++) {
           const nextStep = chainPrompt.steps[i];
           if (nextStep.inputMapping) {
-            const hasConnection = Object.values(step.outputMapping).some(output =>
+            const hasConnection = Object.values(step.outputMapping).some((output) =>
               Object.values(nextStep.inputMapping!).includes(output)
             );
             if (hasConnection && hasCircularDependency(i)) {

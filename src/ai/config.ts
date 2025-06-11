@@ -3,10 +3,10 @@
  * 处理 AI 提供商的配置加载、验证和管理
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { AIManagerConfig, AIProviderConfig, CurrentAIProvider } from "./types.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { AIManagerConfig, AIProviderConfig, CurrentAIProvider } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,14 +25,14 @@ export class AIConfigManager {
    */
   loadManagerConfig(): AIManagerConfig {
     const cacheKey = 'manager-config';
-    
+
     if (this.configCache.has(cacheKey)) {
       return this.configCache.get(cacheKey);
     }
 
     try {
       const configFile = path.join(this.configPath, 'ai-config.json');
-      
+
       if (fs.existsSync(configFile)) {
         const content = fs.readFileSync(configFile, 'utf-8');
         const config = JSON.parse(content) as AIManagerConfig;
@@ -56,21 +56,21 @@ export class AIConfigManager {
    */
   loadProviderConfig(providerId: string): AIProviderConfig | null {
     const cacheKey = `provider-${providerId}`;
-    
+
     if (this.configCache.has(cacheKey)) {
       return this.configCache.get(cacheKey);
     }
 
     try {
       const configFile = path.join(this.configPath, 'providers', `${providerId}.json`);
-      
+
       if (fs.existsSync(configFile)) {
         const content = fs.readFileSync(configFile, 'utf-8');
         const config = JSON.parse(content) as AIProviderConfig;
-        
+
         // 从环境变量加载敏感信息
         this.loadEnvironmentVariables(config);
-        
+
         this.configCache.set(cacheKey, config);
         return config;
       }
@@ -95,12 +95,12 @@ export class AIConfigManager {
 
     try {
       const files = fs.readdirSync(providersDir);
-      
+
       for (const file of files) {
         if (file.endsWith('.json')) {
           const providerId = path.basename(file, '.json');
           const config = this.loadProviderConfig(providerId);
-          
+
           if (config) {
             configs.push(config);
           }
@@ -136,10 +136,10 @@ export class AIConfigManager {
     try {
       this.ensureProvidersDirectory();
       const configFile = path.join(this.configPath, 'providers', `${config.id}.json`);
-      
+
       // 移除敏感信息（API 密钥等）
       const sanitizedConfig = this.sanitizeConfig(config);
-      
+
       fs.writeFileSync(configFile, JSON.stringify(sanitizedConfig, null, 2));
       this.configCache.set(`provider-${config.id}`, config);
     } catch (error) {
@@ -154,7 +154,7 @@ export class AIConfigManager {
   getCurrentAIConfig(): CurrentAIProvider {
     try {
       const configFile = path.join(this.configPath, 'current-ai.json');
-      
+
       if (fs.existsSync(configFile)) {
         const content = fs.readFileSync(configFile, 'utf-8');
         return JSON.parse(content) as CurrentAIProvider;
@@ -168,7 +168,7 @@ export class AIConfigManager {
       useCurrentAI: true,
       currentAIId: 'current-execution-ai',
       currentAIName: 'Current Execution AI',
-      capabilities: ['general', 'analysis', 'generation', 'coding']
+      capabilities: ['general', 'analysis', 'generation', 'coding'],
     };
   }
 
@@ -220,7 +220,7 @@ export class AIConfigManager {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -244,7 +244,7 @@ export class AIConfigManager {
     // 从环境变量加载 API 密钥
     const envKeyName = `AI_${config.id.toUpperCase()}_API_KEY`;
     const apiKey = process.env[envKeyName];
-    
+
     if (apiKey) {
       config.apiKey = apiKey;
     }
@@ -252,7 +252,7 @@ export class AIConfigManager {
     // 从环境变量加载 API 端点
     const envEndpointName = `AI_${config.id.toUpperCase()}_ENDPOINT`;
     const apiEndpoint = process.env[envEndpointName];
-    
+
     if (apiEndpoint) {
       config.apiEndpoint = apiEndpoint;
     }
@@ -265,7 +265,7 @@ export class AIConfigManager {
    */
   private sanitizeConfig(config: AIProviderConfig): AIProviderConfig {
     const sanitized = { ...config };
-    
+
     // 移除 API 密钥
     if (sanitized.apiKey) {
       delete sanitized.apiKey;
@@ -281,7 +281,7 @@ export class AIConfigManager {
   private getDefaultConfigPath(): string {
     // 尝试从项目根目录查找配置
     let currentDir = __dirname;
-    
+
     while (currentDir && currentDir !== path.dirname(currentDir)) {
       const configDir = path.join(currentDir, 'config', 'ai');
       if (fs.existsSync(configDir)) {
@@ -325,18 +325,18 @@ export class AIConfigManager {
         maxTokens: 4000,
         temperature: 0.7,
         timeout: 30000,
-        retryCount: 2
+        retryCount: 2,
       },
       costControl: {
         dailyCostLimit: 10.0,
         monthlyCostLimit: 100.0,
-        warningThreshold: 0.8
+        warningThreshold: 0.8,
       },
       monitoring: {
         enableUsageStats: true,
         enablePerformanceMonitoring: true,
-        logLevel: 'info'
-      }
+        logLevel: 'info',
+      },
     };
   }
 }

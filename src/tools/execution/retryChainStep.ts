@@ -2,15 +2,15 @@
  * 重试链式执行步骤工具
  */
 
-import { z } from "zod";
-import { retryChainStep } from "../../execution/index.js";
-import { log } from "../../utils/logger.js";
+import { z } from 'zod';
+import { retryChainStep } from '../../execution/index.js';
+import { log } from '../../utils/logger.js';
 
 // 输入参数 Schema
 export const retryChainStepSchema = z.object({
-  chainId: z.string().describe("链式执行的唯一标识符"),
-  stepIndex: z.number().optional().describe("要重试的步骤索引（可选，默认重试失败的步骤）"),
-  reason: z.string().optional().describe("重试原因（可选）")
+  chainId: z.string().describe('链式执行的唯一标识符'),
+  stepIndex: z.number().optional().describe('要重试的步骤索引（可选，默认重试失败的步骤）'),
+  reason: z.string().optional().describe('重试原因（可选）'),
 });
 
 /**
@@ -18,17 +18,17 @@ export const retryChainStepSchema = z.object({
  */
 export async function retryChainStepTool(args: z.infer<typeof retryChainStepSchema>) {
   try {
-    log.info("RetryChainStep", `重试链式执行步骤: ${args.chainId}`, {
+    log.info('RetryChainStep', `重试链式执行步骤: ${args.chainId}`, {
       stepIndex: args.stepIndex,
-      reason: args.reason || "用户请求"
+      reason: args.reason || '用户请求',
     });
 
     const result = await retryChainStep(args.chainId, args.stepIndex);
 
     if (result.success) {
-      log.info("RetryChainStep", `链式执行步骤重试成功: ${args.chainId}`, {
+      log.info('RetryChainStep', `链式执行步骤重试成功: ${args.chainId}`, {
         retryStepIndex: result.retryStepIndex,
-        reason: args.reason
+        reason: args.reason,
       });
 
       return {
@@ -37,14 +37,14 @@ export async function retryChainStepTool(args: z.infer<typeof retryChainStepSche
         chainId: args.chainId,
         result: {
           retryStepIndex: result.retryStepIndex,
-          reason: args.reason || "用户请求",
-          retriedAt: new Date().toISOString()
-        }
+          reason: args.reason || '用户请求',
+          retriedAt: new Date().toISOString(),
+        },
       };
     } else {
-      log.warn("RetryChainStep", `链式执行步骤重试失败: ${args.chainId}`, {
+      log.warn('RetryChainStep', `链式执行步骤重试失败: ${args.chainId}`, {
         message: result.message,
-        stepIndex: args.stepIndex
+        stepIndex: args.stepIndex,
       });
 
       return {
@@ -52,26 +52,26 @@ export async function retryChainStepTool(args: z.infer<typeof retryChainStepSche
         message: result.message,
         chainId: args.chainId,
         stepIndex: args.stepIndex,
-        error: "重试操作失败"
+        error: '重试操作失败',
       };
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    log.error("RetryChainStep", "重试链式执行步骤失败", error as Error);
+    log.error('RetryChainStep', '重试链式执行步骤失败', error as Error);
 
     return {
       success: false,
       message: `重试链式执行步骤失败: ${errorMessage}`,
       chainId: args.chainId,
       stepIndex: args.stepIndex,
-      error: errorMessage
+      error: errorMessage,
     };
   }
 }
 
 // 工具定义
 export const retryChainStepToolDefinition = {
-  name: "retry_chain_step",
+  name: 'retry_chain_step',
   description: `重试链式执行步骤
 
 这个工具允许你重试链式任务中失败的步骤。
@@ -104,5 +104,5 @@ export const retryChainStepToolDefinition = {
 
 返回信息包括重试结果、步骤索引、重试时间等。`,
   inputSchema: retryChainStepSchema,
-  handler: retryChainStepTool
+  handler: retryChainStepTool,
 };

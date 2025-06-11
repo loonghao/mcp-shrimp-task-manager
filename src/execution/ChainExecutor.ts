@@ -13,15 +13,10 @@ import {
   ChainEventType,
   ChainStep,
   ChainPrompt,
-} from "../types/index.js";
-import { v4 as uuidv4 } from "uuid";
-import {
-  getTaskById,
-  updateTask,
-  updateTaskStatus,
-  createTask,
-} from "../models/taskModel.js";
-import { Logger } from "../utils/logger.js";
+} from '../types/index.js';
+import { v4 as uuidv4 } from 'uuid';
+import { getTaskById, updateTask, updateTaskStatus, createTask } from '../models/taskModel.js';
+import { Logger } from '../utils/logger.js';
 
 /**
  * 链式执行器：负责管理和执行链式任务流程
@@ -67,7 +62,7 @@ export class ChainExecutor {
     const executionConfig = { ...this.defaultConfig, ...config };
     const startTime = new Date();
 
-    this.logger.info("ChainExecutor", `开始执行链式任务: ${chainPrompt.name.zh} (ID: ${chainId})`);
+    this.logger.info('ChainExecutor', `开始执行链式任务: ${chainPrompt.name.zh} (ID: ${chainId})`);
 
     // 创建执行上下文
     const context: ChainExecutionContext = {
@@ -86,9 +81,9 @@ export class ChainExecutor {
     try {
       // 创建链式任务
       const chainTasks = await this.createChainTasks(chainPrompt, chainId, initialData);
-      
+
       // 记录链开始事件
-      this.recordEvent(context, ChainEventType.CHAIN_STARTED, 0, chainTasks[0]?.id || "", {
+      this.recordEvent(context, ChainEventType.CHAIN_STARTED, 0, chainTasks[0]?.id || '', {
         chainPrompt: chainPrompt.name,
         totalSteps: chainPrompt.steps.length,
         initialData,
@@ -98,20 +93,20 @@ export class ChainExecutor {
       const result = await this.executeChainSteps(context, chainTasks, chainPrompt.steps);
 
       // 记录链完成事件
-      this.recordEvent(context, ChainEventType.CHAIN_COMPLETED, context.totalSteps - 1, "", {
+      this.recordEvent(context, ChainEventType.CHAIN_COMPLETED, context.totalSteps - 1, '', {
         executionTime: Date.now() - startTime.getTime(),
         finalData: result.finalData,
       });
 
-      this.logger.info("ChainExecutor", `链式任务执行完成: ${chainId}, 耗时: ${result.executionTime}ms`);
+      this.logger.info('ChainExecutor', `链式任务执行完成: ${chainId}, 耗时: ${result.executionTime}ms`);
 
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      this.logger.error("ChainExecutor", `链式任务执行失败: ${chainId}, 错误: ${errorMessage}`);
+      this.logger.error('ChainExecutor', `链式任务执行失败: ${chainId}, 错误: ${errorMessage}`);
 
       // 记录链失败事件
-      this.recordEvent(context, ChainEventType.CHAIN_FAILED, context.currentStepIndex, "", {
+      this.recordEvent(context, ChainEventType.CHAIN_FAILED, context.currentStepIndex, '', {
         error: errorMessage,
         executionTime: Date.now() - startTime.getTime(),
       });
@@ -123,14 +118,16 @@ export class ChainExecutor {
         totalSteps: context.totalSteps,
         executionTime: Date.now() - startTime.getTime(),
         results: context.stepResults,
-        errors: [{
-          stepIndex: context.currentStepIndex,
-          taskId: "",
-          errorType: ChainErrorType.SYSTEM_ERROR,
-          message: errorMessage,
-          timestamp: new Date(),
-          recoverable: false,
-        }],
+        errors: [
+          {
+            stepIndex: context.currentStepIndex,
+            taskId: '',
+            errorType: ChainErrorType.SYSTEM_ERROR,
+            message: errorMessage,
+            timestamp: new Date(),
+            recoverable: false,
+          },
+        ],
       };
     } finally {
       this.activeChains.delete(chainId);
@@ -154,7 +151,7 @@ export class ChainExecutor {
 
     for (let i = 0; i < chainPrompt.steps.length; i++) {
       const step = chainPrompt.steps[i];
-      
+
       // 创建任务
       const task = await createTask(
         `${chainPrompt.name.zh} - 步骤 ${i + 1}: ${step.stepName}`,
@@ -211,7 +208,7 @@ export class ChainExecutor {
       context.currentStepIndex = i;
 
       try {
-        this.logger.info("ChainExecutor", `执行步骤 ${i + 1}/${tasks.length}: ${step.stepName} (任务ID: ${task.id})`);
+        this.logger.info('ChainExecutor', `执行步骤 ${i + 1}/${tasks.length}: ${step.stepName} (任务ID: ${task.id})`);
 
         // 记录步骤开始事件
         this.recordEvent(context, ChainEventType.STEP_STARTED, i, task.id, {
@@ -247,11 +244,10 @@ export class ChainExecutor {
           outputData: currentData,
         });
 
-        this.logger.info("ChainExecutor", `步骤 ${i + 1} 执行完成`);
-
+        this.logger.info('ChainExecutor', `步骤 ${i + 1} 执行完成`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        this.logger.error("ChainExecutor", `步骤 ${i + 1} 执行失败: ${errorMessage}`);
+        this.logger.error('ChainExecutor', `步骤 ${i + 1} 执行失败: ${errorMessage}`);
 
         const chainError: ChainExecutionError = {
           stepIndex: i,
@@ -332,10 +328,7 @@ export class ChainExecutor {
    * @param mapping 映射规则
    * @returns 映射后的数据
    */
-  private applyInputMapping(
-    data: Record<string, any>,
-    mapping?: Record<string, string>
-  ): Record<string, any> {
+  private applyInputMapping(data: Record<string, any>, mapping?: Record<string, string>): Record<string, any> {
     if (!mapping) return data;
 
     const mappedData: Record<string, any> = {};
@@ -354,10 +347,7 @@ export class ChainExecutor {
    * @param mapping 映射规则
    * @returns 映射后的数据
    */
-  private applyOutputMapping(
-    data: Record<string, any>,
-    mapping?: Record<string, string>
-  ): Record<string, any> {
+  private applyOutputMapping(data: Record<string, any>, mapping?: Record<string, string>): Record<string, any> {
     if (!mapping) return data;
 
     const mappedData: Record<string, any> = {};
@@ -396,7 +386,7 @@ export class ChainExecutor {
     context.executionHistory.push(event);
 
     if (context.config.logLevel === ChainLogLevel.DEBUG) {
-      this.logger.debug("ChainExecutor", `链式执行事件: ${eventType}`, event);
+      this.logger.debug('ChainExecutor', `链式执行事件: ${eventType}`, event);
     }
   }
 
@@ -420,10 +410,10 @@ export class ChainExecutor {
       return false;
     }
 
-    this.logger.info("ChainExecutor", `取消链式执行: ${chainId}`);
+    this.logger.info('ChainExecutor', `取消链式执行: ${chainId}`);
 
     // 记录取消事件
-    this.recordEvent(context, ChainEventType.CHAIN_CANCELLED, context.currentStepIndex, "", {
+    this.recordEvent(context, ChainEventType.CHAIN_CANCELLED, context.currentStepIndex, '', {
       cancelledAt: new Date().toISOString(),
     });
 

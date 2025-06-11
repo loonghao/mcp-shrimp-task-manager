@@ -3,9 +3,9 @@
  * 支持链式执行的参数映射和步骤管理
  */
 
-import { ChainPromptLoader, ChainExecutionContext } from "../loaders/ChainPromptLoader.js";
-import { ChainPrompt, ChainStep } from "../../types/index.js";
-import { generatePrompt } from "../loader.js";
+import { ChainPromptLoader, ChainExecutionContext } from '../loaders/ChainPromptLoader.js';
+import { ChainPrompt, ChainStep } from '../../types/index.js';
+import { generatePrompt } from '../loader.js';
 
 export interface ChainExecutionOptions {
   enableRetry?: boolean;
@@ -53,18 +53,18 @@ export class ChainPromptGenerator {
   }> {
     const chain = await this.loader.loadChain(chainId);
     const context = await this.loader.prepareExecutionContext(chainId, initialData);
-    
+
     const steps = [];
     const tempContext = { ...context };
 
     for (const step of chain.steps) {
       const inputData = this.loader.processStepInput(step, tempContext);
       const dependencies = this.extractStepDependencies(step, chain.steps);
-      
+
       steps.push({
         step,
         inputData,
-        dependencies
+        dependencies,
       });
 
       // 模拟步骤输出以计算后续步骤的输入
@@ -78,7 +78,7 @@ export class ChainPromptGenerator {
     return {
       chain,
       context,
-      steps
+      steps,
     };
   }
 
@@ -101,8 +101,8 @@ export class ChainPromptGenerator {
 
     // 尝试从分类加载 prompt 模板
     try {
-      const { loadPromptByCategory } = await import("../loader.js");
-      
+      const { loadPromptByCategory } = await import('../loader.js');
+
       if (step.category) {
         const template = loadPromptByCategory(step.category, step.promptId);
         return generatePrompt(template, inputData);
@@ -113,7 +113,7 @@ export class ChainPromptGenerator {
 
     // 回退到传统的模板加载方式
     try {
-      const { loadPromptFromTemplate } = await import("../loader.js");
+      const { loadPromptFromTemplate } = await import('../loader.js');
       const template = loadPromptFromTemplate(`${step.promptId}/index.md`);
       return generatePrompt(template, inputData);
     } catch (error) {
@@ -171,7 +171,8 @@ export class ChainPromptGenerator {
       }
 
       // 检查超时配置
-      if (step.timeout && step.timeout > 300000) { // 5 minutes
+      if (step.timeout && step.timeout > 300000) {
+        // 5 minutes
         warnings.push(`Step ${i + 1} (${step.stepName}): long timeout (${step.timeout}ms)`);
       }
     }
@@ -180,7 +181,7 @@ export class ChainPromptGenerator {
       valid: missingParameters.length === 0,
       missingParameters,
       unusedParameters: Array.from(unusedParameters),
-      warnings
+      warnings,
     };
   }
 
@@ -210,7 +211,7 @@ export class ChainPromptGenerator {
   }> {
     const chain = await this.loader.loadChain(chainId);
     const stats = await this.loader.getChainStats(chainId);
-    
+
     const dataFlow = [];
     const tempContext = { ...context };
 
@@ -230,7 +231,7 @@ export class ChainPromptGenerator {
       dataFlow.push({
         step: step.stepName,
         inputs,
-        outputs
+        outputs,
       });
 
       // 更新临时上下文
@@ -242,20 +243,20 @@ export class ChainPromptGenerator {
         id: chain.id,
         name: chain.name,
         description: chain.description,
-        stats
+        stats,
       },
       contextSnapshot: {
         currentStep: context.currentStep,
         totalSteps: chain.steps.length,
         data: context.data,
-        metadata: context.metadata
+        metadata: context.metadata,
       },
       dataFlow,
       performance: {
         totalSteps: chain.steps.length,
         completedSteps: context.currentStep,
-        progress: (context.currentStep / chain.steps.length) * 100
-      }
+        progress: (context.currentStep / chain.steps.length) * 100,
+      },
     };
   }
 
@@ -271,8 +272,8 @@ export class ChainPromptGenerator {
       data: context.data,
       metadata: {
         ...context.metadata,
-        checkpointTime: new Date().toISOString()
-      }
+        checkpointTime: new Date().toISOString(),
+      },
     };
 
     return JSON.stringify(checkpoint);
@@ -292,8 +293,8 @@ export class ChainPromptGenerator {
         data: checkpoint.data,
         metadata: {
           ...checkpoint.metadata,
-          restoredAt: new Date().toISOString()
-        }
+          restoredAt: new Date().toISOString(),
+        },
       };
     } catch (error) {
       throw new Error(`Invalid checkpoint data: ${error}`);
@@ -317,7 +318,7 @@ export class ChainPromptGenerator {
     for (const contextKey of Object.values(step.inputMapping)) {
       for (const otherStep of allSteps) {
         if (otherStep === step) continue;
-        
+
         if (otherStep.outputMapping && Object.values(otherStep.outputMapping).includes(contextKey)) {
           dependencies.push(otherStep.stepName);
         }

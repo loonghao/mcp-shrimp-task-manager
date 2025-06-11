@@ -3,8 +3,8 @@
  * 统一管理所有应用程序配置
  */
 
-import "dotenv/config";
-import { ApplicationConfig } from "./ApplicationBootstrap.js";
+import 'dotenv/config';
+import { ApplicationConfig } from './ApplicationBootstrap.js';
 
 export class ConfigManager {
   private applicationConfig: ApplicationConfig;
@@ -19,7 +19,7 @@ export class ConfigManager {
   async initialize(): Promise<void> {
     // 确保关键环境变量有默认值
     this.setDefaultEnvironmentVariables();
-    
+
     // 重新加载配置
     this.applicationConfig = this.loadApplicationConfig();
   }
@@ -47,7 +47,7 @@ export class ConfigManager {
     return {
       level: process.env.LOG_LEVEL || 'info',
       toConsole: process.env.LOG_TO_CONSOLE === 'true',
-      dataDir: process.env.DATA_DIR
+      dataDir: process.env.DATA_DIR,
     };
   }
 
@@ -57,13 +57,13 @@ export class ConfigManager {
   getServerConfig() {
     return {
       mcp: {
-        name: "Shrimp Task Manager",
-        version: this.applicationConfig.version
+        name: 'Shrimp Task Manager',
+        version: this.applicationConfig.version,
       },
       express: {
         enableGui: this.applicationConfig.enableGui,
-        staticPath: "public"
-      }
+        staticPath: 'public',
+      },
     };
   }
 
@@ -75,7 +75,7 @@ export class ConfigManager {
       enableRateLimit: process.env.ENABLE_RATE_LIMIT === 'true',
       maxRequestsPerMinute: parseInt(process.env.MAX_REQUESTS_PER_MINUTE || '100'),
       enableCors: process.env.ENABLE_CORS === 'true',
-      allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['*']
+      allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
     };
   }
 
@@ -87,7 +87,7 @@ export class ConfigManager {
       enableCache: process.env.ENABLE_CACHE !== 'false',
       cacheSize: parseInt(process.env.CACHE_SIZE || '1000'),
       cacheTtl: parseInt(process.env.CACHE_TTL || '300000'), // 5分钟
-      enableCompression: process.env.ENABLE_COMPRESSION !== 'false'
+      enableCompression: process.env.ENABLE_COMPRESSION !== 'false',
     };
   }
 
@@ -96,10 +96,10 @@ export class ConfigManager {
    */
   private loadApplicationConfig(): ApplicationConfig {
     return {
-      enableGui: process.env.ENABLE_GUI === "true",
+      enableGui: process.env.ENABLE_GUI === 'true',
       version: this.getVersion(),
       projectAutoDetect: process.env.PROJECT_AUTO_DETECT === 'true',
-      templatesUse: process.env.TEMPLATES_USE || 'zh'
+      templatesUse: process.env.TEMPLATES_USE || 'zh',
     };
   }
 
@@ -128,9 +128,9 @@ export class ConfigManager {
     // 从 package.json 读取版本号
     try {
       // 在实际实现中，这里应该从 package.json 读取
-      return "1.1.0";
+      return '1.1.0';
     } catch (error) {
-      return "1.0.0";
+      return '1.0.0';
     }
   }
 
@@ -152,7 +152,7 @@ export class ConfigManager {
     const numericConfigs = [
       { key: 'MAX_REQUESTS_PER_MINUTE', min: 1, max: 10000 },
       { key: 'CACHE_SIZE', min: 100, max: 100000 },
-      { key: 'CACHE_TTL', min: 1000, max: 3600000 }
+      { key: 'CACHE_TTL', min: 1000, max: 3600000 },
     ];
 
     for (const config of numericConfigs) {
@@ -167,7 +167,7 @@ export class ConfigManager {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -181,7 +181,7 @@ export class ConfigManager {
       arch: process.arch,
       env: process.env.NODE_ENV || 'development',
       pid: process.pid,
-      uptime: process.uptime()
+      uptime: process.uptime(),
     };
   }
 }

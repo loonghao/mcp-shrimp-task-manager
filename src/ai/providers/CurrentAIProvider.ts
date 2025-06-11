@@ -4,7 +4,7 @@
  * 这是一个特殊的提供商，不需要额外配置，直接使用当前的 AI 能力
  */
 
-import { AIProvider, AIProviderConfig, AIExecutionOptions, AIResponse } from "../types.js";
+import { AIProvider, AIProviderConfig, AIExecutionOptions, AIResponse } from '../types.js';
 
 export class CurrentAIProvider implements AIProvider {
   public readonly id = 'current-ai';
@@ -37,11 +37,11 @@ export class CurrentAIProvider implements AIProvider {
    */
   async executePrompt(prompt: string, options?: AIExecutionOptions): Promise<AIResponse> {
     const startTime = Date.now();
-    
+
     // 这是一个占位符实现
     // 在实际使用中，AI 管理器会检测到这是当前 AI 提供商
     // 并使用特殊的处理逻辑（比如直接返回给调用者处理）
-    
+
     const response: AIResponse = {
       content: `[CURRENT_AI_PLACEHOLDER] This response should be handled by the AI Manager. Prompt: ${prompt.substring(0, 100)}...`,
       model: options?.model || this.config.models.default,
@@ -52,8 +52,8 @@ export class CurrentAIProvider implements AIProvider {
       metadata: {
         isCurrentAI: true,
         originalPrompt: prompt,
-        options: options
-      }
+        options: options,
+      },
     };
 
     return response;
@@ -97,15 +97,7 @@ export class CurrentAIProvider implements AIProvider {
    * @returns 能力列表
    */
   getCapabilities(): string[] {
-    return [
-      'general',
-      'analysis',
-      'generation',
-      'coding',
-      'research',
-      'task-management',
-      'chain-execution'
-    ];
+    return ['general', 'analysis', 'generation', 'coding', 'research', 'task-management', 'chain-execution'];
   }
 
   /**
@@ -124,24 +116,24 @@ export class CurrentAIProvider implements AIProvider {
             name: 'Current AI Model',
             maxTokens: 8000,
             capabilities: this.getCapabilities(),
-            costMultiplier: 0
-          }
-        }
+            costMultiplier: 0,
+          },
+        },
       },
       limits: {
         requestsPerMinute: 1000, // 很高的限制，因为是当前 AI
         requestsPerDay: 10000,
-        maxTokens: 8000
+        maxTokens: 8000,
       },
       pricing: {
         inputCostPer1kTokens: 0,
-        outputCostPer1kTokens: 0
+        outputCostPer1kTokens: 0,
       },
       settings: {
         isCurrentAI: true,
         description: 'This provider represents the AI currently executing the system',
-        usage: 'Used as the default provider when no specific AI is configured'
-      }
+        usage: 'Used as the default provider when no specific AI is configured',
+      },
     };
   }
 
@@ -167,7 +159,7 @@ export class CurrentAIProvider implements AIProvider {
     return {
       isCurrentAI: true,
       providerId: this.id,
-      shouldDelegate: true
+      shouldDelegate: true,
     };
   }
 
@@ -185,7 +177,7 @@ export class CurrentAIProvider implements AIProvider {
       isCurrentAI: true,
       capabilities: this.getCapabilities(),
       config: this.config,
-      usage: 'This provider is used when no specific AI provider is configured or when explicitly using the current AI'
+      usage: 'This provider is used when no specific AI provider is configured or when explicitly using the current AI',
     };
   }
 }

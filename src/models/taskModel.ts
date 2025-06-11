@@ -8,14 +8,14 @@ import {
   RelatedFile,
   ChainExecutionStatus,
   ChainExecutionResult,
-} from "../types/index.js";
-import fs from "fs/promises";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { getProjectDataDir } from "../utils/pathManager.js";
-import { getProjectRoot } from "../utils/moduleResolver.js";
+} from '../types/index.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { getProjectDataDir } from '../utils/pathManager.js';
+import { getProjectRoot } from '../utils/moduleResolver.js';
 
 // 確保獲取專案資料夾路徑
 const PROJECT_ROOT = getProjectRoot();
@@ -28,7 +28,7 @@ async function getDataDir(): Promise<string> {
 // 獲取任務文件路徑
 async function getTasksFile(): Promise<string> {
   const dataDir = await getDataDir();
-  return path.join(dataDir, "tasks.json");
+  return path.join(dataDir, 'tasks.json');
 }
 
 // 將exec轉換為Promise形式
@@ -56,7 +56,7 @@ async function ensureDataDir() {
 async function readTasks(): Promise<Task[]> {
   await ensureDataDir();
   const tasksFile = await getTasksFile();
-  const data = await fs.readFile(tasksFile, "utf-8");
+  const data = await fs.readFile(tasksFile, 'utf-8');
   const tasks = JSON.parse(data).tasks;
 
   // 將日期字串轉換回 Date 物件
@@ -119,10 +119,7 @@ export async function createTask(
 }
 
 // 更新任務
-export async function updateTask(
-  taskId: string,
-  updates: Partial<Task>
-): Promise<Task | null> {
+export async function updateTask(taskId: string, updates: Partial<Task>): Promise<Task | null> {
   const tasks = await readTasks();
   const taskIndex = tasks.findIndex((task) => task.id === taskId);
 
@@ -133,12 +130,10 @@ export async function updateTask(
   // 檢查任務是否已完成，已完成的任務不允許更新（除非是明確允許的欄位）
   if (tasks[taskIndex].status === TaskStatus.COMPLETED) {
     // 僅允許更新 summary 欄位（任務摘要）和 relatedFiles 欄位
-    const allowedFields = ["summary", "relatedFiles"];
+    const allowedFields = ['summary', 'relatedFiles'];
     const attemptedFields = Object.keys(updates);
 
-    const disallowedFields = attemptedFields.filter(
-      (field) => !allowedFields.includes(field)
-    );
+    const disallowedFields = attemptedFields.filter((field) => !allowedFields.includes(field));
 
     if (disallowedFields.length > 0) {
       return null;
@@ -157,10 +152,7 @@ export async function updateTask(
 }
 
 // 更新任務狀態
-export async function updateTaskStatus(
-  taskId: string,
-  status: TaskStatus
-): Promise<Task | null> {
+export async function updateTaskStatus(taskId: string, status: TaskStatus): Promise<Task | null> {
   const updates: Partial<Task> = { status };
 
   if (status === TaskStatus.COMPLETED) {
@@ -171,10 +163,7 @@ export async function updateTaskStatus(
 }
 
 // 更新任務摘要
-export async function updateTaskSummary(
-  taskId: string,
-  summary: string
-): Promise<Task | null> {
+export async function updateTaskSummary(taskId: string, summary: string): Promise<Task | null> {
   return await updateTask(taskId, { summary });
 }
 
@@ -195,12 +184,12 @@ export async function updateTaskContent(
   const task = await getTaskById(taskId);
 
   if (!task) {
-    return { success: false, message: "找不到指定任務" };
+    return { success: false, message: '找不到指定任務' };
   }
 
   // 檢查任務是否已完成
   if (task.status === TaskStatus.COMPLETED) {
-    return { success: false, message: "無法更新已完成的任務" };
+    return { success: false, message: '無法更新已完成的任務' };
   }
 
   // 構建更新物件，只包含實際需要更新的欄位
@@ -238,19 +227,19 @@ export async function updateTaskContent(
 
   // 如果沒有要更新的內容，提前返回
   if (Object.keys(updateObj).length === 0) {
-    return { success: true, message: "沒有提供需要更新的內容", task };
+    return { success: true, message: '沒有提供需要更新的內容', task };
   }
 
   // 執行更新
   const updatedTask = await updateTask(taskId, updateObj);
 
   if (!updatedTask) {
-    return { success: false, message: "更新任務時發生錯誤" };
+    return { success: false, message: '更新任務時發生錯誤' };
   }
 
   return {
     success: true,
-    message: "任務內容已成功更新",
+    message: '任務內容已成功更新',
     task: updatedTask,
   };
 }
@@ -264,19 +253,19 @@ export async function updateTaskRelatedFiles(
   const task = await getTaskById(taskId);
 
   if (!task) {
-    return { success: false, message: "找不到指定任務" };
+    return { success: false, message: '找不到指定任務' };
   }
 
   // 檢查任務是否已完成
   if (task.status === TaskStatus.COMPLETED) {
-    return { success: false, message: "無法更新已完成的任務" };
+    return { success: false, message: '無法更新已完成的任務' };
   }
 
   // 執行更新
   const updatedTask = await updateTask(taskId, { relatedFiles });
 
   if (!updatedTask) {
-    return { success: false, message: "更新任務相關文件時發生錯誤" };
+    return { success: false, message: '更新任務相關文件時發生錯誤' };
   }
 
   return {
@@ -297,7 +286,7 @@ export async function batchCreateOrUpdateTasks(
     implementationGuide?: string; // 新增：實現指南
     verificationCriteria?: string; // 新增：驗證標準
   }>,
-  updateMode: "append" | "overwrite" | "selective" | "clearAllTasks", // 必填參數，指定任務更新策略
+  updateMode: 'append' | 'overwrite' | 'selective' | 'clearAllTasks', // 必填參數，指定任務更新策略
   globalAnalysisResult?: string // 新增：全局分析結果
 ): Promise<Task[]> {
   // 讀取現有的所有任務
@@ -306,24 +295,20 @@ export async function batchCreateOrUpdateTasks(
   // 根據更新模式處理現有任務
   let tasksToKeep: Task[] = [];
 
-  if (updateMode === "append") {
+  if (updateMode === 'append') {
     // 追加模式：保留所有現有任務
     tasksToKeep = [...existingTasks];
-  } else if (updateMode === "overwrite") {
+  } else if (updateMode === 'overwrite') {
     // 覆蓋模式：僅保留已完成的任務，清除所有未完成任務
-    tasksToKeep = existingTasks.filter(
-      (task) => task.status === TaskStatus.COMPLETED
-    );
-  } else if (updateMode === "selective") {
+    tasksToKeep = existingTasks.filter((task) => task.status === TaskStatus.COMPLETED);
+  } else if (updateMode === 'selective') {
     // 選擇性更新模式：根據任務名稱選擇性更新，保留未在更新列表中的任務
     // 1. 提取待更新任務的名稱清單
     const updateTaskNames = new Set(taskDataList.map((task) => task.name));
 
     // 2. 保留所有沒有出現在更新列表中的任務
-    tasksToKeep = existingTasks.filter(
-      (task) => !updateTaskNames.has(task.name)
-    );
-  } else if (updateMode === "clearAllTasks") {
+    tasksToKeep = existingTasks.filter((task) => !updateTaskNames.has(task.name));
+  } else if (updateMode === 'clearAllTasks') {
     // 清除所有任務模式：清空任務列表
     tasksToKeep = [];
   }
@@ -332,7 +317,7 @@ export async function batchCreateOrUpdateTasks(
   const taskNameToIdMap = new Map<string, string>();
 
   // 對於選擇性更新模式，先將現有任務的名稱和ID記錄下來
-  if (updateMode === "selective") {
+  if (updateMode === 'selective') {
     existingTasks.forEach((task) => {
       taskNameToIdMap.set(task.name, task.id);
     });
@@ -349,20 +334,15 @@ export async function batchCreateOrUpdateTasks(
 
   for (const taskData of taskDataList) {
     // 檢查是否為選擇性更新模式且該任務名稱已存在
-    if (updateMode === "selective" && taskNameToIdMap.has(taskData.name)) {
+    if (updateMode === 'selective' && taskNameToIdMap.has(taskData.name)) {
       // 獲取現有任務的ID
       const existingTaskId = taskNameToIdMap.get(taskData.name)!;
 
       // 查找現有任務
-      const existingTaskIndex = existingTasks.findIndex(
-        (task) => task.id === existingTaskId
-      );
+      const existingTaskIndex = existingTasks.findIndex((task) => task.id === existingTaskId);
 
       // 如果找到現有任務並且該任務未完成，則更新它
-      if (
-        existingTaskIndex !== -1 &&
-        existingTasks[existingTaskIndex].status !== TaskStatus.COMPLETED
-      ) {
+      if (existingTaskIndex !== -1 && existingTasks[existingTaskIndex].status !== TaskStatus.COMPLETED) {
         const taskToUpdate = existingTasks[existingTaskIndex];
 
         // 更新任務的基本信息，但保留原始ID、創建時間等
@@ -435,11 +415,7 @@ export async function batchCreateOrUpdateTasks(
         let dependencyTaskId = dependencyName;
 
         // 如果依賴項看起來不像UUID，則嘗試將其解釋為任務名稱
-        if (
-          !dependencyName.match(
-            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-          )
-        ) {
+        if (!dependencyName.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
           // 如果映射中存在此名稱，則使用對應的ID
           if (taskNameToIdMap.has(dependencyName)) {
             dependencyTaskId = taskNameToIdMap.get(dependencyName)!;
@@ -448,9 +424,7 @@ export async function batchCreateOrUpdateTasks(
           }
         } else {
           // 是UUID格式，但需要確認此ID是否對應實際存在的任務
-          const idExists = [...tasksToKeep, ...newTasks].some(
-            (task) => task.id === dependencyTaskId
-          );
+          const idExists = [...tasksToKeep, ...newTasks].some((task) => task.id === dependencyTaskId);
           if (!idExists) {
             continue; // 跳過此依賴
           }
@@ -473,9 +447,7 @@ export async function batchCreateOrUpdateTasks(
 }
 
 // 檢查任務是否可以執行（所有依賴都已完成）
-export async function canExecuteTask(
-  taskId: string
-): Promise<{ canExecute: boolean; blockedBy?: string[] }> {
+export async function canExecuteTask(taskId: string): Promise<{ canExecute: boolean; blockedBy?: string[] }> {
   const task = await getTaskById(taskId);
 
   if (!task) {
@@ -508,31 +480,25 @@ export async function canExecuteTask(
 }
 
 // 刪除任務
-export async function deleteTask(
-  taskId: string
-): Promise<{ success: boolean; message: string }> {
+export async function deleteTask(taskId: string): Promise<{ success: boolean; message: string }> {
   const tasks = await readTasks();
   const taskIndex = tasks.findIndex((task) => task.id === taskId);
 
   if (taskIndex === -1) {
-    return { success: false, message: "找不到指定任務" };
+    return { success: false, message: '找不到指定任務' };
   }
 
   // 檢查任務狀態，已完成的任務不允許刪除
   if (tasks[taskIndex].status === TaskStatus.COMPLETED) {
-    return { success: false, message: "無法刪除已完成的任務" };
+    return { success: false, message: '無法刪除已完成的任務' };
   }
 
   // 檢查是否有其他任務依賴此任務
   const allTasks = tasks.filter((_, index) => index !== taskIndex);
-  const dependentTasks = allTasks.filter((task) =>
-    task.dependencies.some((dep) => dep.taskId === taskId)
-  );
+  const dependentTasks = allTasks.filter((task) => task.dependencies.some((dep) => dep.taskId === taskId));
 
   if (dependentTasks.length > 0) {
-    const dependentTaskNames = dependentTasks
-      .map((task) => `"${task.name}" (ID: ${task.id})`)
-      .join(", ");
+    const dependentTaskNames = dependentTasks.map((task) => `"${task.name}" (ID: ${task.id})`).join(', ');
     return {
       success: false,
       message: `無法刪除此任務，因為以下任務依賴於它: ${dependentTaskNames}`,
@@ -543,13 +509,11 @@ export async function deleteTask(
   tasks.splice(taskIndex, 1);
   await writeTasks(tasks);
 
-  return { success: true, message: "任務刪除成功" };
+  return { success: true, message: '任務刪除成功' };
 }
 
 // 評估任務複雜度
-export async function assessTaskComplexity(
-  taskId: string
-): Promise<TaskComplexityAssessment | null> {
+export async function assessTaskComplexity(taskId: string): Promise<TaskComplexityAssessment | null> {
   const task = await getTaskById(taskId);
 
   if (!task) {
@@ -566,24 +530,16 @@ export async function assessTaskComplexity(
   let level = TaskComplexityLevel.LOW;
 
   // 描述長度評估
-  if (
-    descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.VERY_HIGH
-  ) {
+  if (descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.VERY_HIGH) {
     level = TaskComplexityLevel.VERY_HIGH;
-  } else if (
-    descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.HIGH
-  ) {
+  } else if (descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.HIGH) {
     level = TaskComplexityLevel.HIGH;
-  } else if (
-    descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.MEDIUM
-  ) {
+  } else if (descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.MEDIUM) {
     level = TaskComplexityLevel.MEDIUM;
   }
 
   // 依賴數量評估（取最高級別）
-  if (
-    dependenciesCount >= TaskComplexityThresholds.DEPENDENCIES_COUNT.VERY_HIGH
-  ) {
+  if (dependenciesCount >= TaskComplexityThresholds.DEPENDENCIES_COUNT.VERY_HIGH) {
     level = TaskComplexityLevel.VERY_HIGH;
   } else if (
     dependenciesCount >= TaskComplexityThresholds.DEPENDENCIES_COUNT.HIGH &&
@@ -601,10 +557,7 @@ export async function assessTaskComplexity(
   // 注記長度評估（取最高級別）
   if (notesLength >= TaskComplexityThresholds.NOTES_LENGTH.VERY_HIGH) {
     level = TaskComplexityLevel.VERY_HIGH;
-  } else if (
-    notesLength >= TaskComplexityThresholds.NOTES_LENGTH.HIGH &&
-    level !== TaskComplexityLevel.VERY_HIGH
-  ) {
+  } else if (notesLength >= TaskComplexityThresholds.NOTES_LENGTH.HIGH && level !== TaskComplexityLevel.VERY_HIGH) {
     level = TaskComplexityLevel.HIGH;
   } else if (
     notesLength >= TaskComplexityThresholds.NOTES_LENGTH.MEDIUM &&
@@ -619,51 +572,37 @@ export async function assessTaskComplexity(
 
   // 低複雜度任務建議
   if (level === TaskComplexityLevel.LOW) {
-    recommendations.push("此任務複雜度較低，可直接執行");
-    recommendations.push("建議設定清晰的完成標準，確保驗收有明確依據");
+    recommendations.push('此任務複雜度較低，可直接執行');
+    recommendations.push('建議設定清晰的完成標準，確保驗收有明確依據');
   }
   // 中等複雜度任務建議
   else if (level === TaskComplexityLevel.MEDIUM) {
-    recommendations.push("此任務具有一定複雜性，建議詳細規劃執行步驟");
-    recommendations.push("可分階段執行並定期檢查進度，確保理解準確且實施完整");
+    recommendations.push('此任務具有一定複雜性，建議詳細規劃執行步驟');
+    recommendations.push('可分階段執行並定期檢查進度，確保理解準確且實施完整');
     if (dependenciesCount > 0) {
-      recommendations.push("注意檢查所有依賴任務的完成狀態和輸出質量");
+      recommendations.push('注意檢查所有依賴任務的完成狀態和輸出質量');
     }
   }
   // 高複雜度任務建議
   else if (level === TaskComplexityLevel.HIGH) {
-    recommendations.push("此任務複雜度較高，建議先進行充分的分析和規劃");
-    recommendations.push("考慮將任務拆分為較小的、可獨立執行的子任務");
-    recommendations.push("建立清晰的里程碑和檢查點，便於追蹤進度和品質");
-    if (
-      dependenciesCount > TaskComplexityThresholds.DEPENDENCIES_COUNT.MEDIUM
-    ) {
-      recommendations.push(
-        "依賴任務較多，建議製作依賴關係圖，確保執行順序正確"
-      );
+    recommendations.push('此任務複雜度較高，建議先進行充分的分析和規劃');
+    recommendations.push('考慮將任務拆分為較小的、可獨立執行的子任務');
+    recommendations.push('建立清晰的里程碑和檢查點，便於追蹤進度和品質');
+    if (dependenciesCount > TaskComplexityThresholds.DEPENDENCIES_COUNT.MEDIUM) {
+      recommendations.push('依賴任務較多，建議製作依賴關係圖，確保執行順序正確');
     }
   }
   // 極高複雜度任務建議
   else if (level === TaskComplexityLevel.VERY_HIGH) {
-    recommendations.push("⚠️ 此任務複雜度極高，強烈建議拆分為多個獨立任務");
-    recommendations.push(
-      "在執行前進行詳盡的分析和規劃，明確定義各子任務的範圍和介面"
-    );
-    recommendations.push(
-      "對任務進行風險評估，識別可能的阻礙因素並制定應對策略"
-    );
-    recommendations.push("建立具體的測試和驗證標準，確保每個子任務的輸出質量");
-    if (
-      descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.VERY_HIGH
-    ) {
-      recommendations.push(
-        "任務描述非常長，建議整理關鍵點並建立結構化的執行清單"
-      );
+    recommendations.push('⚠️ 此任務複雜度極高，強烈建議拆分為多個獨立任務');
+    recommendations.push('在執行前進行詳盡的分析和規劃，明確定義各子任務的範圍和介面');
+    recommendations.push('對任務進行風險評估，識別可能的阻礙因素並制定應對策略');
+    recommendations.push('建立具體的測試和驗證標準，確保每個子任務的輸出質量');
+    if (descriptionLength >= TaskComplexityThresholds.DESCRIPTION_LENGTH.VERY_HIGH) {
+      recommendations.push('任務描述非常長，建議整理關鍵點並建立結構化的執行清單');
     }
     if (dependenciesCount >= TaskComplexityThresholds.DEPENDENCIES_COUNT.HIGH) {
-      recommendations.push(
-        "依賴任務數量過多，建議重新評估任務邊界，確保任務切分合理"
-      );
+      recommendations.push('依賴任務數量過多，建議重新評估任務邊界，確保任務切分合理');
     }
   }
 
@@ -694,24 +633,19 @@ export async function clearAllTasks(): Promise<{
 
     // 如果沒有任務，直接返回
     if (allTasks.length === 0) {
-      return { success: true, message: "沒有任務需要清除" };
+      return { success: true, message: '沒有任務需要清除' };
     }
 
     // 篩選出已完成的任務
-    const completedTasks = allTasks.filter(
-      (task) => task.status === TaskStatus.COMPLETED
-    );
+    const completedTasks = allTasks.filter((task) => task.status === TaskStatus.COMPLETED);
 
     // 創建備份文件名
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/:/g, "-")
-      .replace(/\..+/, "");
+    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
     const backupFileName = `tasks_memory_${timestamp}.json`;
 
     // 確保 memory 目錄存在
     const dataDir = await getDataDir();
-    const MEMORY_DIR = path.join(dataDir, "memory");
+    const MEMORY_DIR = path.join(dataDir, 'memory');
     try {
       await fs.access(MEMORY_DIR);
     } catch (error) {
@@ -722,10 +656,7 @@ export async function clearAllTasks(): Promise<{
     const memoryFilePath = path.join(MEMORY_DIR, backupFileName);
 
     // 同時寫入到 memory 目錄 (只包含已完成的任務)
-    await fs.writeFile(
-      memoryFilePath,
-      JSON.stringify({ tasks: completedTasks }, null, 2)
-    );
+    await fs.writeFile(memoryFilePath, JSON.stringify({ tasks: completedTasks }, null, 2));
 
     // 清空任務文件
     await writeTasks([]);
@@ -738,9 +669,7 @@ export async function clearAllTasks(): Promise<{
   } catch (error) {
     return {
       success: false,
-      message: `清除任務時發生錯誤: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      message: `清除任務時發生錯誤: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -766,7 +695,7 @@ export async function searchTasksWithCommand(
 
   // 搜尋記憶資料夾中的任務
   const dataDir = await getDataDir();
-  const MEMORY_DIR = path.join(dataDir, "memory");
+  const MEMORY_DIR = path.join(dataDir, 'memory');
 
   try {
     // 確保記憶資料夾存在
@@ -786,10 +715,10 @@ export async function searchTasksWithCommand(
           // 解析搜尋結果，提取符合的檔案路徑
           const matchedFiles = new Set<string>();
 
-          stdout.split("\n").forEach((line) => {
+          stdout.split('\n').forEach((line) => {
             if (line.trim()) {
               // 格式通常是: 文件路徑:匹配內容
-              const filePath = line.split(":")[0];
+              const filePath = line.split(':')[0];
               if (filePath) {
                 matchedFiles.add(filePath);
               }
@@ -798,38 +727,27 @@ export async function searchTasksWithCommand(
 
           // 限制讀取檔案數量
           const MAX_FILES_TO_READ = 10;
-          const sortedFiles = Array.from(matchedFiles)
-            .sort()
-            .reverse()
-            .slice(0, MAX_FILES_TO_READ);
+          const sortedFiles = Array.from(matchedFiles).sort().reverse().slice(0, MAX_FILES_TO_READ);
 
           // 只處理符合條件的檔案
           for (const filePath of sortedFiles) {
             try {
-              const data = await fs.readFile(filePath, "utf-8");
+              const data = await fs.readFile(filePath, 'utf-8');
               const tasks = JSON.parse(data).tasks || [];
 
               // 格式化日期字段
               const formattedTasks = tasks.map((task: any) => ({
                 ...task,
-                createdAt: task.createdAt
-                  ? new Date(task.createdAt)
-                  : new Date(),
-                updatedAt: task.updatedAt
-                  ? new Date(task.updatedAt)
-                  : new Date(),
-                completedAt: task.completedAt
-                  ? new Date(task.completedAt)
-                  : undefined,
+                createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+                updatedAt: task.updatedAt ? new Date(task.updatedAt) : new Date(),
+                completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
               }));
 
               // 進一步過濾任務確保符合條件
               const filteredTasks = isId
                 ? formattedTasks.filter((task: Task) => task.id === query)
                 : formattedTasks.filter((task: Task) => {
-                    const keywords = query
-                      .split(/\s+/)
-                      .filter((k) => k.length > 0);
+                    const keywords = query.split(/\s+/).filter((k) => k.length > 0);
                     if (keywords.length === 0) return true;
 
                     return keywords.every((keyword) => {
@@ -837,14 +755,9 @@ export async function searchTasksWithCommand(
                       return (
                         task.name.toLowerCase().includes(lowerKeyword) ||
                         task.description.toLowerCase().includes(lowerKeyword) ||
-                        (task.notes &&
-                          task.notes.toLowerCase().includes(lowerKeyword)) ||
-                        (task.implementationGuide &&
-                          task.implementationGuide
-                            .toLowerCase()
-                            .includes(lowerKeyword)) ||
-                        (task.summary &&
-                          task.summary.toLowerCase().includes(lowerKeyword))
+                        (task.notes && task.notes.toLowerCase().includes(lowerKeyword)) ||
+                        (task.implementationGuide && task.implementationGuide.toLowerCase().includes(lowerKeyword)) ||
+                        (task.summary && task.summary.toLowerCase().includes(lowerKeyword))
                       );
                     });
                   });
@@ -913,17 +826,13 @@ export async function searchTasksWithCommand(
 }
 
 // 根據平台生成適當的搜尋命令
-function generateSearchCommand(
-  query: string,
-  isId: boolean,
-  memoryDir: string
-): string {
+function generateSearchCommand(query: string, isId: boolean, memoryDir: string): string {
   // 安全地轉義用戶輸入
   const safeQuery = escapeShellArg(query);
   const keywords = safeQuery.split(/\s+/).filter((k) => k.length > 0);
 
   // 檢測操作系統類型
-  const isWindows = process.platform === "win32";
+  const isWindows = process.platform === 'win32';
 
   if (isWindows) {
     // Windows環境，使用findstr命令
@@ -935,7 +844,7 @@ function generateSearchCommand(
       return `findstr /s /i /c:"${safeQuery}" "${memoryDir}\\*.json"`;
     } else {
       // 多關鍵字搜尋 - Windows中使用PowerShell
-      const keywordPatterns = keywords.map((k) => `'${k}'`).join(" -and ");
+      const keywordPatterns = keywords.map((k) => `'${k}'`).join(' -and ');
       return `powershell -Command "Get-ChildItem -Path '${memoryDir}' -Filter *.json -Recurse | Select-String -Pattern ${keywordPatterns} | ForEach-Object { $_.Path }"`;
     }
   } else {
@@ -962,20 +871,16 @@ function generateSearchCommand(
  * 安全地轉義shell參數，防止命令注入
  */
 function escapeShellArg(arg: string): string {
-  if (!arg) return "";
+  if (!arg) return '';
 
   // 移除所有控制字符和特殊字符
   return arg
-    .replace(/[\x00-\x1F\x7F]/g, "") // 控制字符
-    .replace(/[&;`$"'<>|]/g, ""); // Shell 特殊字符
+    .replace(/[\x00-\x1F\x7F]/g, '') // 控制字符
+    .replace(/[&;`$"'<>|]/g, ''); // Shell 特殊字符
 }
 
 // 過濾當前任務列表
-function filterCurrentTasks(
-  tasks: Task[],
-  query: string,
-  isId: boolean
-): Task[] {
+function filterCurrentTasks(tasks: Task[], query: string, isId: boolean): Task[] {
   if (isId) {
     return tasks.filter((task) => task.id === query);
   } else {
@@ -989,8 +894,7 @@ function filterCurrentTasks(
           task.name.toLowerCase().includes(lowerKeyword) ||
           task.description.toLowerCase().includes(lowerKeyword) ||
           (task.notes && task.notes.toLowerCase().includes(lowerKeyword)) ||
-          (task.implementationGuide &&
-            task.implementationGuide.toLowerCase().includes(lowerKeyword)) ||
+          (task.implementationGuide && task.implementationGuide.toLowerCase().includes(lowerKeyword)) ||
           (task.summary && task.summary.toLowerCase().includes(lowerKeyword))
         );
       });
@@ -1049,9 +953,7 @@ export async function createChainTask(
  */
 export async function getChainTasks(chainId: string): Promise<Task[]> {
   const tasks = await readTasks();
-  return tasks
-    .filter((task) => task.chainId === chainId)
-    .sort((a, b) => (a.stepIndex || 0) - (b.stepIndex || 0));
+  return tasks.filter((task) => task.chainId === chainId).sort((a, b) => (a.stepIndex || 0) - (b.stepIndex || 0));
 }
 
 /**
@@ -1060,14 +962,9 @@ export async function getChainTasks(chainId: string): Promise<Task[]> {
  * @param currentStepIndex 当前步骤索引
  * @returns 下一个步骤的任务或null
  */
-export async function getNextChainStep(
-  chainId: string,
-  currentStepIndex: number
-): Promise<Task | null> {
+export async function getNextChainStep(chainId: string, currentStepIndex: number): Promise<Task | null> {
   const tasks = await readTasks();
-  return tasks.find(
-    (task) => task.chainId === chainId && task.stepIndex === currentStepIndex + 1
-  ) || null;
+  return tasks.find((task) => task.chainId === chainId && task.stepIndex === currentStepIndex + 1) || null;
 }
 
 /**
@@ -1122,13 +1019,11 @@ export async function passDataToNextStep(
  * @param taskId 任务ID
  * @returns 检查结果
  */
-export async function canExecuteChainTask(
-  taskId: string
-): Promise<{ canExecute: boolean; reason?: string }> {
+export async function canExecuteChainTask(taskId: string): Promise<{ canExecute: boolean; reason?: string }> {
   const task = await getTaskById(taskId);
 
   if (!task) {
-    return { canExecute: false, reason: "任务不存在" };
+    return { canExecute: false, reason: '任务不存在' };
   }
 
   if (!task.chainId) {
@@ -1136,28 +1031,28 @@ export async function canExecuteChainTask(
     const result = await canExecuteTask(taskId);
     return {
       canExecute: result.canExecute,
-      reason: result.blockedBy ? `被以下任务阻塞: ${result.blockedBy.join(", ")}` : undefined,
+      reason: result.blockedBy ? `被以下任务阻塞: ${result.blockedBy.join(', ')}` : undefined,
     };
   }
 
   // 链式任务检查
   if (task.chainStatus === ChainExecutionStatus.CHAIN_FAILED) {
-    return { canExecute: false, reason: "链式执行已失败" };
+    return { canExecute: false, reason: '链式执行已失败' };
   }
 
   if (task.chainStatus === ChainExecutionStatus.CHAIN_CANCELLED) {
-    return { canExecute: false, reason: "链式执行已取消" };
+    return { canExecute: false, reason: '链式执行已取消' };
   }
 
   if (task.chainStatus === ChainExecutionStatus.WAITING_FOR_PARENT && task.parentStepId) {
     const parentTask = await getTaskById(task.parentStepId);
     if (!parentTask || parentTask.status !== TaskStatus.COMPLETED) {
-      return { canExecute: false, reason: "等待父步骤完成" };
+      return { canExecute: false, reason: '等待父步骤完成' };
     }
   }
 
   if (task.chainStatus === ChainExecutionStatus.WAITING_FOR_DATA) {
-    return { canExecute: false, reason: "等待数据传递" };
+    return { canExecute: false, reason: '等待数据传递' };
   }
 
   return { canExecute: true };
@@ -1173,7 +1068,7 @@ export async function getChainProgress(chainId: string): Promise<{
   completedSteps: number;
   currentStep: number;
   progress: number;
-  status: "pending" | "running" | "completed" | "failed" | "cancelled";
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 }> {
   const chainTasks = await getChainTasks(chainId);
 
@@ -1183,31 +1078,27 @@ export async function getChainProgress(chainId: string): Promise<{
       completedSteps: 0,
       currentStep: 0,
       progress: 0,
-      status: "pending",
+      status: 'pending',
     };
   }
 
-  const completedSteps = chainTasks.filter(task => task.status === TaskStatus.COMPLETED).length;
-  const failedTasks = chainTasks.filter(task =>
-    task.chainStatus === ChainExecutionStatus.CHAIN_FAILED
-  );
-  const cancelledTasks = chainTasks.filter(task =>
-    task.chainStatus === ChainExecutionStatus.CHAIN_CANCELLED
-  );
-  const runningTasks = chainTasks.filter(task => task.status === TaskStatus.IN_PROGRESS);
+  const completedSteps = chainTasks.filter((task) => task.status === TaskStatus.COMPLETED).length;
+  const failedTasks = chainTasks.filter((task) => task.chainStatus === ChainExecutionStatus.CHAIN_FAILED);
+  const cancelledTasks = chainTasks.filter((task) => task.chainStatus === ChainExecutionStatus.CHAIN_CANCELLED);
+  const runningTasks = chainTasks.filter((task) => task.status === TaskStatus.IN_PROGRESS);
 
-  let status: "pending" | "running" | "completed" | "failed" | "cancelled";
+  let status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
   if (cancelledTasks.length > 0) {
-    status = "cancelled";
+    status = 'cancelled';
   } else if (failedTasks.length > 0) {
-    status = "failed";
+    status = 'failed';
   } else if (completedSteps === chainTasks.length) {
-    status = "completed";
+    status = 'completed';
   } else if (runningTasks.length > 0) {
-    status = "running";
+    status = 'running';
   } else {
-    status = "pending";
+    status = 'pending';
   }
 
   const currentStep = Math.max(0, completedSteps);
@@ -1237,7 +1128,7 @@ export async function cancelChainExecution(chainId: string): Promise<{
   if (chainTasks.length === 0) {
     return {
       success: false,
-      message: "未找到指定的链式执行",
+      message: '未找到指定的链式执行',
       cancelledTasks: 0,
     };
   }

@@ -3,10 +3,10 @@
  * 解析 PRD 文档并提取结构化信息，支持团队协作分析
  */
 
-import { 
-  PRDDocument, 
-  PRDContent, 
-  PRDMetadata, 
+import {
+  PRDDocument,
+  PRDContent,
+  PRDMetadata,
   PRDAnalysis,
   UserStory,
   FunctionalRequirement,
@@ -18,9 +18,9 @@ import {
   TeamComposition,
   Component,
   WorkflowPhase,
-  PRDParsingOptions
-} from "./types.js";
-import { RoleDefinitions } from "./roles/RoleDefinitions.js";
+  PRDParsingOptions,
+} from './types.js';
+import { RoleDefinitions } from './roles/RoleDefinitions.js';
 
 export class PRDParser {
   private options: PRDParsingOptions;
@@ -30,7 +30,7 @@ export class PRDParser {
       language: 'zh',
       includeAnalysis: true,
       generateTasks: true,
-      ...options
+      ...options,
     };
   }
 
@@ -43,7 +43,7 @@ export class PRDParser {
   async parseDocument(content: string, metadata?: Partial<PRDMetadata>): Promise<PRDDocument> {
     const parsedContent = this.parseContent(content);
     const documentMetadata = this.extractMetadata(content, metadata);
-    
+
     let analysis: PRDAnalysis | undefined;
     if (this.options.includeAnalysis) {
       analysis = await this.analyzeDocument(parsedContent, documentMetadata);
@@ -52,7 +52,7 @@ export class PRDParser {
     return {
       metadata: documentMetadata,
       content: parsedContent,
-      analysis
+      analysis,
     };
   }
 
@@ -63,7 +63,7 @@ export class PRDParser {
    */
   private parseContent(content: string): PRDContent {
     const sections = this.extractSections(content);
-    
+
     return {
       overview: sections.overview || '',
       objectives: this.extractObjectives(sections.objectives || ''),
@@ -74,7 +74,7 @@ export class PRDParser {
       constraints: this.extractList(sections.constraints || ''),
       assumptions: this.extractList(sections.assumptions || ''),
       dependencies: this.extractList(sections.dependencies || ''),
-      successMetrics: this.extractList(sections.successMetrics || '')
+      successMetrics: this.extractList(sections.successMetrics || ''),
     };
   }
 
@@ -100,12 +100,12 @@ export class PRDParser {
       constraints: /^#+\s*(约束|限制|constraints|limitations)/i,
       assumptions: /^#+\s*(假设|前提|assumptions)/i,
       dependencies: /^#+\s*(依赖|依赖关系|dependencies)/i,
-      successMetrics: /^#+\s*(成功指标|验收标准|success\s*metrics|acceptance\s*criteria)/i
+      successMetrics: /^#+\s*(成功指标|验收标准|success\s*metrics|acceptance\s*criteria)/i,
     };
 
     for (const line of lines) {
       let matchedSection = '';
-      
+
       // 检查是否匹配任何章节标题
       for (const [section, pattern] of Object.entries(sectionPatterns)) {
         if (pattern.test(line)) {
@@ -119,7 +119,7 @@ export class PRDParser {
         if (currentSection) {
           sections[currentSection] = currentContent.join('\n').trim();
         }
-        
+
         // 开始新章节
         currentSection = matchedSection;
         currentContent = [];
@@ -172,7 +172,7 @@ export class PRDParser {
    * @returns 用户故事对象
    */
   private parseUserStory(block: string, index: number): UserStory | null {
-    const lines = block.split('\n').filter(line => line.trim());
+    const lines = block.split('\n').filter((line) => line.trim());
     if (lines.length === 0) return null;
 
     const title = lines[0].replace(/^#+\s*/, '').trim();
@@ -180,7 +180,7 @@ export class PRDParser {
 
     // 提取验收标准
     const acceptanceCriteria = this.extractAcceptanceCriteria(description);
-    
+
     // 分析涉及的角色
     const involvedRoles = this.analyzeInvolvedRoles(description);
 
@@ -192,7 +192,7 @@ export class PRDParser {
       acceptanceCriteria,
       priority: this.estimatePriority(description),
       estimatedEffort: this.estimateEffort(description),
-      involvedRoles
+      involvedRoles,
     };
   }
 
@@ -223,7 +223,7 @@ export class PRDParser {
    * @returns 功能需求对象
    */
   private parseFunctionalRequirement(block: string, index: number): FunctionalRequirement | null {
-    const lines = block.split('\n').filter(line => line.trim());
+    const lines = block.split('\n').filter((line) => line.trim());
     if (lines.length === 0) return null;
 
     const title = lines[0].replace(/^#+\s*/, '').trim();
@@ -237,7 +237,7 @@ export class PRDParser {
       priority: this.estimatePriority(description),
       complexity: this.estimateComplexity(description),
       involvedRoles: this.analyzeInvolvedRoles(description),
-      dependencies: this.extractDependencies(description)
+      dependencies: this.extractDependencies(description),
     };
   }
 
@@ -268,7 +268,7 @@ export class PRDParser {
    * @returns 非功能需求对象
    */
   private parseNonFunctionalRequirement(block: string, index: number): NonFunctionalRequirement | null {
-    const lines = block.split('\n').filter(line => line.trim());
+    const lines = block.split('\n').filter((line) => line.trim());
     if (lines.length === 0) return null;
 
     const description = lines.join('\n').trim();
@@ -279,7 +279,7 @@ export class PRDParser {
       type,
       description,
       metrics: this.extractMetrics(description),
-      involvedRoles: this.analyzeInvolvedRoles(description)
+      involvedRoles: this.analyzeInvolvedRoles(description),
     };
   }
 
@@ -291,7 +291,7 @@ export class PRDParser {
    */
   private extractMetadata(content: string, provided?: Partial<PRDMetadata>): PRDMetadata {
     const now = new Date();
-    
+
     return {
       title: provided?.title || this.extractTitle(content),
       version: provided?.version || '1.0.0',
@@ -302,7 +302,7 @@ export class PRDParser {
       techStack: provided?.techStack || this.inferTechStack(content),
       teamSize: provided?.teamSize || this.estimateTeamSize(content),
       timeline: provided?.timeline || this.estimateTimeline(content),
-      priority: provided?.priority || this.estimateProjectPriority(content)
+      priority: provided?.priority || this.estimateProjectPriority(content),
     };
   }
 
@@ -327,7 +327,7 @@ export class PRDParser {
       identifiedComponents: components,
       workflowPhases,
       riskAssessment,
-      dependencies
+      dependencies,
     };
   }
 
@@ -336,7 +336,7 @@ export class PRDParser {
   private extractList(content: string): string[] {
     const items: string[] = [];
     const lines = content.split('\n');
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed.match(/^[-*+]\s+/) || trimmed.match(/^\d+\.\s+/)) {
@@ -345,18 +345,18 @@ export class PRDParser {
         items.push(trimmed);
       }
     }
-    
-    return items.filter(item => item.length > 0);
+
+    return items.filter((item) => item.length > 0);
   }
 
   private extractStoryBlocks(content: string): string[] {
     // 简化实现：按段落分割
-    return content.split('\n\n').filter(block => block.trim().length > 0);
+    return content.split('\n\n').filter((block) => block.trim().length > 0);
   }
 
   private extractRequirementBlocks(content: string): string[] {
     // 简化实现：按段落分割
-    return content.split('\n\n').filter(block => block.trim().length > 0);
+    return content.split('\n\n').filter((block) => block.trim().length > 0);
   }
 
   private extractTitle(content: string): string {
@@ -372,7 +372,7 @@ export class PRDParser {
   private extractAcceptanceCriteria(description: string): string[] {
     const criteria: string[] = [];
     const lines = description.split('\n');
-    
+
     for (const line of lines) {
       if (line.includes('验收标准') || line.includes('acceptance criteria')) {
         // 提取后续的列表项
@@ -388,7 +388,7 @@ export class PRDParser {
         break;
       }
     }
-    
+
     return criteria;
   }
 
@@ -402,11 +402,11 @@ export class PRDParser {
       'backend-developer': ['后端', 'API', '数据库', 'backend', 'server', 'database'],
       'mobile-developer': ['移动', '手机', 'APP', 'mobile', 'iOS', 'Android'],
       'qa-engineer': ['测试', '质量', 'test', 'quality', 'QA'],
-      'devops-engineer': ['部署', '运维', 'deploy', 'devops', 'infrastructure']
+      'devops-engineer': ['部署', '运维', 'deploy', 'devops', 'infrastructure'],
     };
 
     for (const [role, keywords] of Object.entries(roleKeywords)) {
-      if (keywords.some(keyword => description.toLowerCase().includes(keyword.toLowerCase()))) {
+      if (keywords.some((keyword) => description.toLowerCase().includes(keyword.toLowerCase()))) {
         roles.push(role as TeamRole);
       }
     }
@@ -417,15 +417,15 @@ export class PRDParser {
   private estimatePriority(description: string): number {
     const highPriorityKeywords = ['重要', '关键', '核心', '必须', 'critical', 'important', 'must'];
     const lowPriorityKeywords = ['可选', '建议', '优化', 'optional', 'nice to have'];
-    
+
     const text = description.toLowerCase();
-    
-    if (highPriorityKeywords.some(keyword => text.includes(keyword.toLowerCase()))) {
+
+    if (highPriorityKeywords.some((keyword) => text.includes(keyword.toLowerCase()))) {
       return 1;
-    } else if (lowPriorityKeywords.some(keyword => text.includes(keyword.toLowerCase()))) {
+    } else if (lowPriorityKeywords.some((keyword) => text.includes(keyword.toLowerCase()))) {
       return 3;
     }
-    
+
     return 2; // 默认中等优先级
   }
 
@@ -441,48 +441,44 @@ export class PRDParser {
     const complexityKeywords = {
       high: ['复杂', '集成', '算法', '性能', 'complex', 'integration', 'algorithm'],
       medium: ['中等', '标准', 'standard', 'normal'],
-      low: ['简单', '基础', 'simple', 'basic']
+      low: ['简单', '基础', 'simple', 'basic'],
     };
 
     const text = description.toLowerCase();
-    
-    if (complexityKeywords.high.some(keyword => text.includes(keyword.toLowerCase()))) {
+
+    if (complexityKeywords.high.some((keyword) => text.includes(keyword.toLowerCase()))) {
       return 'high';
-    } else if (complexityKeywords.low.some(keyword => text.includes(keyword.toLowerCase()))) {
+    } else if (complexityKeywords.low.some((keyword) => text.includes(keyword.toLowerCase()))) {
       return 'low';
     }
-    
+
     return 'medium';
   }
 
   private categorizeRequirement(description: string): string {
     const categories = {
-      '用户界面': ['界面', '页面', '显示', 'UI', 'interface'],
-      '数据处理': ['数据', '存储', '处理', 'data', 'storage'],
-      '业务逻辑': ['业务', '逻辑', '流程', 'business', 'logic'],
-      '集成': ['集成', '接口', 'API', 'integration'],
-      '安全': ['安全', '权限', 'security', 'permission']
+      用户界面: ['界面', '页面', '显示', 'UI', 'interface'],
+      数据处理: ['数据', '存储', '处理', 'data', 'storage'],
+      业务逻辑: ['业务', '逻辑', '流程', 'business', 'logic'],
+      集成: ['集成', '接口', 'API', 'integration'],
+      安全: ['安全', '权限', 'security', 'permission'],
     };
 
     const text = description.toLowerCase();
-    
+
     for (const [category, keywords] of Object.entries(categories)) {
-      if (keywords.some(keyword => text.includes(keyword.toLowerCase()))) {
+      if (keywords.some((keyword) => text.includes(keyword.toLowerCase()))) {
         return category;
       }
     }
-    
+
     return '其他';
   }
 
   private extractDependencies(description: string): string[] {
     // 简化实现：查找依赖关键词
     const dependencies: string[] = [];
-    const dependencyPatterns = [
-      /依赖于\s*([^，,。.]+)/g,
-      /需要\s*([^，,。.]+)/g,
-      /基于\s*([^，,。.]+)/g
-    ];
+    const dependencyPatterns = [/依赖于\s*([^，,。.]+)/g, /需要\s*([^，,。.]+)/g, /基于\s*([^，,。.]+)/g];
 
     for (const pattern of dependencyPatterns) {
       let match;
@@ -496,14 +492,14 @@ export class PRDParser {
 
   private classifyNonFunctionalRequirement(description: string): NonFunctionalRequirement['type'] {
     const text = description.toLowerCase();
-    
+
     if (text.includes('性能') || text.includes('performance')) return 'performance';
     if (text.includes('安全') || text.includes('security')) return 'security';
     if (text.includes('可用性') || text.includes('usability')) return 'usability';
     if (text.includes('扩展') || text.includes('scalability')) return 'scalability';
     if (text.includes('可靠') || text.includes('reliability')) return 'reliability';
     if (text.includes('维护') || text.includes('maintainability')) return 'maintainability';
-    
+
     return 'performance'; // 默认
   }
 
@@ -512,7 +508,7 @@ export class PRDParser {
     const metricPatterns = [
       /(\d+(?:\.\d+)?)\s*(秒|ms|毫秒|分钟|小时)/g,
       /(\d+(?:\.\d+)?)\s*%/g,
-      /(\d+(?:\.\d+)?)\s*(MB|GB|KB)/g
+      /(\d+(?:\.\d+)?)\s*(MB|GB|KB)/g,
     ];
 
     for (const pattern of metricPatterns) {
@@ -527,13 +523,13 @@ export class PRDParser {
 
   private inferProjectType(content: string): ProjectType {
     const text = content.toLowerCase();
-    
+
     if (text.includes('移动') || text.includes('app') || text.includes('mobile')) return 'mobile-application';
     if (text.includes('网站') || text.includes('web') || text.includes('网页')) return 'web-application';
     if (text.includes('api') || text.includes('接口') || text.includes('服务')) return 'api-service';
     if (text.includes('数据') || text.includes('data') || text.includes('分析')) return 'data-platform';
     if (text.includes('电商') || text.includes('商城') || text.includes('购物')) return 'e-commerce';
-    
+
     return 'web-application'; // 默认
   }
 
@@ -543,15 +539,15 @@ export class PRDParser {
 
     // 前端技术
     const frontendTechs = ['react', 'vue', 'angular', 'html', 'css', 'javascript'];
-    techStack.frontend = frontendTechs.filter(tech => text.includes(tech));
+    techStack.frontend = frontendTechs.filter((tech) => text.includes(tech));
 
     // 后端技术
     const backendTechs = ['node.js', 'java', 'python', 'go', 'php', '.net'];
-    techStack.backend = backendTechs.filter(tech => text.includes(tech));
+    techStack.backend = backendTechs.filter((tech) => text.includes(tech));
 
     // 数据库
     const databases = ['mysql', 'postgresql', 'mongodb', 'redis'];
-    techStack.database = databases.filter(db => text.includes(db));
+    techStack.database = databases.filter((db) => text.includes(db));
 
     return techStack;
   }
@@ -574,11 +570,11 @@ export class PRDParser {
 
   private estimateProjectPriority(content: string): 'low' | 'medium' | 'high' | 'critical' {
     const text = content.toLowerCase();
-    
+
     if (text.includes('紧急') || text.includes('critical') || text.includes('urgent')) return 'critical';
     if (text.includes('重要') || text.includes('important') || text.includes('high')) return 'high';
     if (text.includes('一般') || text.includes('normal') || text.includes('medium')) return 'medium';
-    
+
     return 'medium'; // 默认
   }
 
@@ -590,7 +586,7 @@ export class PRDParser {
       technical: 5,
       business: 5,
       integration: 5,
-      factors: ['标准复杂度项目']
+      factors: ['标准复杂度项目'],
     };
   }
 
@@ -603,8 +599,8 @@ export class PRDParser {
       workload: {
         'product-manager': 20,
         'frontend-developer': 40,
-        'backend-developer': 40
-      } as Record<TeamRole, number>
+        'backend-developer': 40,
+      } as Record<TeamRole, number>,
     };
   }
 
@@ -620,9 +616,9 @@ export class PRDParser {
         description: req.description,
         complexity: req.complexity,
         primaryRole: this.determinePrimaryRole(req.involvedRoles),
-        supportingRoles: req.involvedRoles.filter(role => role !== this.determinePrimaryRole(req.involvedRoles)),
+        supportingRoles: req.involvedRoles.filter((role) => role !== this.determinePrimaryRole(req.involvedRoles)),
         dependencies: req.dependencies,
-        estimatedEffort: this.estimateComponentEffort(req.complexity)
+        estimatedEffort: this.estimateComponentEffort(req.complexity),
       };
       components.push(component);
     });
@@ -643,7 +639,13 @@ export class PRDParser {
   }
 
   private determinePrimaryRole(roles: TeamRole[]): TeamRole {
-    const priorityOrder: TeamRole[] = ['product-manager', 'tech-lead', 'frontend-developer', 'backend-developer', 'ui-designer'];
+    const priorityOrder: TeamRole[] = [
+      'product-manager',
+      'tech-lead',
+      'frontend-developer',
+      'backend-developer',
+      'ui-designer',
+    ];
 
     for (const role of priorityOrder) {
       if (roles.includes(role)) {
@@ -658,7 +660,7 @@ export class PRDParser {
     const effortMap = {
       low: 3,
       medium: 8,
-      high: 20
+      high: 20,
     };
     return effortMap[complexity];
   }
@@ -674,7 +676,7 @@ export class PRDParser {
       technicalRisks: [],
       businessRisks: [],
       resourceRisks: [],
-      timelineRisks: []
+      timelineRisks: [],
     };
   }
 
@@ -682,7 +684,7 @@ export class PRDParser {
     // 简化实现
     return {
       nodes: [],
-      edges: []
+      edges: [],
     };
   }
 

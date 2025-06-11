@@ -38,16 +38,16 @@ export type {
   TaskTemplate,
   TemplateVariation,
   CollaborationPattern,
-  MeetingType
-} from "./types.js";
+  MeetingType,
+} from './types.js';
 
 // 导出核心类
-export { PRDParser } from "./parser.js";
-export { TeamCollaborativeTaskGenerator } from "./generator.js";
-export { RoleDefinitions } from "./roles/RoleDefinitions.js";
+export { PRDParser } from './parser.js';
+export { TeamCollaborativeTaskGenerator } from './generator.js';
+export { RoleDefinitions } from './roles/RoleDefinitions.js';
 
 // 导出工具函数
-export { 
+export {
   createPRDProcessor,
   generateTeamTasks,
   analyzePRDComplexity,
@@ -55,5 +55,5 @@ export {
   formatTaskSummary,
   exportTasksToJSON,
   exportTasksToMarkdown,
-  validateTaskDependencies
-} from "./utils.js";
+  validateTaskDependencies,
+} from './utils.js';
