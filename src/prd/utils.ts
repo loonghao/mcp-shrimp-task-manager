@@ -3,9 +3,9 @@
  * 提供便捷的 PRD 处理和任务生成功能
  */
 
-import { PRDParser } from "./parser.js";
-import { TeamCollaborativeTaskGenerator } from "./generator.js";
-import { RoleDefinitions } from "./roles/RoleDefinitions.js";
+import { PRDParser } from './parser.js';
+import { TeamCollaborativeTaskGenerator } from './generator.js';
+import { RoleDefinitions } from './roles/RoleDefinitions.js';
 import {
   PRDDocument,
   GeneratedTaskSet,
@@ -14,8 +14,8 @@ import {
   TaskGenerationOptions,
   ProjectComplexity,
   TeamComposition,
-  RoleTask
-} from "./types.js";
+  RoleTask,
+} from './types.js';
 
 /**
  * 创建 PRD 处理器
@@ -33,22 +33,25 @@ export function createPRDProcessor(
   return {
     parser,
     generator,
-    
+
     /**
      * 处理 PRD 并生成团队任务
      * @param prdContent PRD 内容
      * @param metadata 可选的元数据
      * @returns 生成的任务集
      */
-    async processPRD(prdContent: string, metadata?: any): Promise<{
+    async processPRD(
+      prdContent: string,
+      metadata?: any
+    ): Promise<{
       document: PRDDocument;
       taskSet: GeneratedTaskSet;
     }> {
       const document = await parser.parseDocument(prdContent, metadata);
       const taskSet = await generator.generateTaskSet(document);
-      
+
       return { document, taskSet };
-    }
+    },
   };
 }
 
@@ -58,15 +61,12 @@ export function createPRDProcessor(
  * @param targetRoles 目标角色
  * @returns 生成的任务集
  */
-export async function generateTeamTasks(
-  prdContent: string,
-  targetRoles?: TeamRole[]
-): Promise<GeneratedTaskSet> {
+export async function generateTeamTasks(prdContent: string, targetRoles?: TeamRole[]): Promise<GeneratedTaskSet> {
   const processor = createPRDProcessor(
     { includeAnalysis: true },
     { targetRoles: targetRoles || RoleDefinitions.getCoreRoles() }
   );
-  
+
   const result = await processor.processPRD(prdContent);
   return result.taskSet;
 }
@@ -79,11 +79,11 @@ export async function generateTeamTasks(
 export async function analyzePRDComplexity(prdContent: string): Promise<ProjectComplexity> {
   const parser = new PRDParser({ includeAnalysis: true });
   const document = await parser.parseDocument(prdContent);
-  
+
   if (!document.analysis) {
     throw new Error('Analysis not available');
   }
-  
+
   return document.analysis.complexity;
 }
 
@@ -95,11 +95,11 @@ export async function analyzePRDComplexity(prdContent: string): Promise<ProjectC
 export async function recommendTeamComposition(prdContent: string): Promise<TeamComposition> {
   const parser = new PRDParser({ includeAnalysis: true });
   const document = await parser.parseDocument(prdContent);
-  
+
   if (!document.analysis) {
     throw new Error('Analysis not available');
   }
-  
+
   return document.analysis.recommendedTeam;
 }
 
@@ -121,7 +121,7 @@ export function formatTaskSummary(taskSet: GeneratedTaskSet): string {
   for (const [role, tasks] of Object.entries(taskSet.roleBasedTasks)) {
     const roleDefinition = RoleDefinitions.getRoleDefinition(role as TeamRole);
     const totalHours = tasks.reduce((sum, task) => sum + task.estimatedHours, 0);
-    
+
     summary += `### ${roleDefinition.name.zh} (${role})\n`;
     summary += `- 任务数量: ${tasks.length}\n`;
     summary += `- 预估工时: ${totalHours}小时\n`;
@@ -131,7 +131,7 @@ export function formatTaskSummary(taskSet: GeneratedTaskSet): string {
   // 跨角色协作任务
   if (taskSet.crossRoleTasks.length > 0) {
     summary += `## 跨角色协作任务\n\n`;
-    taskSet.crossRoleTasks.forEach(task => {
+    taskSet.crossRoleTasks.forEach((task) => {
       summary += `- **${task.title}**: ${task.description}\n`;
       summary += `  - 涉及角色: ${task.involvedRoles.join('、')}\n`;
       summary += `  - 协调者: ${task.coordinator}\n\n`;
@@ -141,7 +141,7 @@ export function formatTaskSummary(taskSet: GeneratedTaskSet): string {
   // 里程碑
   if (taskSet.milestones.length > 0) {
     summary += `## 项目里程碑\n\n`;
-    taskSet.milestones.forEach(milestone => {
+    taskSet.milestones.forEach((milestone) => {
       summary += `- **${milestone.name}**: ${milestone.description}\n`;
       summary += `  - 验收标准: ${milestone.criteria.join('、')}\n\n`;
     });
@@ -166,7 +166,7 @@ export function exportTasksToJSON(taskSet: GeneratedTaskSet): string {
  */
 export function exportTasksToMarkdown(taskSet: GeneratedTaskSet): string {
   let markdown = `# ${taskSet.metadata.prdId} - 团队协作任务清单\n\n`;
-  
+
   // 元数据
   markdown += `## 项目信息\n\n`;
   markdown += `- **生成时间**: ${taskSet.metadata.generatedAt.toLocaleString()}\n`;
@@ -177,10 +177,10 @@ export function exportTasksToMarkdown(taskSet: GeneratedTaskSet): string {
   // 角色任务
   for (const [role, tasks] of Object.entries(taskSet.roleBasedTasks)) {
     const roleDefinition = RoleDefinitions.getRoleDefinition(role as TeamRole);
-    
+
     markdown += `## ${roleDefinition.name.zh} 任务清单\n\n`;
-    
-    tasks.forEach(task => {
+
+    tasks.forEach((task) => {
       markdown += `### ${task.title}\n\n`;
       markdown += `- **任务ID**: ${task.id}\n`;
       markdown += `- **描述**: ${task.description}\n`;
@@ -189,20 +189,20 @@ export function exportTasksToMarkdown(taskSet: GeneratedTaskSet): string {
       markdown += `- **复杂度**: ${task.complexity}\n`;
       markdown += `- **技能要求**: ${task.skills.join('、')}\n`;
       markdown += `- **交付物**: ${task.deliverables.join('、')}\n`;
-      
+
       if (task.dependencies.length > 0) {
         markdown += `- **依赖任务**: ${task.dependencies.join('、')}\n`;
       }
-      
+
       if (task.collaboratesWith.length > 0) {
         markdown += `- **协作角色**: ${task.collaboratesWith.join('、')}\n`;
       }
-      
+
       markdown += `\n**验收标准**:\n`;
-      task.acceptanceCriteria.forEach(criteria => {
+      task.acceptanceCriteria.forEach((criteria) => {
         markdown += `- ${criteria}\n`;
       });
-      
+
       markdown += `\n---\n\n`;
     });
   }
@@ -210,8 +210,8 @@ export function exportTasksToMarkdown(taskSet: GeneratedTaskSet): string {
   // 跨角色任务
   if (taskSet.crossRoleTasks.length > 0) {
     markdown += `## 跨角色协作任务\n\n`;
-    
-    taskSet.crossRoleTasks.forEach(task => {
+
+    taskSet.crossRoleTasks.forEach((task) => {
       markdown += `### ${task.title}\n\n`;
       markdown += `- **任务ID**: ${task.id}\n`;
       markdown += `- **描述**: ${task.description}\n`;
@@ -227,18 +227,18 @@ export function exportTasksToMarkdown(taskSet: GeneratedTaskSet): string {
   // 里程碑
   if (taskSet.milestones.length > 0) {
     markdown += `## 项目里程碑\n\n`;
-    
-    taskSet.milestones.forEach(milestone => {
+
+    taskSet.milestones.forEach((milestone) => {
       markdown += `### ${milestone.name}\n\n`;
       markdown += `- **描述**: ${milestone.description}\n`;
       markdown += `- **涉及角色**: ${milestone.involvedRoles.join('、')}\n`;
       markdown += `- **交付物**: ${milestone.deliverables.join('、')}\n`;
-      
+
       markdown += `\n**完成标准**:\n`;
-      milestone.criteria.forEach(criteria => {
+      milestone.criteria.forEach((criteria) => {
         markdown += `- ${criteria}\n`;
       });
-      
+
       markdown += `\n---\n\n`;
     });
   }
@@ -258,40 +258,44 @@ export function validateTaskDependencies(taskSet: GeneratedTaskSet): {
 } {
   const errors: string[] = [];
   const warnings: string[] = [];
-  
+
   // 收集所有任务ID
   const allTaskIds = new Set<string>();
-  Object.values(taskSet.roleBasedTasks).flat().forEach(task => {
-    allTaskIds.add(task.id);
-  });
-  taskSet.crossRoleTasks.forEach(task => {
+  Object.values(taskSet.roleBasedTasks)
+    .flat()
+    .forEach((task) => {
+      allTaskIds.add(task.id);
+    });
+  taskSet.crossRoleTasks.forEach((task) => {
     allTaskIds.add(task.id);
   });
 
   // 验证角色任务的依赖
-  Object.values(taskSet.roleBasedTasks).flat().forEach(task => {
-    task.dependencies.forEach(depId => {
-      if (!allTaskIds.has(depId)) {
-        errors.push(`任务 ${task.id} 依赖的任务 ${depId} 不存在`);
-      }
-    });
+  Object.values(taskSet.roleBasedTasks)
+    .flat()
+    .forEach((task) => {
+      task.dependencies.forEach((depId) => {
+        if (!allTaskIds.has(depId)) {
+          errors.push(`任务 ${task.id} 依赖的任务 ${depId} 不存在`);
+        }
+      });
 
-    task.blockedBy.forEach(blockerId => {
-      if (!allTaskIds.has(blockerId)) {
-        errors.push(`任务 ${task.id} 被不存在的任务 ${blockerId} 阻塞`);
-      }
-    });
+      task.blockedBy.forEach((blockerId) => {
+        if (!allTaskIds.has(blockerId)) {
+          errors.push(`任务 ${task.id} 被不存在的任务 ${blockerId} 阻塞`);
+        }
+      });
 
-    task.blocks.forEach(blockedId => {
-      if (!allTaskIds.has(blockedId)) {
-        warnings.push(`任务 ${task.id} 阻塞的任务 ${blockedId} 不存在`);
-      }
+      task.blocks.forEach((blockedId) => {
+        if (!allTaskIds.has(blockedId)) {
+          warnings.push(`任务 ${task.id} 阻塞的任务 ${blockedId} 不存在`);
+        }
+      });
     });
-  });
 
   // 验证跨角色任务的依赖
-  taskSet.crossRoleTasks.forEach(task => {
-    task.dependencies.forEach(depId => {
+  taskSet.crossRoleTasks.forEach((task) => {
+    task.dependencies.forEach((depId) => {
       if (!allTaskIds.has(depId)) {
         errors.push(`跨角色任务 ${task.id} 依赖的任务 ${depId} 不存在`);
       }
@@ -307,7 +311,7 @@ export function validateTaskDependencies(taskSet: GeneratedTaskSet): {
   return {
     valid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -318,7 +322,7 @@ export function validateTaskDependencies(taskSet: GeneratedTaskSet): {
  */
 function detectCircularDependencies(taskSet: GeneratedTaskSet): string[] {
   const allTasks = Object.values(taskSet.roleBasedTasks).flat();
-  const taskMap = new Map(allTasks.map(task => [task.id, task]));
+  const taskMap = new Map(allTasks.map((task) => [task.id, task]));
   const visited = new Set<string>();
   const recursionStack = new Set<string>();
 

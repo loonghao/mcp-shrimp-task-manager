@@ -3,21 +3,18 @@
  * 提供從環境變數載入自定義 prompt 的功能
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { PromptConfig, PromptCategory, ChainPrompt } from "../types/index.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { PromptConfig, PromptCategory, ChainPrompt } from '../types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function processEnvString(input: string | undefined): string {
-  if (!input) return "";
+  if (!input) return '';
 
-  return input
-    .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "\t")
-    .replace(/\\r/g, "\r");
+  return input.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '\r');
 }
 
 /**
@@ -54,20 +51,16 @@ export function loadPrompt(basePrompt: string, promptKey: string): string {
  * @param params 動態參數
  * @returns 填充參數後的 prompt
  */
-export function generatePrompt(
-  promptTemplate: string,
-  params: Record<string, any> = {}
-): string {
+export function generatePrompt(promptTemplate: string, params: Record<string, any> = {}): string {
   // 使用簡單的模板替換方法，將 {paramName} 替換為對應的參數值
   let result = promptTemplate;
 
   Object.entries(params).forEach(([key, value]) => {
     // 如果值為 undefined 或 null，使用空字串替換
-    const replacementValue =
-      value !== undefined && value !== null ? String(value) : "";
+    const replacementValue = value !== undefined && value !== null ? String(value) : '';
 
     // 使用正則表達式替換所有匹配的佔位符
-    const placeholder = new RegExp(`\\{${key}\\}`, "g");
+    const placeholder = new RegExp(`\\{${key}\\}`, 'g');
     result = result.replace(placeholder, replacementValue);
   });
 
@@ -131,11 +124,11 @@ function findTemplateSetRoot(templateDir: string): string {
  * @throws Error 如果找不到模板文件
  */
 export function loadPromptFromTemplate(templatePath: string): string {
-  const templateSetName = process.env.TEMPLATES_USE || "en";
+  const templateSetName = process.env.TEMPLATES_USE || 'en';
   const dataDir = process.env.DATA_DIR;
   const builtInTemplatesBaseDir = __dirname;
 
-  let finalPath = "";
+  let finalPath = '';
   const checkedPaths: string[] = []; // 用於更詳細的錯誤報告
 
   // 1. 檢查 DATA_DIR 中的自定義路徑
@@ -151,11 +144,7 @@ export function loadPromptFromTemplate(templatePath: string): string {
   // 2. 如果未找到自定義路徑，檢查特定的內建模板目錄
   if (!finalPath) {
     // 假設 templateSetName 對於內建模板是 'en', 'zh' 等
-    const specificBuiltInFilePath = path.join(
-      builtInTemplatesBaseDir,
-      `templates_${templateSetName}`,
-      templatePath
-    );
+    const specificBuiltInFilePath = path.join(builtInTemplatesBaseDir, `templates_${templateSetName}`, templatePath);
     checkedPaths.push(`Specific Built-in: ${specificBuiltInFilePath}`);
     if (fs.existsSync(specificBuiltInFilePath)) {
       finalPath = specificBuiltInFilePath;
@@ -163,12 +152,8 @@ export function loadPromptFromTemplate(templatePath: string): string {
   }
 
   // 3. 如果特定的內建模板也未找到，且不是 'en' (避免重複檢查)
-  if (!finalPath && templateSetName !== "en") {
-    const defaultBuiltInFilePath = path.join(
-      builtInTemplatesBaseDir,
-      "templates_en",
-      templatePath
-    );
+  if (!finalPath && templateSetName !== 'en') {
+    const defaultBuiltInFilePath = path.join(builtInTemplatesBaseDir, 'templates_en', templatePath);
     checkedPaths.push(`Default Built-in ('en'): ${defaultBuiltInFilePath}`);
     if (fs.existsSync(defaultBuiltInFilePath)) {
       finalPath = defaultBuiltInFilePath;
@@ -179,13 +164,13 @@ export function loadPromptFromTemplate(templatePath: string): string {
   if (!finalPath) {
     throw new Error(
       `Template file not found: '${templatePath}' in template set '${templateSetName}'. Checked paths:\n - ${checkedPaths.join(
-        "\n - "
+        '\n - '
       )}`
     );
   }
 
   // 5. 讀取找到的文件
-  let content = fs.readFileSync(finalPath, "utf-8");
+  let content = fs.readFileSync(finalPath, 'utf-8');
 
   // 6. 處理模板包含（{{include:shared/filename.md}}）
   content = processTemplateIncludes(content, path.dirname(finalPath));
@@ -218,17 +203,17 @@ export function loadPromptConfig(): PromptConfig {
  */
 function getDefaultPromptConfig(): PromptConfig {
   return {
-    version: "1.0.0",
-    description: "Default Enhanced Prompt System Configuration",
+    version: '1.0.0',
+    description: 'Default Enhanced Prompt System Configuration',
     categories: {},
     chains: {},
     settings: {
-      defaultLanguage: "zh",
+      defaultLanguage: 'zh',
       enableHotReload: false,
       cacheEnabled: true,
       maxCacheSize: 50,
-      loadingStrategy: "lazy"
-    }
+      loadingStrategy: 'lazy',
+    },
   };
 }
 
@@ -269,7 +254,7 @@ export function loadPromptByCategory(categoryId: string, promptId: string): stri
  */
 export function getAvailableCategories(): PromptCategory[] {
   const config = loadPromptConfig();
-  return Object.values(config.categories).filter(category => category.enabled);
+  return Object.values(config.categories).filter((category) => category.enabled);
 }
 
 /**

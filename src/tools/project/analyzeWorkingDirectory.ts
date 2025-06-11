@@ -3,10 +3,10 @@
  * 专门用于分析和解决MCP环境下的工作目录检测问题
  */
 
-import { z } from "zod";
-import { getProjectContext } from "../../utils/projectDetector.js";
-import path from "path";
-import fs from "fs/promises";
+import { z } from 'zod';
+import { getProjectContext } from '../../utils/projectDetector.js';
+import path from 'path';
+import fs from 'fs/promises';
 
 /**
  * 分析工作目录的输入schema
@@ -32,9 +32,9 @@ export async function analyzeWorkingDirectory(input: AnalyzeWorkingDirectoryInpu
   try {
     // 获取项目上下文信息
     const projectContext = await getProjectContext({
-      fallbackDir: input.suggestedDir || process.cwd()
+      fallbackDir: input.suggestedDir || process.cwd(),
     });
-    
+
     // 分析不同的目录路径
     const analysis = {
       processCwd: process.cwd(),
@@ -68,14 +68,14 @@ export async function analyzeWorkingDirectory(input: AnalyzeWorkingDirectoryInpu
 
     // 生成问题诊断
     const diagnosis = generateDiagnosis(analysis);
-    
+
     // 生成解决建议
     const recommendations = generateRecommendations(analysis);
 
     return {
       content: [
         {
-          type: "text" as const,
+          type: 'text' as const,
           text: `# 🔍 工作目录分析报告
 
 ## 📊 检测结果
@@ -122,7 +122,7 @@ const projectContext = await getProjectContext(); // 可能使用错误的proces
     return {
       content: [
         {
-          type: "text" as const,
+          type: 'text' as const,
           text: `❌ 工作目录分析失败: ${errorMsg}`,
         },
       ],
@@ -136,21 +136,16 @@ const projectContext = await getProjectContext(); // 可能使用错误的proces
 async function analyzeFileSystem(dirPath: string) {
   try {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
-    const files = entries.filter(e => e.isFile()).map(e => e.name);
-    const directories = entries.filter(e => e.isDirectory()).map(e => e.name);
-    
+    const files = entries.filter((e) => e.isFile()).map((e) => e.name);
+    const directories = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+
     return {
       totalEntries: entries.length,
       files: files.slice(0, 10), // 只显示前10个文件
       directories: directories.slice(0, 10), // 只显示前10个目录
-      hasCommonProjectFiles: [
-        'package.json',
-        '.git',
-        'README.md',
-        'tsconfig.json',
-        'src',
-        'node_modules'
-      ].filter(name => entries.some(e => e.name === name)),
+      hasCommonProjectFiles: ['package.json', '.git', 'README.md', 'tsconfig.json', 'src', 'node_modules'].filter(
+        (name) => entries.some((e) => e.name === name)
+      ),
     };
   } catch (error) {
     return { error: error instanceof Error ? error.message : String(error) };
@@ -172,7 +167,7 @@ function generateAnalysisSummary(analysis: any): string {
   if (analysis.projectIndicators.hasGitRepo) {
     lines.push(`**Git仓库**: ✅ 检测到`);
   }
-  
+
   if (analysis.projectIndicators.hasPackageJson) {
     lines.push(`**Package.json**: ✅ 检测到 (${analysis.projectIndicators.packageName || '无名称'})`);
   }
@@ -185,23 +180,23 @@ function generateAnalysisSummary(analysis: any): string {
  */
 function generateDiagnosis(analysis: any): string {
   const issues = [];
-  
+
   if (analysis.isMcpEnvironment) {
-    issues.push("🔴 **MCP环境问题**: 检测到在MCP环境下运行，process.cwd()指向server目录而非用户项目目录");
+    issues.push('🔴 **MCP环境问题**: 检测到在MCP环境下运行，process.cwd()指向server目录而非用户项目目录');
   }
-  
+
   if (!analysis.pathAnalysis.isSameAsProcessCwd) {
-    issues.push("🟡 **目录不一致**: 检测到的工作目录与process.cwd()不同，可能影响项目检测");
+    issues.push('🟡 **目录不一致**: 检测到的工作目录与process.cwd()不同，可能影响项目检测');
   }
-  
+
   if (!analysis.projectIndicators.hasGitRepo && !analysis.projectIndicators.hasPackageJson) {
-    issues.push("🟡 **项目标识缺失**: 未检测到.git或package.json，可能不是有效的项目目录");
+    issues.push('🟡 **项目标识缺失**: 未检测到.git或package.json，可能不是有效的项目目录');
   }
-  
+
   if (issues.length === 0) {
-    return "✅ **无明显问题**: 工作目录检测正常";
+    return '✅ **无明显问题**: 工作目录检测正常';
   }
-  
+
   return issues.join('\n\n');
 }
 
@@ -210,30 +205,30 @@ function generateDiagnosis(analysis: any): string {
  */
 function generateRecommendations(analysis: any): string {
   const recommendations = [];
-  
+
   if (analysis.isMcpEnvironment) {
     recommendations.push(`
 **1. 使用明确的工作目录参数**
    - 在调用项目检测函数时，明确传递工作目录参数
    - 避免依赖process.cwd()的默认行为`);
-    
+
     recommendations.push(`
 **2. 启用项目自动检测**
    - 设置环境变量: \`PROJECT_AUTO_DETECT=true\`
    - 这将启用智能工作目录检测机制`);
   }
-  
+
   if (!analysis.projectIndicators.hasGitRepo && !analysis.projectIndicators.hasPackageJson) {
     recommendations.push(`
 **3. 确认项目目录**
    - 确保当前目录是正确的项目根目录
    - 项目应包含.git目录或package.json文件`);
   }
-  
+
   recommendations.push(`
 **4. 手动指定项目目录**
    - 如果自动检测失败，可以手动指定项目目录
    - 使用绝对路径以避免相对路径问题`);
-  
+
   return recommendations.join('\n');
 }

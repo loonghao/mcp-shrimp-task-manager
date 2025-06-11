@@ -3,9 +3,9 @@
  * 提供一致的路径获取接口，确保所有模块使用相同的路径逻辑
  */
 
-import path from "path";
-import fs from "fs/promises";
-import { getProjectContext } from "./projectDetector.js";
+import path from 'path';
+import fs from 'fs/promises';
+import { getProjectContext } from './projectDetector.js';
 
 /**
  * 路径管理器类
@@ -43,7 +43,7 @@ class PathManager {
    * 获取基础数据目录
    */
   public getBaseDataDir(): string {
-    return process.env.DATA_DIR || path.join(process.cwd(), "data");
+    return process.env.DATA_DIR || path.join(process.cwd(), 'data');
   }
 
   /**
@@ -52,11 +52,9 @@ class PathManager {
    */
   public async getProjectDataDir(forceRefresh: boolean = false): Promise<string> {
     const now = Date.now();
-    
+
     // 检查缓存是否有效
-    if (!forceRefresh && 
-        this.cachedProjectDataDir && 
-        (now - this.lastUpdateTime) < this.CACHE_TTL) {
+    if (!forceRefresh && this.cachedProjectDataDir && now - this.lastUpdateTime < this.CACHE_TTL) {
       return this.cachedProjectDataDir;
     }
 
@@ -78,19 +76,18 @@ class PathManager {
         this.cachedProjectInfo = {
           id: projectContext.projectId,
           path: projectContext.projectRoot,
-          name: projectContext.projectName
+          name: projectContext.projectName,
         };
         this.cachedProjectDataDir = path.join(baseDataDir, 'projects', projectContext.projectId);
       } else {
         this.cachedProjectDataDir = baseDataDir;
       }
-      
+
       this.lastUpdateTime = now;
       return this.cachedProjectDataDir;
-      
     } catch (error) {
       // 检测失败时回退到基础目录
-      console.warn("项目检测失败，使用基础数据目录:", error);
+      console.warn('项目检测失败，使用基础数据目录:', error);
       this.cachedProjectDataDir = baseDataDir;
       this.lastUpdateTime = now;
       return baseDataDir;
@@ -102,7 +99,7 @@ class PathManager {
    */
   public async getLogDir(forceRefresh: boolean = false): Promise<string> {
     const projectDataDir = await this.getProjectDataDir(forceRefresh);
-    return path.join(projectDataDir, "logs");
+    return path.join(projectDataDir, 'logs');
   }
 
   /**
@@ -110,7 +107,7 @@ class PathManager {
    */
   public async getTasksFilePath(forceRefresh: boolean = false): Promise<string> {
     const projectDataDir = await this.getProjectDataDir(forceRefresh);
-    return path.join(projectDataDir, "tasks.json");
+    return path.join(projectDataDir, 'tasks.json');
   }
 
   /**
@@ -118,7 +115,7 @@ class PathManager {
    */
   public async getConfigDir(forceRefresh: boolean = false): Promise<string> {
     const projectDataDir = await this.getProjectDataDir(forceRefresh);
-    return path.join(projectDataDir, "config");
+    return path.join(projectDataDir, 'config');
   }
 
   /**
@@ -126,7 +123,7 @@ class PathManager {
    */
   public async getTempDir(forceRefresh: boolean = false): Promise<string> {
     const projectDataDir = await this.getProjectDataDir(forceRefresh);
-    return path.join(projectDataDir, "temp");
+    return path.join(projectDataDir, 'temp');
   }
 
   /**
@@ -136,13 +133,13 @@ class PathManager {
    */
   public async getDocumentationDir(forceRefresh: boolean = false): Promise<string> {
     const projectDataDir = await this.getProjectDataDir(forceRefresh);
-    const docsDir = path.join(projectDataDir, "docs");
+    const docsDir = path.join(projectDataDir, 'docs');
 
     // 自动创建目录结构
     try {
       await fs.mkdir(docsDir, { recursive: true });
     } catch (error) {
-      console.warn("创建文档目录失败:", error);
+      console.warn('创建文档目录失败:', error);
     }
 
     return docsDir;
@@ -162,13 +159,13 @@ class PathManager {
   public async updateProjectPath(projectPath: string): Promise<void> {
     // 清除缓存
     this.clearCache();
-    
+
     // 设置环境变量
     process.env.SHRIMP_PROJECT_PATH = projectPath;
-    
+
     // 强制重新获取项目数据目录
     await this.getProjectDataDir(true);
-    
+
     // 通知其他模块更新路径
     await this.notifyPathUpdate();
   }
@@ -179,14 +176,13 @@ class PathManager {
   private async notifyPathUpdate(): Promise<void> {
     try {
       // 更新日志目录
-      const { logger } = await import("./logger.js");
+      const { logger } = await import('./logger.js');
       const newLogDir = await this.getLogDir(true);
       await logger.setProjectLogDir(path.dirname(newLogDir)); // 传递项目数据目录
-      
+
       // 可以在这里添加其他需要更新路径的模块
-      
     } catch (error) {
-      console.warn("通知路径更新失败:", error);
+      console.warn('通知路径更新失败:', error);
     }
   }
 
@@ -220,7 +216,7 @@ class PathManager {
       configDir,
       tempDir,
       documentationDir,
-      projectInfo
+      projectInfo,
     };
   }
 }

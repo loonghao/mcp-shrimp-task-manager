@@ -2,14 +2,14 @@
  * 取消链式执行工具
  */
 
-import { z } from "zod";
-import { cancelChain } from "../../execution/index.js";
-import { log } from "../../utils/logger.js";
+import { z } from 'zod';
+import { cancelChain } from '../../execution/index.js';
+import { log } from '../../utils/logger.js';
 
 // 输入参数 Schema
 export const cancelChainSchema = z.object({
-  chainId: z.string().describe("要取消的链式执行的唯一标识符"),
-  reason: z.string().optional().describe("取消原因（可选）")
+  chainId: z.string().describe('要取消的链式执行的唯一标识符'),
+  reason: z.string().optional().describe('取消原因（可选）'),
 });
 
 /**
@@ -17,16 +17,16 @@ export const cancelChainSchema = z.object({
  */
 export async function cancelChainTool(args: z.infer<typeof cancelChainSchema>) {
   try {
-    log.info("CancelChain", `取消链式执行: ${args.chainId}`, {
-      reason: args.reason || "用户请求"
+    log.info('CancelChain', `取消链式执行: ${args.chainId}`, {
+      reason: args.reason || '用户请求',
     });
 
     const result = await cancelChain(args.chainId);
 
     if (result.success) {
-      log.info("CancelChain", `链式执行取消成功: ${args.chainId}`, {
+      log.info('CancelChain', `链式执行取消成功: ${args.chainId}`, {
         cancelledTasks: result.cancelledTasks,
-        reason: args.reason
+        reason: args.reason,
       });
 
       return {
@@ -35,38 +35,38 @@ export async function cancelChainTool(args: z.infer<typeof cancelChainSchema>) {
         chainId: args.chainId,
         result: {
           cancelledTasks: result.cancelledTasks,
-          reason: args.reason || "用户请求",
-          cancelledAt: new Date().toISOString()
-        }
+          reason: args.reason || '用户请求',
+          cancelledAt: new Date().toISOString(),
+        },
       };
     } else {
-      log.warn("CancelChain", `链式执行取消失败: ${args.chainId}`, {
-        message: result.message
+      log.warn('CancelChain', `链式执行取消失败: ${args.chainId}`, {
+        message: result.message,
       });
 
       return {
         success: false,
         message: result.message,
         chainId: args.chainId,
-        error: "取消操作失败"
+        error: '取消操作失败',
       };
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    log.error("CancelChain", "取消链式执行失败", error as Error);
+    log.error('CancelChain', '取消链式执行失败', error as Error);
 
     return {
       success: false,
       message: `取消链式执行失败: ${errorMessage}`,
       chainId: args.chainId,
-      error: errorMessage
+      error: errorMessage,
     };
   }
 }
 
 // 工具定义
 export const cancelChainToolDefinition = {
-  name: "cancel_chain",
+  name: 'cancel_chain',
   description: `取消链式执行
 
 这个工具允许你取消正在执行的链式任务流程。
@@ -93,5 +93,5 @@ export const cancelChainToolDefinition = {
 
 返回信息包括取消结果、影响的任务数量、取消时间等。`,
   inputSchema: cancelChainSchema,
-  handler: cancelChainTool
+  handler: cancelChainTool,
 };

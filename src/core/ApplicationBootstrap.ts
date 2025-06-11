@@ -3,12 +3,12 @@
  * 负责协调各个组件的初始化和启动
  */
 
-import { log } from "../utils/logger.js";
-import { getProjectDataDir } from "../utils/pathManager.js";
-import { ConfigManager } from "./ConfigManager.js";
-import { McpServerFactory } from "./McpServerFactory.js";
-import { ExpressServerFactory } from "./ExpressServerFactory.js";
-import { ToolRegistry } from "./ToolRegistry.js";
+import { log } from '../utils/logger.js';
+import { getProjectDataDir } from '../utils/pathManager.js';
+import { ConfigManager } from './ConfigManager.js';
+import { McpServerFactory } from './McpServerFactory.js';
+import { ExpressServerFactory } from './ExpressServerFactory.js';
+import { ToolRegistry } from './ToolRegistry.js';
 
 export interface ApplicationConfig {
   enableGui: boolean;
@@ -49,9 +49,9 @@ export class ApplicationBootstrap {
       // 5. 设置清理处理器
       this.setupCleanupHandlers();
 
-      log.info("System", "应用程序启动完成");
+      log.info('System', '应用程序启动完成');
     } catch (error) {
-      log.error("System", "应用程序启动失败", error as Error);
+      log.error('System', '应用程序启动失败', error as Error);
       throw error;
     }
   }
@@ -61,9 +61,9 @@ export class ApplicationBootstrap {
    */
   private async initializeConfiguration(): Promise<void> {
     await this.configManager.initialize();
-    
+
     const config = this.configManager.getApplicationConfig();
-    log.info("System", "MCP Shrimp Task Manager 启动", {
+    log.info('System', 'MCP Shrimp Task Manager 启动', {
       version: config.version,
       nodeVersion: process.version,
       platform: process.platform,
@@ -71,7 +71,7 @@ export class ApplicationBootstrap {
         ENABLE_GUI: config.enableGui,
         PROJECT_AUTO_DETECT: config.projectAutoDetect,
         TEMPLATES_USE: config.templatesUse,
-      }
+      },
     });
   }
 
@@ -80,12 +80,12 @@ export class ApplicationBootstrap {
    */
   private async initializeLogging(): Promise<void> {
     await log.init();
-    
+
     // 设置项目特定的日志目录
     const projectDataDir = await getProjectDataDir();
     await log.setProjectDir(projectDataDir);
-    
-    log.info("System", "日志系统初始化完成", { projectDataDir });
+
+    log.info('System', '日志系统初始化完成', { projectDataDir });
   }
 
   /**
@@ -93,8 +93,8 @@ export class ApplicationBootstrap {
    */
   private async registerTools(): Promise<void> {
     await this.toolRegistry.discoverAndRegisterTools();
-    log.info("System", "工具注册完成", {
-      toolCount: this.toolRegistry.getToolCount()
+    log.info('System', '工具注册完成', {
+      toolCount: this.toolRegistry.getToolCount(),
     });
   }
 
@@ -108,12 +108,12 @@ export class ApplicationBootstrap {
     if (config.enableGui) {
       this.expressServerFactory = new ExpressServerFactory();
       await this.expressServerFactory.start();
-      log.info("System", "Express 服务器启动完成");
+      log.info('System', 'Express 服务器启动完成');
     }
 
     // 启动 MCP 服务器
     await this.mcpServerFactory.start();
-    log.info("System", "MCP 服务器启动完成");
+    log.info('System', 'MCP 服务器启动完成');
   }
 
   /**
@@ -121,8 +121,8 @@ export class ApplicationBootstrap {
    */
   private setupCleanupHandlers(): void {
     const cleanup = async () => {
-      log.info("System", "正在清理资源...");
-      
+      log.info('System', '正在清理资源...');
+
       try {
         // 停止 Express 服务器
         if (this.expressServerFactory) {
@@ -133,14 +133,14 @@ export class ApplicationBootstrap {
         await this.mcpServerFactory.stop();
 
         // 清理日志系统
-        const { logger } = await import("../utils/logger.js");
+        const { logger } = await import('../utils/logger.js');
         logger.cleanup();
-        
-        log.info("System", "资源清理完成");
+
+        log.info('System', '资源清理完成');
       } catch (error) {
-        console.error("清理资源时发生错误:", error);
+        console.error('清理资源时发生错误:', error);
       }
-      
+
       process.exit(0);
     };
 

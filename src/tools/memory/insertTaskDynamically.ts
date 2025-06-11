@@ -3,27 +3,27 @@
  * 支持在任务执行过程中智能插入新任务，并自动调整后续任务
  */
 
-import { z } from "zod";
-import { TaskMemoryManager } from "../../memory/TaskMemoryManager.js";
-import { DynamicTaskAdjuster, TaskInsertionRequest } from "../../memory/DynamicTaskAdjuster.js";
-import { getProjectContext } from "../../utils/projectDetector.js";
-import { getProjectDataDir } from "../../utils/pathManager.js";
-import { handleError, createSuccessResponse, validateAndHandle, type ApiResponse } from "../../utils/errorHandler.js";
-import { adaptToMcpResponse, type McpToolResponse } from "../../utils/mcpAdapter.js";
-import { join } from "path";
+import { z } from 'zod';
+import { TaskMemoryManager } from '../../memory/TaskMemoryManager.js';
+import { DynamicTaskAdjuster, TaskInsertionRequest } from '../../memory/DynamicTaskAdjuster.js';
+import { getProjectContext } from '../../utils/projectDetector.js';
+import { getProjectDataDir } from '../../utils/pathManager.js';
+import { handleError, createSuccessResponse, validateAndHandle, type ApiResponse } from '../../utils/errorHandler.js';
+import { adaptToMcpResponse, type McpToolResponse } from '../../utils/mcpAdapter.js';
+import { join } from 'path';
 
 // 输入参数验证
 const InsertTaskDynamicallySchema = z.object({
-  title: z.string().min(5).describe("新任务的标题，应该简洁明确"),
-  description: z.string().min(20).describe("新任务的详细描述，包含具体要求和目标"),
-  priority: z.number().min(1).max(10).optional().describe("任务优先级，1-10，数字越大优先级越高"),
-  urgency: z.enum(["low", "medium", "high", "critical"]).optional().describe("任务紧急程度"),
-  insertAfter: z.string().optional().describe("在指定任务ID之后插入"),
-  insertBefore: z.string().optional().describe("在指定任务ID之前插入"),
-  relatedTasks: z.array(z.string()).optional().describe("相关任务ID列表"),
-  context: z.string().optional().describe("插入任务的背景和原因说明"),
-  autoAdjust: z.boolean().default(true).describe("是否自动调整后续任务"),
-  generateSuggestions: z.boolean().default(true).describe("是否生成优化建议")
+  title: z.string().min(5).describe('新任务的标题，应该简洁明确'),
+  description: z.string().min(20).describe('新任务的详细描述，包含具体要求和目标'),
+  priority: z.number().min(1).max(10).optional().describe('任务优先级，1-10，数字越大优先级越高'),
+  urgency: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('任务紧急程度'),
+  insertAfter: z.string().optional().describe('在指定任务ID之后插入'),
+  insertBefore: z.string().optional().describe('在指定任务ID之前插入'),
+  relatedTasks: z.array(z.string()).optional().describe('相关任务ID列表'),
+  context: z.string().optional().describe('插入任务的背景和原因说明'),
+  autoAdjust: z.boolean().default(true).describe('是否自动调整后续任务'),
+  generateSuggestions: z.boolean().default(true).describe('是否生成优化建议'),
 });
 
 type InsertTaskDynamicallyInput = z.infer<typeof InsertTaskDynamicallySchema>;
@@ -35,21 +35,26 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput): P
   try {
     // 验证输入参数
     const validationResult = validateAndHandle(InsertTaskDynamicallySchema, args, '参数验证');
-    if (typeof validationResult === 'object' && validationResult !== null && 'success' in validationResult && !validationResult.success) {
+    if (
+      typeof validationResult === 'object' &&
+      validationResult !== null &&
+      'success' in validationResult &&
+      !validationResult.success
+    ) {
       return adaptToMcpResponse(validationResult as ApiResponse);
     }
     const validatedArgs = validationResult as InsertTaskDynamicallyInput;
-    const { 
-      title, 
-      description, 
-      priority, 
-      urgency, 
-      insertAfter, 
-      insertBefore, 
-      relatedTasks, 
+    const {
+      title,
+      description,
+      priority,
+      urgency,
+      insertAfter,
+      insertBefore,
+      relatedTasks,
       context,
       autoAdjust,
-      generateSuggestions
+      generateSuggestions,
     } = validatedArgs;
 
     // 获取项目上下文
@@ -70,7 +75,7 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput): P
       insertAfter,
       insertBefore,
       relatedTasks,
-      context
+      context,
     };
 
     console.log(`📝 准备插入任务: "${title}"`);
@@ -96,7 +101,7 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput): P
           `动态插入任务: ${title}`,
           [
             { id: 'insert', description: '插入新任务' },
-            { id: 'skip', description: '跳过插入' }
+            { id: 'skip', description: '跳过插入' },
           ],
           'insert',
           context || '用户请求插入新任务'
@@ -106,44 +111,50 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput): P
 
       // 生成返回结果
       const responseData = {
-          insertedTask: result.insertedTask ? {
-            id: result.insertedTask.id,
-            title: result.insertedTask.name,
-            description: result.insertedTask.description,
-            status: result.insertedTask.status,
-            createdAt: result.insertedTask.createdAt
-          } : null,
+        insertedTask: result.insertedTask
+          ? {
+              id: result.insertedTask.id,
+              title: result.insertedTask.name,
+              description: result.insertedTask.description,
+              status: result.insertedTask.status,
+              createdAt: result.insertedTask.createdAt,
+            }
+          : null,
 
-          adjustmentSummary: {
-            adjustedTasksCount: result.adjustedTasks.length,
-            suggestionsCount: result.suggestions.length,
-            warningsCount: result.warnings.length,
-            summary: result.summary
-          },
+        adjustmentSummary: {
+          adjustedTasksCount: result.adjustedTasks.length,
+          suggestionsCount: result.suggestions.length,
+          warningsCount: result.warnings.length,
+          summary: result.summary,
+        },
 
-          adjustedTasks: autoAdjust ? result.adjustedTasks.map(task => ({
-            id: task.id,
-            title: task.name,
-            status: task.status,
-            lastModified: task.updatedAt
-          })) : [],
+        adjustedTasks: autoAdjust
+          ? result.adjustedTasks.map((task) => ({
+              id: task.id,
+              title: task.name,
+              status: task.status,
+              lastModified: task.updatedAt,
+            }))
+          : [],
 
-          suggestions: generateSuggestions ? result.suggestions.map(suggestion => ({
-            taskId: suggestion.taskId,
-            type: suggestion.adjustmentType,
-            reasoning: suggestion.reasoning,
-            confidence: suggestion.confidence,
-            impact: suggestion.impact
-          })) : [],
+        suggestions: generateSuggestions
+          ? result.suggestions.map((suggestion) => ({
+              taskId: suggestion.taskId,
+              type: suggestion.adjustmentType,
+              reasoning: suggestion.reasoning,
+              confidence: suggestion.confidence,
+              impact: suggestion.impact,
+            }))
+          : [],
 
-          warnings: result.warnings,
+        warnings: result.warnings,
 
-          nextSteps: [
-            "检查调整后的任务列表",
-            "评估生成的优化建议",
-            "根据需要手动调整任务优先级",
-            "开始执行调整后的任务计划"
-          ]
+        nextSteps: [
+          '检查调整后的任务列表',
+          '评估生成的优化建议',
+          '根据需要手动调整任务优先级',
+          '开始执行调整后的任务计划',
+        ],
       };
 
       // 输出详细信息
@@ -171,16 +182,14 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput): P
       }
 
       return adaptToMcpResponse(createSuccessResponse(responseData, result.warnings));
-
     } else {
       console.error('❌ 任务插入失败');
       return adaptToMcpResponse({
         success: false,
         error: result.summary,
-        warnings: result.warnings
+        warnings: result.warnings,
       });
     }
-
   } catch (error) {
     return adaptToMcpResponse(handleError(error, '动态任务插入'));
   }
@@ -188,7 +197,7 @@ export async function insertTaskDynamically(args: InsertTaskDynamicallyInput): P
 
 // 工具定义
 export const insertTaskDynamicallyTool = {
-  name: "insert_task_dynamically",
+  name: 'insert_task_dynamically',
   description: `智能动态任务插入工具 - 任务记忆和上下文保持的核心功能
 
 🧠 **核心特色**：
@@ -219,5 +228,5 @@ export const insertTaskDynamicallyTool = {
 
 这个功能解决了传统任务管理中"天马行空插入任务"导致计划混乱的问题，
 通过智能分析和自动调整，确保新任务的插入不会破坏现有的任务流程。`,
-  inputSchema: InsertTaskDynamicallySchema
+  inputSchema: InsertTaskDynamicallySchema,
 };

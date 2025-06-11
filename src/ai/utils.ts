@@ -3,9 +3,9 @@
  * 提供便捷的 AI 管理功能和辅助函数
  */
 
-import { AIManager } from "./manager.js";
-import { AIConfigManager } from "./config.js";
-import { AIResponse, AIExecutionResult, CurrentAIProvider } from "./types.js";
+import { AIManager } from './manager.js';
+import { AIConfigManager } from './config.js';
+import { AIResponse, AIExecutionResult, CurrentAIProvider } from './types.js';
 
 /**
  * 创建默认的 AI 管理器实例
@@ -25,12 +25,10 @@ export function createDefaultAIManager(configPath?: string): AIManager {
 export function isCurrentAIResponse(response: AIResponse | AIExecutionResult): boolean {
   if ('response' in response) {
     // AIExecutionResult
-    return response.providerId === 'current-ai' ||
-           (response.response?.metadata?.isCurrentAI === true);
+    return response.providerId === 'current-ai' || response.response?.metadata?.isCurrentAI === true;
   } else {
     // AIResponse
-    return response.providerId === 'current-ai' ||
-           (response as AIResponse).metadata?.isCurrentAI === true;
+    return response.providerId === 'current-ai' || (response as AIResponse).metadata?.isCurrentAI === true;
   }
 }
 
@@ -40,8 +38,7 @@ export function isCurrentAIResponse(response: AIResponse | AIExecutionResult): b
  * @returns 是否需要委托
  */
 export function shouldDelegateToCurrentAI(response: AIResponse): boolean {
-  return response.metadata?.shouldDelegate === true || 
-         response.content.startsWith('[CURRENT_AI_EXECUTION]');
+  return response.metadata?.shouldDelegate === true || response.content.startsWith('[CURRENT_AI_EXECUTION]');
 }
 
 /**
@@ -83,7 +80,7 @@ export function createCurrentAIConfig(
     useCurrentAI,
     currentAIId: useCurrentAI ? 'current-execution-ai' : undefined,
     currentAIName: aiName || 'Current Execution AI',
-    capabilities: capabilities || ['general', 'analysis', 'generation', 'coding']
+    capabilities: capabilities || ['general', 'analysis', 'generation', 'coding'],
   };
 }
 
@@ -108,11 +105,11 @@ export function formatUsageStats(stats: any[]): string {
     output += `Total Cost: $${stat.totalCost.toFixed(4)}\n`;
     output += `Avg Response Time: ${stat.averageResponseTime.toFixed(0)}ms\n`;
     output += `Success Rate: ${stat.successRate.toFixed(1)}%\n`;
-    
+
     if (Object.keys(stat.errors).length > 0) {
       output += `Errors: ${JSON.stringify(stat.errors)}\n`;
     }
-    
+
     output += '\n';
   }
 
@@ -134,21 +131,20 @@ export function formatHealthStatus(healthStatuses: any[]): string {
 
   for (const status of healthStatuses) {
     const healthIcon = status.healthy ? '✅' : '❌';
-    const availabilityColor = status.availability >= 90 ? '🟢' : 
-                             status.availability >= 70 ? '🟡' : '🔴';
-    
+    const availabilityColor = status.availability >= 90 ? '🟢' : status.availability >= 70 ? '🟡' : '🔴';
+
     output += `${healthIcon} Provider: ${status.providerId}\n`;
     output += `${availabilityColor} Availability: ${status.availability.toFixed(1)}%\n`;
     output += `Last Checked: ${status.lastChecked.toLocaleString()}\n`;
-    
+
     if (status.responseTime) {
       output += `Response Time: ${status.responseTime}ms\n`;
     }
-    
+
     if (status.error) {
       output += `Error: ${status.error}\n`;
     }
-    
+
     output += '\n';
   }
 
@@ -189,7 +185,7 @@ export function validateAIExecutionOptions(options: any): { valid: boolean; erro
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -224,7 +220,7 @@ export function createExecutionSummary(result: AIExecutionResult): string {
   const retries = result.retryCount;
 
   let summary = `${status} | Provider: ${provider} | Time: ${time}ms`;
-  
+
   if (retries > 0) {
     summary += ` | Retries: ${retries}`;
   }
@@ -252,12 +248,8 @@ export function createExecutionSummary(result: AIExecutionResult): string {
  * @param warningThreshold 警告阈值（0-1）
  * @returns 是否需要警告
  */
-export function shouldWarnAboutCost(
-  currentCost: number,
-  limit: number,
-  warningThreshold: number = 0.8
-): boolean {
-  return currentCost >= (limit * warningThreshold);
+export function shouldWarnAboutCost(currentCost: number, limit: number, warningThreshold: number = 0.8): boolean {
+  return currentCost >= limit * warningThreshold;
 }
 
 /**
@@ -267,11 +259,7 @@ export function shouldWarnAboutCost(
  * @param period 时间周期
  * @returns 警告消息
  */
-export function generateCostWarning(
-  currentCost: number,
-  limit: number,
-  period: string = 'daily'
-): string {
-  const percentage = (currentCost / limit * 100).toFixed(1);
+export function generateCostWarning(currentCost: number, limit: number, period: string = 'daily'): string {
+  const percentage = ((currentCost / limit) * 100).toFixed(1);
   return `⚠️ AI usage cost warning: ${percentage}% of ${period} limit ($${currentCost.toFixed(2)} / $${limit.toFixed(2)})`;
 }

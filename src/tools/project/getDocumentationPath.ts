@@ -3,18 +3,18 @@
  * 用于获取和管理AI生成文档的存储路径
  */
 
-import { z } from "zod";
-import path from "path";
-import { getDocumentationDir } from "../../utils/pathManager.js";
-import { log } from "../../utils/logger.js";
+import { z } from 'zod';
+import path from 'path';
+import { getDocumentationDir } from '../../utils/pathManager.js';
+import { log } from '../../utils/logger.js';
 
 /**
  * 获取文档路径的输入schema
  */
 export const getDocumentationPathSchema = z.object({
-  filename: z.string().optional().describe("文档文件名（可选），如果提供则返回完整文件路径"),
-  subDir: z.string().optional().describe("子目录名（可选），用于组织不同类型的文档"),
-  createDir: z.boolean().optional().default(true).describe("是否自动创建目录结构"),
+  filename: z.string().optional().describe('文档文件名（可选），如果提供则返回完整文件路径'),
+  subDir: z.string().optional().describe('子目录名（可选），用于组织不同类型的文档'),
+  createDir: z.boolean().optional().default(true).describe('是否自动创建目录结构'),
 });
 
 export type GetDocumentationPathInput = z.infer<typeof getDocumentationPathSchema>;
@@ -26,18 +26,18 @@ function validateFilename(filename: string): { valid: boolean; error?: string } 
   // 检查文件名是否包含非法字符
   const invalidChars = /[<>:"|?*\x00-\x1f]/;
   if (invalidChars.test(filename)) {
-    return { valid: false, error: "文件名包含非法字符" };
+    return { valid: false, error: '文件名包含非法字符' };
   }
 
   // 检查是否为保留名称（Windows）
   const reservedNames = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)/i;
   if (reservedNames.test(filename)) {
-    return { valid: false, error: "文件名为系统保留名称" };
+    return { valid: false, error: '文件名为系统保留名称' };
   }
 
   // 检查文件名长度
   if (filename.length > 255) {
-    return { valid: false, error: "文件名过长" };
+    return { valid: false, error: '文件名过长' };
   }
 
   return { valid: true };
@@ -49,12 +49,12 @@ function validateFilename(filename: string): { valid: boolean; error?: string } 
 function validateSubDir(subDir: string): { valid: boolean; error?: string } {
   // 检查是否包含路径遍历字符
   if (subDir.includes('..')) {
-    return { valid: false, error: "子目录名不能包含路径遍历字符" };
+    return { valid: false, error: '子目录名不能包含路径遍历字符' };
   }
 
   // 检查是否包含绝对路径标识符
   if (subDir.startsWith('/') || subDir.startsWith('\\') || /^[A-Za-z]:/.test(subDir)) {
-    return { valid: false, error: "子目录名不能是绝对路径" };
+    return { valid: false, error: '子目录名不能是绝对路径' };
   }
 
   // 分割路径并验证每个部分
@@ -80,11 +80,11 @@ function validateSubDir(subDir: string): { valid: boolean; error?: string } {
  */
 export async function getDocumentationPath(input: GetDocumentationPathInput) {
   try {
-    log.info("GetDocumentationPath", "开始获取文档路径", input);
+    log.info('GetDocumentationPath', '开始获取文档路径', input);
 
     // 获取基础文档目录
     const baseDocDir = await getDocumentationDir();
-    
+
     let targetDir = baseDocDir;
     let fullPath = baseDocDir;
 
@@ -115,24 +115,28 @@ export async function getDocumentationPath(input: GetDocumentationPathInput) {
         baseDocumentationDir: baseDocDir,
         targetDir: targetDir,
         fullPath: fullPath,
-        relativePath: input.subDir ? 
-          (input.filename ? path.join(input.subDir, input.filename) : input.subDir) :
-          (input.filename ? input.filename : ""),
+        relativePath: input.subDir
+          ? input.filename
+            ? path.join(input.subDir, input.filename)
+            : input.subDir
+          : input.filename
+            ? input.filename
+            : '',
       },
       info: {
         isFile: !!input.filename,
         isDirectory: !input.filename,
         hasSubDir: !!input.subDir,
         autoCreateEnabled: input.createDir ?? true,
-      }
+      },
     };
 
-    log.info("GetDocumentationPath", "文档路径获取成功", result);
+    log.info('GetDocumentationPath', '文档路径获取成功', result);
 
     return {
       content: [
         {
-          type: "text" as const,
+          type: 'text' as const,
           text: `# 📁 文档路径信息
 
 ## 🎯 路径详情
@@ -150,14 +154,16 @@ ${result.info.hasSubDir ? `- **子目录**: \`${input.subDir}\`` : ''}
 
 ## 💡 使用说明
 
-${result.info.isFile ? 
-  `此路径指向文件 \`${input.filename}\`，可以直接用于文档创建操作。` :
-  `此路径指向目录，可以用于存储多个文档文件。`
+${
+  result.info.isFile
+    ? `此路径指向文件 \`${input.filename}\`，可以直接用于文档创建操作。`
+    : `此路径指向目录，可以用于存储多个文档文件。`
 }
 
-${result.info.autoCreateEnabled ? 
-  '目录结构已自动创建，可以直接使用此路径进行文档操作。' :
-  '⚠️ 自动创建已禁用，请确保目录存在后再使用。'
+${
+  result.info.autoCreateEnabled
+    ? '目录结构已自动创建，可以直接使用此路径进行文档操作。'
+    : '⚠️ 自动创建已禁用，请确保目录存在后再使用。'
 }
 
 ## 🔧 技术信息
@@ -168,15 +174,14 @@ ${JSON.stringify(result, null, 2)}
         },
       ],
     };
-
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    log.error("GetDocumentationPath", "获取文档路径失败", error as Error, { input });
-    
+    log.error('GetDocumentationPath', '获取文档路径失败', error as Error, { input });
+
     return {
       content: [
         {
-          type: "text" as const,
+          type: 'text' as const,
           text: `❌ 获取文档路径失败: ${errorMsg}
 
 ## 🔍 调试信息

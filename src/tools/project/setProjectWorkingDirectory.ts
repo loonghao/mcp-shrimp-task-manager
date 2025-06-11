@@ -3,19 +3,19 @@
  * 用于手动指定正确的项目工作目录，解决MCP环境下的路径检测问题
  */
 
-import { z } from "zod";
-import fs from "fs/promises";
-import path from "path";
-import { log } from "../../utils/logger.js";
-import { updateProjectPath, getPathSummary } from "../../utils/pathManager.js";
+import { z } from 'zod';
+import fs from 'fs/promises';
+import path from 'path';
+import { log } from '../../utils/logger.js';
+import { updateProjectPath, getPathSummary } from '../../utils/pathManager.js';
 
 /**
  * 设置项目工作目录的输入schema
  */
 export const setProjectWorkingDirectorySchema = z.object({
-  projectPath: z.string().describe("项目目录的绝对路径"),
-  persistent: z.boolean().optional().default(false).describe("是否持久化保存此设置"),
-  validateProject: z.boolean().optional().default(true).describe("是否验证目录包含项目文件"),
+  projectPath: z.string().describe('项目目录的绝对路径'),
+  persistent: z.boolean().optional().default(false).describe('是否持久化保存此设置'),
+  validateProject: z.boolean().optional().default(true).describe('是否验证目录包含项目文件'),
 });
 
 export type SetProjectWorkingDirectoryInput = z.infer<typeof setProjectWorkingDirectorySchema>;
@@ -38,17 +38,17 @@ async function validateProjectDirectory(dirPath: string): Promise<boolean> {
     'tsconfig.json',
     'src',
     'lib',
-    'app'
+    'app',
   ];
 
   let foundIndicators = 0;
-  
+
   for (const indicator of projectIndicators) {
     try {
       const indicatorPath = path.join(dirPath, indicator);
       await fs.access(indicatorPath);
       foundIndicators++;
-      
+
       // 如果找到关键项目文件，直接认为是有效项目
       if (['package.json', '.git', 'pyproject.toml', 'Cargo.toml', 'go.mod'].includes(indicator)) {
         return true;
@@ -71,14 +71,14 @@ async function saveProjectConfig(projectPath: string): Promise<void> {
     projectPath: projectPath,
     lastUpdated: new Date().toISOString(),
     autoDetected: false,
-    manuallySet: true
+    manuallySet: true,
   };
 
   try {
     await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
-    log.info("ProjectConfig", "项目配置已保存", { configPath, projectPath });
+    log.info('ProjectConfig', '项目配置已保存', { configPath, projectPath });
   } catch (error) {
-    log.warn("ProjectConfig", "保存项目配置失败", { error, configPath });
+    log.warn('ProjectConfig', '保存项目配置失败', { error, configPath });
   }
 }
 
@@ -89,7 +89,7 @@ async function updateGlobalProjectContext(projectPath: string): Promise<void> {
   // 使用统一的路径管理器更新项目路径
   await updateProjectPath(projectPath);
 
-  log.info("ProjectContext", "全局项目上下文已更新", { projectPath });
+  log.info('ProjectContext', '全局项目上下文已更新', { projectPath });
 }
 
 /**
@@ -99,10 +99,10 @@ export async function setProjectWorkingDirectory(input: SetProjectWorkingDirecto
   try {
     const { projectPath, persistent, validateProject } = input;
 
-    log.info("SetProjectWorkingDirectory", "开始设置项目工作目录", { 
-      projectPath, 
-      persistent, 
-      validateProject 
+    log.info('SetProjectWorkingDirectory', '开始设置项目工作目录', {
+      projectPath,
+      persistent,
+      validateProject,
     });
 
     // 验证路径是绝对路径
@@ -124,7 +124,7 @@ export async function setProjectWorkingDirectory(input: SetProjectWorkingDirecto
     if (validateProject) {
       const isValidProject = await validateProjectDirectory(projectPath);
       if (!isValidProject) {
-        log.warn("SetProjectWorkingDirectory", "目录可能不是有效的项目目录", { projectPath });
+        log.warn('SetProjectWorkingDirectory', '目录可能不是有效的项目目录', { projectPath });
         // 不抛出错误，只是警告
       }
     }
@@ -151,31 +151,34 @@ export async function setProjectWorkingDirectory(input: SetProjectWorkingDirecto
 
 🔄 所有相关模块的路径已自动更新`;
 
-    log.info("SetProjectWorkingDirectory", "项目工作目录设置成功", {
+    log.info('SetProjectWorkingDirectory', '项目工作目录设置成功', {
       projectPath,
       persistent,
       validateProject,
-      pathSummary
+      pathSummary,
     });
 
     return {
-      content: [{
-        type: "text" as const,
-        text: message
-      }]
+      content: [
+        {
+          type: 'text' as const,
+          text: message,
+        },
+      ],
     };
-
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    log.error("SetProjectWorkingDirectory", "设置项目工作目录失败", error as Error, { 
-      input 
+    log.error('SetProjectWorkingDirectory', '设置项目工作目录失败', error as Error, {
+      input,
     });
-    
+
     return {
-      content: [{
-        type: "text" as const,
-        text: `❌ 设置项目工作目录失败: ${errorMsg}`
-      }]
+      content: [
+        {
+          type: 'text' as const,
+          text: `❌ 设置项目工作目录失败: ${errorMsg}`,
+        },
+      ],
     };
   }
 }

@@ -6,12 +6,7 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  TaskKnowledge,
-  TaskDecision,
-  TaskDiscovery,
-  CollaborationPattern
-} from '../types/taskMemory.js';
+import { TaskKnowledge, TaskDecision, TaskDiscovery, CollaborationPattern } from '../types/taskMemory.js';
 import { TeamRole } from '../prd/types.js';
 
 // 团队知识条目
@@ -104,7 +99,7 @@ export class TeamMemoryManager {
       }
 
       const subDirs = ['knowledge', 'patterns', 'learning', 'members', 'shared'];
-      subDirs.forEach(dir => {
+      subDirs.forEach((dir) => {
         const dirPath = join(this.teamMemoryDir, dir);
         if (!existsSync(dirPath)) {
           mkdirSync(dirPath, { recursive: true });
@@ -180,7 +175,7 @@ export class TeamMemoryManager {
       ratings: [],
       tags: knowledge.tags,
       visibility,
-      applicableRoles: applicableRoles || [contributor.role]
+      applicableRoles: applicableRoles || [contributor.role],
     };
 
     this.teamKnowledge.set(entry.id, entry);
@@ -208,8 +203,7 @@ export class TeamMemoryManager {
 
     for (const entry of this.teamKnowledge.values()) {
       // 检查可见性
-      if (entry.visibility === 'role-specific' && 
-          !entry.applicableRoles.includes(requesterRole)) {
+      if (entry.visibility === 'role-specific' && !entry.applicableRoles.includes(requesterRole)) {
         continue;
       }
 
@@ -223,21 +217,19 @@ export class TeamMemoryManager {
 
       // 技术相关性
       if (context?.technologies) {
-        const techMatches = context.technologies.filter(tech =>
+        const techMatches = context.technologies.filter((tech) =>
           entry.knowledge.context.technology.includes(tech)
         ).length;
         relevanceScore += techMatches * 2;
       }
 
       // 任务类型相关性
-      if (context?.taskType && 
-          entry.knowledge.applicability.taskTypes.includes(context.taskType)) {
+      if (context?.taskType && entry.knowledge.applicability.taskTypes.includes(context.taskType)) {
         relevanceScore += 2;
       }
 
       // 项目类型相关性
-      if (context?.projectType && 
-          entry.knowledge.applicability.projectTypes.includes(context.projectType)) {
+      if (context?.projectType && entry.knowledge.applicability.projectTypes.includes(context.projectType)) {
         relevanceScore += 1;
       }
 
@@ -268,20 +260,20 @@ export class TeamMemoryManager {
     pattern: CollaborationPattern,
     success: boolean
   ): Promise<string> {
-    const existingPattern = Array.from(this.collaborationPatterns.values())
-      .find(p => p.name === name && 
-                 JSON.stringify(p.involvedRoles.sort()) === JSON.stringify(involvedRoles.sort()));
+    const existingPattern = Array.from(this.collaborationPatterns.values()).find(
+      (p) => p.name === name && JSON.stringify(p.involvedRoles.sort()) === JSON.stringify(involvedRoles.sort())
+    );
 
     if (existingPattern) {
       // 更新现有模式
       existingPattern.usageCount++;
       existingPattern.lastUsed = new Date();
-      
+
       if (success) {
-        existingPattern.successRate = 
+        existingPattern.successRate =
           (existingPattern.successRate * (existingPattern.usageCount - 1) + 1) / existingPattern.usageCount;
       } else {
-        existingPattern.successRate = 
+        existingPattern.successRate =
           (existingPattern.successRate * (existingPattern.usageCount - 1)) / existingPattern.usageCount;
       }
 
@@ -298,7 +290,7 @@ export class TeamMemoryManager {
         successRate: success ? 1 : 0,
         usageCount: 1,
         lastUsed: new Date(),
-        improvements: []
+        improvements: [],
       };
 
       this.collaborationPatterns.set(newPattern.id, newPattern);
@@ -318,9 +310,7 @@ export class TeamMemoryManager {
 
     for (const pattern of this.collaborationPatterns.values()) {
       // 检查角色匹配
-      const roleMatch = involvedRoles.every(role => 
-        pattern.involvedRoles.includes(role)
-      );
+      const roleMatch = involvedRoles.every((role) => pattern.involvedRoles.includes(role));
 
       if (roleMatch && pattern.successRate > 0.6) {
         patterns.push(pattern);
@@ -361,7 +351,7 @@ export class TeamMemoryManager {
       recommendations,
       createdBy,
       createdAt: new Date(),
-      verified: false
+      verified: false,
     };
 
     this.learningRecords.set(record.id, record);
@@ -373,35 +363,29 @@ export class TeamMemoryManager {
   /**
    * 获取团队学习记录
    */
-  async getTeamLearning(
-    filters?: {
-      learningType?: string;
-      roles?: TeamRole[];
-      technologies?: string[];
-      verified?: boolean;
-    }
-  ): Promise<TeamLearningRecord[]> {
+  async getTeamLearning(filters?: {
+    learningType?: string;
+    roles?: TeamRole[];
+    technologies?: string[];
+    verified?: boolean;
+  }): Promise<TeamLearningRecord[]> {
     let records = Array.from(this.learningRecords.values());
 
     if (filters) {
       if (filters.learningType) {
-        records = records.filter(r => r.learningType === filters.learningType);
+        records = records.filter((r) => r.learningType === filters.learningType);
       }
 
       if (filters.roles) {
-        records = records.filter(r => 
-          filters.roles!.some(role => r.context.roles.includes(role))
-        );
+        records = records.filter((r) => filters.roles!.some((role) => r.context.roles.includes(role)));
       }
 
       if (filters.technologies) {
-        records = records.filter(r =>
-          filters.technologies!.some(tech => r.context.technologies.includes(tech))
-        );
+        records = records.filter((r) => filters.technologies!.some((tech) => r.context.technologies.includes(tech)));
       }
 
       if (filters.verified !== undefined) {
-        records = records.filter(r => r.verified === filters.verified);
+        records = records.filter((r) => r.verified === filters.verified);
       }
     }
 
@@ -411,26 +395,21 @@ export class TeamMemoryManager {
   /**
    * 评价知识
    */
-  async rateKnowledge(
-    knowledgeId: string,
-    raterId: string,
-    rating: number,
-    comment?: string
-  ): Promise<void> {
+  async rateKnowledge(knowledgeId: string, raterId: string, rating: number, comment?: string): Promise<void> {
     const entry = this.teamKnowledge.get(knowledgeId);
     if (!entry) {
       throw new Error(`Knowledge entry not found: ${knowledgeId}`);
     }
 
     // 移除之前的评分（如果存在）
-    entry.ratings = entry.ratings.filter(r => r.raterId !== raterId);
+    entry.ratings = entry.ratings.filter((r) => r.raterId !== raterId);
 
     // 添加新评分
     entry.ratings.push({
       raterId,
       rating,
       comment,
-      ratedAt: new Date()
+      ratedAt: new Date(),
     });
 
     await this.saveTeamKnowledge();

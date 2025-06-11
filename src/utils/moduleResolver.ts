@@ -15,12 +15,12 @@ export function getCurrentModulePath(importMetaUrl?: string): string {
   if (process.env.NODE_ENV === 'test') {
     return path.join(process.cwd(), 'src', 'models', 'taskModel.ts');
   }
-  
+
   // 在生产环境中，使用import.meta.url
   if (importMetaUrl) {
     return fileURLToPath(importMetaUrl);
   }
-  
+
   // 回退方案
   return path.join(process.cwd(), 'src', 'models', 'taskModel.ts');
 }

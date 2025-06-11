@@ -11,21 +11,21 @@ export interface TaskExecutionContext {
   endTime?: Date; // 结束执行时间
   status: 'running' | 'paused' | 'completed' | 'failed'; // 执行状态
   summary?: string; // 执行摘要
-  
+
   // 执行过程记录
   steps: TaskExecutionStep[]; // 执行步骤记录
   decisions: TaskDecision[]; // 执行过程中的决策记录
   discoveries: TaskDiscovery[]; // 执行过程中的发现和洞察
-  
+
   // 上下文信息
   environment: ExecutionEnvironment; // 执行环境信息
   resources: TaskResource[]; // 使用的资源
   artifacts: TaskArtifact[]; // 产生的工件
-  
+
   // 知识传递
   knowledgeGenerated: TaskKnowledge[]; // 产生的知识
   knowledgeConsumed: string[]; // 消费的知识ID列表
-  
+
   // 中断和恢复
   checkpoints: TaskCheckpoint[]; // 检查点（支持中断恢复）
   resumeInfo?: TaskResumeInfo; // 恢复信息
@@ -39,12 +39,12 @@ export interface TaskExecutionStep {
   startTime: Date; // 开始时间
   endTime?: Date; // 结束时间
   status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped'; // 步骤状态
-  
+
   // 步骤详情
   actions: TaskAction[]; // 执行的动作
   outputs: TaskOutput[]; // 产生的输出
   errors?: TaskError[]; // 遇到的错误
-  
+
   // 元数据
   metadata: Record<string, any>; // 步骤元数据
   notes?: string; // 步骤备注

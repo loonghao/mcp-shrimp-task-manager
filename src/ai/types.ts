@@ -15,19 +15,19 @@ export interface AIProvider {
   enabled: boolean;
   /** 优先级（数字越小优先级越高） */
   priority: number;
-  
+
   /** 检查提供商是否可用 */
   isAvailable(): Promise<boolean>;
-  
+
   /** 执行 prompt */
   executePrompt(prompt: string, options?: AIExecutionOptions): Promise<AIResponse>;
-  
+
   /** 获取成本估算 */
   getCost(tokens: number): number;
-  
+
   /** 获取提供商配置 */
   getConfig(): AIProviderConfig;
-  
+
   /** 验证配置 */
   validateConfig(): Promise<boolean>;
 }

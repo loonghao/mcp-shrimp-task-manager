@@ -12,13 +12,7 @@
         "en": "Prompts for task planning, execution, and management",
         "zh": "用于任务规划、执行和管理的提示词"
       },
-      "prompts": [
-        "plan-task",
-        "analyze-task",
-        "execute-task",
-        "verify-task",
-        "split-tasks"
-      ],
+      "prompts": ["plan-task", "analyze-task", "execute-task", "verify-task", "split-tasks"],
       "enabled": true
     },
     "project-analysis": {
@@ -31,11 +25,7 @@
         "en": "Prompts for project structure analysis and code review",
         "zh": "用于项目结构分析和代码审查的提示词"
       },
-      "prompts": [
-        "analyze-codebase",
-        "review-architecture",
-        "assess-complexity"
-      ],
+      "prompts": ["analyze-codebase", "review-architecture", "assess-complexity"],
       "enabled": true
     },
     "research": {
@@ -48,11 +38,7 @@
         "en": "Prompts for research, investigation, and knowledge gathering",
         "zh": "用于研究、调查和知识收集的提示词"
       },
-      "prompts": [
-        "research-mode",
-        "gather-information",
-        "analyze-findings"
-      ],
+      "prompts": ["research-mode", "gather-information", "analyze-findings"],
       "enabled": true
     }
   },
