@@ -457,7 +457,7 @@ function renderTasks() {
   });
 
   // --- 簡單粗暴的替換 (會導致閃爍) ---
-  // 注意：當前使用簡單的 innerHTML 替換，未來可考慮實現 DOM Diffing 優化
+  // TODO: 實現 DOM Diffing 或更智慧的更新策略
   if (filteredTasks.length === 0) {
     taskListElement.innerHTML = `<div class="placeholder">${translate('task_list_empty')}</div>`;
   } else {
