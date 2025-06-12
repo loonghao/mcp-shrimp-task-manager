@@ -2,7 +2,7 @@
 
 # Changelog
 
-## [1.0.20]
+## [1.1.0] - 2025-01-07
 
 ### Added
 
@@ -93,6 +93,18 @@
 - **📈 Scalability**: Designed to handle large teams and complex project hierarchies
 - **🔄 Real-time**: Live collaboration pattern learning and adaptation
 - **💡 Intelligence**: Machine learning-ready architecture for future AI enhancements
+
+## [1.0.20]
+
+### Added
+
+- Added reset button and thumbnail view
+- Enhanced interaction between dependency graph and task list, making the dependency graph respond to filtering and task list selection
+
+### Changed
+
+- Removed initial animation of dependency graph to avoid animation jumps
+- Optimized initial state of dependency graph
 
 ## [1.0.19]
 
